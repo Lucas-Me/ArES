@@ -4,6 +4,7 @@ import utilitarios
 import gc
 import graphictools
 import os
+import pathlib
 import data_management
 import numpy as np
 import matplotlib as mpl
@@ -87,21 +88,24 @@ class TabelaEixos(QTreeWidget):
         self.items_timeseries = {
             "Eixo Horizontal" : [
                 "Intervalo",
-                "Unidade", 
+                "Unidade",
                 "Rotação (°)",
-                "Offset"],
-            "Eixo Vertical" : ["Número de rótulos", "Valor máximo", "Valor mínimo"]
+                "Tamanho da fonte"],
+            "Eixo Vertical" : ["Número de rótulos", "Valor máximo",
+                                "Valor mínimo", "Tamanho da fonte"]
         }
         self.items_scatterplot = {
             'Eixo Horizontal' : [
                 'Número de rótulos',
                 'Valor máximo',
                 'Valor mínimo',
+                "Tamanho da fonte"
             ],
             'Eixo Vertical' : [
                 'Número de Rótulos',
                 'Valor Máximo',
-                'Valor Mínimo'
+                'Valor Mínimo',
+                "Tamanho da fonte",
             ]
         }
         self.active_scatter = 0
@@ -111,6 +115,8 @@ class TabelaEixos(QTreeWidget):
         self.unidade = QComboBox()
         self.rotation_x = QSpinBox()
         self.size_y = QSpinBox()
+        self.fontsize_x = QSpinBox()
+        self.fontsize_y = QSpinBox()
         self.max_y = QSpinBox()
         self.min_y = QSpinBox()
         self.size_x = QSpinBox()
@@ -121,26 +127,28 @@ class TabelaEixos(QTreeWidget):
         self.widgets = [
             {
                 'Eixo Horizontal': [self.intervalo, self.unidade,
-                                    self.rotation_x],
-                'Eixo Vertical' : [self.size_y, self.max_y, self.min_y]
+                                    self.rotation_x, self.fontsize_x],
+                'Eixo Vertical' : [self.size_y, self.max_y,
+                                    self.min_y, self.fontsize_y]
             },
             {
-                'Eixo Horizontal': [self.size_x, self.max_x, self.min_x],
-                'Eixo Vertical' : [self.size_y, self.max_y, self.min_y] 
+                'Eixo Horizontal': [self.size_x, self.max_x,
+                                    self.min_x, self.fontsize_x],
+                'Eixo Vertical' : [self.size_y, self.max_y,
+                                    self.min_y, self.fontsize_y] 
                 }
         ]
 
         # configurando widgets
-        self.intervalo.setMaximum(30)
-        self.intervalo.setMinimum(1)
+        self.intervalo.setRange(1, 30)
         self.unidade.addItems(['Dia', 'Mês', 'Ano'])
         self.unidade.setCurrentIndex(1)
         self.size_x.setMinimum(1)
         self.size_y.setMinimum(2)
-        self.max_y.setMaximum(10000)
-        self.min_y.setMinimum(-10000)
-        self.rotation_x.setMaximum(180)
-        self.rotation_x.setMinimum(0)
+        self.max_y.setRange(-10000, 10000)
+        self.fontsize_x.setRange(1, 30)
+        self.fontsize_y.setRange(1, 30)
+        self.rotation_x.setRange(0, 180)
         mplcanvas = self.parentWidget.canvas
         self.size_x.setMaximum(mplcanvas.xticks.shape[0])
         self.size_x.setValue(mplcanvas.xtick_size)
@@ -149,12 +157,16 @@ class TabelaEixos(QTreeWidget):
         self.min_y.setValue(mplcanvas.ytick_min)
         self.max_x.setValue(mplcanvas.xtick_max)
         self.min_x.setValue(mplcanvas.xtick_min)
+        self.fontsize_x.setValue(mplcanvas.xticks_fontsize)
+        self.fontsize_y.setValue(mplcanvas.yticks_fontsize)
     
         # procedimentos
         self.run()
     
         # Signals and Slots
         self.size_x.textChanged.connect(self.changeHorizontalContents)
+        self.fontsize_x.valueChanged.connect(self.changeHorizontalContents)
+        self.fontsize_y.valueChanged.connect(self.changeVerticalContents)
         self.size_y.textChanged.connect(self.changeVerticalContents)
         self.max_y.textChanged.connect(self.changeVerticalContents)
         self.min_y.textChanged.connect(self.changeVerticalContents)
@@ -166,7 +178,8 @@ class TabelaEixos(QTreeWidget):
         size = self.size_y.value()
         min_ = self.min_y.value()
         max_ = self.max_y.value()
-        this = {"size" : size, "min_": min_, "max_": max_}
+        fontsize = self.fontsize_y.value()
+        this = {"size" : size, "min_": min_, "max_": max_, "fontsize":fontsize}
         self.parentWidget.canvas.smart_yticks(**this)
         self.updateProperties()
         return None
@@ -176,7 +189,8 @@ class TabelaEixos(QTreeWidget):
         rotation = self.rotation_x.value()
         intervalo = self.intervalo.value()
         range_format = self.unidade.currentText()
-        this = {"size": size, "rotation": rotation,
+        fontsize = self.fontsize_x.value()
+        this = {"size": size, "rotation": rotation, "fontsize" : fontsize,
                 "daterange": intervalo, "dateformat": range_format}
         self.parentWidget.canvas.smart_xticks(**this)
         self.updateProperties()
@@ -234,6 +248,7 @@ class PropriedadesTab(QWidget):
         self.legend_colors = QTableWidget()
         legendGroup = QGroupBox("Legenda")
         self.legend_cols = QSpinBox()
+        self.legend_fontsize = QSpinBox()
         #
         self.aplicar_limite = QPushButton(text = "Aplicar")
         LimiteGroup = QGroupBox("Faixa de Limite")
@@ -252,6 +267,8 @@ class PropriedadesTab(QWidget):
         #
         self.legend_cols.setRange(1, 10)
         self.legend_cols.setValue(5)
+        self.legend_fontsize.setRange(1, 30)
+        self.legend_fontsize.setValue(10)
         #
         self.grafico_tipo.addItems(["Gráfico de linha", "Gráfico de barra", 
                                     "Gráfico de ultrapassagens"])
@@ -272,6 +289,8 @@ class PropriedadesTab(QWidget):
         positionLayout = QHBoxLayout()
         positionLayout.addWidget(QLabel("Colunas"))
         positionLayout.addWidget(self.legend_cols)
+        positionLayout.addWidget(QLabel("Tamanho"))
+        positionLayout.addWidget(self.legend_fontsize)
         positionLayout.setStretch(1, 2)
         displayLayout = QVBoxLayout()
         displayLayout.addLayout(positionLayout)
@@ -305,6 +324,7 @@ class PropriedadesTab(QWidget):
         # Signals and Slots
         self.legend_colors.cellDoubleClicked.connect(self.choose_color)
         self.legend_cols.valueChanged.connect(self.updateLegendFormat)
+        self.legend_fontsize.valueChanged.connect(self.updateLegendFormat)
         self.elementos.activated.connect(self.format_options)
         self.textline.editingFinished.connect(self.set_label)
         self.fontsize.valueChanged.connect(self.set_fontsize)
@@ -315,7 +335,8 @@ class PropriedadesTab(QWidget):
 
     def updateLegendFormat(self):
         ncols = self.legend_cols.value()
-        self.canvas.updateLegend(self.legend_limite.text(), ncols)
+        size = self.legend_fontsize.value()
+        self.canvas.updateLegend(self.legend_limite.text(), ncols, size)
         return None
 
     def choose_color(self, row, column):
@@ -407,10 +428,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         # Propriedades da janela
-        self.setWindowTitle("Visualizador")
+        self.setWindowTitle("ArES")
         self.resize(1000, 700) # largura, altura
         self.logo_icon = QIcon()
-        self.logo_icon.addFile(".\\icons\\logo_2.ico")
+        self.logo_icon.addFile(".\\icons\\logo.ico")
         self.setWindowIcon(self.logo_icon)
 
         # variaveis criadas para o gerenciamento da janela
@@ -644,7 +665,8 @@ class MainWindow(QMainWindow):
 
         label = self.GraficoTab.legend_limite.text()
         ncols = self.GraficoTab.legend_cols.value()
-        self.canvas.updateLegend(label, ncols)
+        size = self.GraficoTab.legend_fontsize.value()
+        self.canvas.updateLegend(label, ncols, size)
         self.GraficoTab.eixos.updateProperties()
         self.GraficoTab.update_table()
 
@@ -1004,16 +1026,27 @@ class OperationsTable(QTableWidget):
 
         return None
 
-
-if __name__ == "__main__":
-    myappid = 'inea.datavisualizationtool.1a' # arbitrary string
+def main():
+    # marca o diretorio do script como atual
+    path = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(path)
+    
+    # inicia a aplicacao
+    myappid = 'inea.ArES.1a' # arbitrary string
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     app = QApplication(sys.argv)
     w = MainWindow()
     w.show()
-    print(QFontDatabase().families())
-    with open("./styles/styles.qss", "r") as f:
-        _style = f.read()
-        app.setStyleSheet(_style)
 
+    # estilos do programa
+    # print(QFontDatabase().families())
+    # with open("./styles/styles.qss", "r") as f:
+    #     _style = f.read()
+    #     app.setStyleSheet(_style)
+
+    # executa o programa
     sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()
+    

@@ -8,7 +8,7 @@ mpl.use("Qt5Agg")
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.backends.qt_compat import (
-    QtWidgets, __version__, QT_API,
+    QtWidgets, __version__,
     _enum,  _getSaveFileName
 )
 import matplotlib.dates as mdates
@@ -44,13 +44,13 @@ class NavigationToolbar(NavigationToolbar2QT):
         selectedFilter = None
         for name, exts in sorted_filetypes:
             exts_list = " ".join(['*.%s' % ext for ext in exts])
-            filter = '%s (%s)' % (name, exts_list)
+            filter_ = '%s (%s)' % (name, exts_list)
             if default_filetype in exts:
-                selectedFilter = filter
-            filters.append(filter)
+                selectedFilter = filter_
+            filters.append(filter_)
         filters = ';;'.join(filters)
 
-        fname, filter = _getSaveFileName(
+        fname, filter_ = _getSaveFileName(
             self.canvas.parent(), "Choose a filename to save to", start,
             filters, selectedFilter)
         if fname:
@@ -58,10 +58,10 @@ class NavigationToolbar(NavigationToolbar2QT):
             if startpath != "":
                 mpl.rcParams['savefig.directory'] = os.path.dirname(fname)
             try:
-                self.canvas.figure.savefig(fname, dpi = 300, bbox_inches="tight")
+                self.canvas.figure.savefig(fname, figsize = (14, 9), dpi = 300, bbox_inches="tight")
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    self, "Error saving file", str(e),
+                    self, "Erro ao salvar o arquivo", str(e),
                     _enum("QtWidgets.QMessageBox.StandardButton").Ok,
                     _enum("QtWidgets.QMessageBox.StandardButton").NoButton)
 
@@ -69,12 +69,23 @@ class NavigationToolbar(NavigationToolbar2QT):
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent = None, width = 16, height = 7, dpi = 100):
+        # startup properties
+        mpl.rcParams.update({
+            'axes.spines.top' : False,
+            'axes.spines.right' : False,
+            'axes.spines.left' : False,
+            'figure.subplot.bottom' : 0.1,
+            'figure.subplot.top' : 0.95,
+            'axes.grid' : True,
+            "axes.grid.axis" : "y",
+        })
+        
+        # iniciando
         self.fig = Figure(figsize = (width, height), dpi = dpi)
         self.axes = self.fig.add_subplot(111)
         self.p = parent
         self.colors = {}
-        self.fig.subplots_adjust(bottom = 0.15, top = 0.95)
-
+        
         # propriedades do grafico
         self.legend = None
         self.label = self.axes.title.get_text()
@@ -85,7 +96,8 @@ class MplCanvas(FigureCanvasQTAgg):
         self.xlabel = self.axes.xaxis.get_label().get_text()
         self.xlabel_fontsize = self.axes.xaxis.get_label().get_fontsize()
         self.xlabel_fontweight = self.axes.xaxis.get_label().get_fontweight()
-        self.xlabel_dateformat = "Dias"
+        self.xticks_fontsize = mpl.rcParams['xtick.major.size']
+        self.xlabel_dateformat = "Mês"
         self.xlabel_daterange = 1
         #
         self.xticks = self.axes.get_xticks()
@@ -100,14 +112,14 @@ class MplCanvas(FigureCanvasQTAgg):
         self.ylabel = self.axes.yaxis.get_label().get_text()
         self.ylabel_fontsize = self.axes.yaxis.get_label().get_fontsize()
         self.ylabel_fontweight = self.axes.yaxis.get_label().get_fontweight()
+        self.yticks_fontsize = mpl.rcParams['ytick.major.size']
         #
         self.ytick_max = self.axes.get_yticks().max()
         self.ytick_min = 0
         self.ytick_size = self.axes.get_yticks().shape[0]
         super(MplCanvas, self).__init__(self.fig)
 
-
-    def updateLegend(self, faixa_str, ncol = 4):
+    def updateLegend(self, faixa_str, ncol = 4, size = 10):
         if not isinstance(self.legend, type(None)):
             self.legend.remove()
 
@@ -116,7 +128,10 @@ class MplCanvas(FigureCanvasQTAgg):
             i = labels.index("Faixa limite")
             labels[i] = faixa_str
 
-        props = dict(loc = 8, ncol = ncol, fancybox = True, shadow = False, prop = dict(family = "Arial", weight = "bold"))
+        props = dict(
+            loc = 8, ncol = ncol, fancybox = True, shadow = False,
+            prop = dict(family = "Arial", weight = "bold", size = size)
+            )
         self.legend = self.fig.legend(handles, labels, **props)
         self.draw()
 
@@ -148,12 +163,6 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_title(**properties[0])
         self.axes.set_xlabel(**properties[1])
         self.axes.set_ylabel(**properties[2])
-        self.axes.grid(True, axis = "y")
-        self.axes.set_axisbelow(True)
-        self.axes.spines['top'].set_visible(False)
-        self.axes.spines['right'].set_visible(False)
-        self.axes.spines['left'].set_visible(False)
-
 
     def barPlot(self, ds, resultados):
         # Limpar o plot atual
@@ -167,7 +176,6 @@ class MplCanvas(FigureCanvasQTAgg):
         freq = np.asarray((unique, counts)).T
         ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
         dx = np.abs(freq[ii, 0])
-     
      
         # insere no plot atual
         width = 0.8 * dx
@@ -275,8 +283,8 @@ class MplCanvas(FigureCanvasQTAgg):
         rotation = kwargs.get('rotation', self.xtick_rotation)
         range_format = kwargs.get("dateformat", self.xlabel_dateformat)
         date_range = kwargs.get("daterange", self.xlabel_daterange)
+        fontsize = kwargs.get("fontsize", self.xticks_fontsize)
 
-        # Testes para formatacao dos rotulos no eixo X.
         if not isinstance(self.xtick_labels[0], np.datetime64):
             # resgata as variaveis
             min_ = kwargs.get('min_', self.xtick_min)
@@ -293,35 +301,41 @@ class MplCanvas(FigureCanvasQTAgg):
             self.xtick_max = np.max(ticks)
             self.xtick_min = np.min(ticks)
             self.xtick_size = ticks.shape[0]
-            self.xtick_rotation = 0
 
-            self.draw()
-            return None
+        else:
+            # Caso seja um objeto datetime
+            strFormat1 = {
+                "Dia" : "datetime64[D]",
+                "Mês" : "datetime64[M]",
+                "Ano" : "datetime64[Y]"
+            }
+            date_formatter = {
+                "datetime64[D]": ("%d/%m/%Y", mdates.DayLocator(interval = date_range)),
+                "datetime64[M]" : ("%d/%m/%Y", mdates.MonthLocator(interval = date_range)), 
+                "datetime64[Y]" : ("%Y", mdates.YearLocator())
+            }
 
-        # Caso seja um objeto datetime
-        strFormat1 = {
-            "Dia" : "datetime64[D]",
-            "Mês" : "datetime64[M]",
-            "Ano" : "datetime64[Y]"
-        }
-        date_formatter = {
-            "datetime64[D]": ("%d/%m/%Y", mdates.DayLocator(interval = date_range)),
-            "datetime64[M]" : ("%m/%Y", mdates.MonthLocator(interval = date_range)), 
-            "datetime64[Y]" : ("%Y", mdates.YearLocator())
-        }
+            datetime_str = strFormat1.get(range_format, "datetime64[D]")
+            self.axes.xaxis.set_major_formatter(
+                mdates.DateFormatter(date_formatter[datetime_str][0])
+                )
+            self.axes.xaxis.set_major_locator(date_formatter[datetime_str][1])
+            self.fig.autofmt_xdate() 
 
-        datetime_str = strFormat1.get(range_format, "datetime64[D]")
-        self.axes.xaxis.set_major_formatter(
-            mdates.DateFormatter(date_formatter[datetime_str][0])
-            )
-        self.axes.xaxis.set_major_locator(date_formatter[datetime_str][1])
-        self.fig.autofmt_xdate() 
-        self.draw()
+            # atualiza as variavies na classe
+            self.xlabel_dateformat = range_format
+            self.xlabel_daterange = date_range
+            dx = self.xticks[2] - self.xticks[1]
+            max_ = np.max(self.xticks) + dx
+            min_ = np.min(self.xticks) - dx
+            self.axes.set_xlim(min_, max_)
 
-        # atualiza as variavies na classe
+        # Testes para formatacao dos rotulos no eixo X.
+        self.axes.tick_params(axis='x', which='major', labelsize=fontsize)
+
         self.xtick_rotation = rotation
-        self.xlabel_dateformat = range_format
-        self.xlabel_daterange = date_range
+        self.xticks_fontsize = fontsize
+        self.draw()
 
         return None
 
@@ -330,17 +344,20 @@ class MplCanvas(FigureCanvasQTAgg):
         min_ = kwargs.get('min_', self.ytick_min)
         max_ = kwargs.get('max_', self.ytick_max)
         size = kwargs.get('size', self.ytick_size)
+        fontsize = kwargs.get('fontsize', self.yticks_fontsize)
 
         # procedimentos
         ticks = np.linspace(min_, max_, size)
         ticks = np.unique(np.ceil(ticks).astype(int))
         self.axes.set_yticks(ticks)
         self.axes.set_ylim(min_, max_)
+        self.axes.tick_params(axis='y', which='major', labelsize=fontsize)
 
         # atualiza os valores
         self.ytick_max = np.max(ticks)
         self.ytick_min = np.min(ticks)
         self.ytick_size = ticks.shape[0]
+        self.yticks_fontsize = fontsize
 
         self.draw()
         return None
