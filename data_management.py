@@ -44,7 +44,7 @@ class VarDataset():
    '''Classe responsavel por armazenar um objeto contendo dados de varias estacoes diferentes,
    referentes a um unico parametro, e realizar as operacoes apropriadas.'''
 
-   def __init__(self, varnames, freq, valores : dict = {}, index : np.array = []):
+   def __init__(self, varnames, freq, valores : dict = {}, index : np.array = [], id = {}):
       # inciando propriedades
       self.valores = valores
       self.index = index
@@ -54,6 +54,7 @@ class VarDataset():
       self.agrupar = []
       self.parametros = varnames
       self.freq = freq # frequencia temporal dos dados
+      self.ID = id # entra com o nome e recebe o id
 
       # Operacoes
       self.update_shape()

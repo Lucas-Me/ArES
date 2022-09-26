@@ -12,7 +12,6 @@ from matplotlib.backends.qt_compat import (
     _enum,  _getSaveFileName
 )
 import matplotlib.dates as mdates
-from copy import copy
 import os
 
 
@@ -85,6 +84,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes = self.fig.add_subplot(111)
         self.p = parent
         self.colors = {}
+        self.alias = {}
         
         # propriedades do grafico
         self.legend = None
@@ -96,7 +96,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.xlabel = self.axes.xaxis.get_label().get_text()
         self.xlabel_fontsize = self.axes.xaxis.get_label().get_fontsize()
         self.xlabel_fontweight = self.axes.xaxis.get_label().get_fontweight()
-        self.xticks_fontsize = mpl.rcParams['xtick.major.size']
+        self.xticks_fontsize = mpl.rcParams['font.size']
         self.xlabel_dateformat = "Mês"
         self.xlabel_daterange = 1
         #
@@ -112,40 +112,44 @@ class MplCanvas(FigureCanvasQTAgg):
         self.ylabel = self.axes.yaxis.get_label().get_text()
         self.ylabel_fontsize = self.axes.yaxis.get_label().get_fontsize()
         self.ylabel_fontweight = self.axes.yaxis.get_label().get_fontweight()
-        self.yticks_fontsize = mpl.rcParams['ytick.major.size']
+        self.yticks_fontsize = mpl.rcParams['font.size']
         #
         self.ytick_max = self.axes.get_yticks().max()
         self.ytick_min = 0
         self.ytick_size = self.axes.get_yticks().shape[0]
         super(MplCanvas, self).__init__(self.fig)
 
-    def updateLegend(self, faixa_str, ncol = 4, size = 10):
+    def updateLegend(self, ncol = 4, size = 10):
         if not isinstance(self.legend, type(None)):
             self.legend.remove()
 
-        handles, labels = self.axes.get_legend_handles_labels()
-        if "Faixa limite" in labels:
-            i = labels.index("Faixa limite")
-            labels[i] = faixa_str
+        handles, IDs = self.axes.get_legend_handles_labels()
+        for j in range(len(IDs)):
+            IDs[j] = self.alias.get(IDs[j], IDs[j])
 
         props = dict(
             loc = 8, ncol = ncol, fancybox = True, shadow = False,
             prop = dict(family = "Arial", weight = "bold", size = size)
             )
-        self.legend = self.fig.legend(handles, labels, **props)
+            
+        self.legend = self.fig.legend(handles, IDs, **props)
         self.draw()
 
-    def updateColor(self, name, color):
+    def updateColor(self, id_, color):
         handles, labels = self.axes.get_legend_handles_labels()
-        if name in labels:
-            i = labels.index(name)
+        if id_ in labels:
+            i = labels.index(id_)
             if isinstance(handles[i], mpl.container.BarContainer):
                 for patch in handles[i].patches:
                     patch.set_facecolor(color)
             else:
                 handles[i].set_color(color)
         
-        self.colors[name] = color
+        # if isinstance(self.p.ds, type(None)):
+        #     self.colors['Faixa Limite'] = color
+        # else:
+        self.colors[id_] = color
+        self.draw()
 
     def reset(self):
         # limpa os elementos do eixo
@@ -165,9 +169,6 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes.set_ylabel(**properties[2])
 
     def barPlot(self, ds, resultados):
-        # Limpar o plot atual
-        self.reset()
-
         # Deduzindo a frequencia do eixo X
         x = ds.index
         x = mdates.date2num(x)
@@ -185,14 +186,18 @@ class MplCanvas(FigureCanvasQTAgg):
         colunas = ds.get_columns()
         max_ = np.zeros(len(colunas))
         min_ = np.zeros(len(colunas))
+
         for i, col in enumerate(colunas):
+            id_ = ds.ID[col]
             times = mdates.num2date(x + width / div * (i - div // 2))
             y = resultados[col]
             max_[i] = np.nanmax(y, axis = 0)
             min_[i] = np.nanmin(y, axis = 0)
-            cor = self.colors.get(col, cmap(cores[i]))
-            self.axes.bar(times, y, width = width/div, label = col, edgecolor = "none", color = cor)
-            self.colors[col] = cor
+            cor = self.colors.get(id_, cmap(cores[i]))
+            self.axes.bar(times, y, width = width/div, label = id_, edgecolor = "none", color = cor)
+            self.colors[id_] = cor
+            if not id_ in self.alias:
+                self.alias[id_] = col
             
         # X ticks
         self.xticks = x
@@ -208,9 +213,6 @@ class MplCanvas(FigureCanvasQTAgg):
         self.smart_yticks()
 
     def linePlot(self, ds, resultados):
-        # Limpar o plot atual
-        self.reset()
-
         # Insere o Plot atual
         div = ds.shape[1]
         cmap = cm.get_cmap("jet")
@@ -218,13 +220,17 @@ class MplCanvas(FigureCanvasQTAgg):
         colunas = ds.get_columns()
         max_ = np.zeros(len(colunas))
         min_ = np.zeros(len(colunas))
+
         for i, col in enumerate(colunas):
             y = resultados[col]
+            id_ = ds.ID[col]
             max_[i] = np.nanmax(y, axis = 0)
             min_[i] = np.nanmin(y, axis = 0)
-            cor = self.colors.get(col, cmap(cores[i]))
-            self.axes.plot(ds.index, y, label = col, color = cor, linestyle = "-")
-            self.colors[col] = cor
+            cor = self.colors.get(id_, cmap(cores[i]))
+            self.axes.plot(ds.index, y, label = id_, color = cor, linestyle = "-")
+            self.colors[id_] = cor
+            if not id_ in self.alias:
+                self.alias[id_] = col
             
         # X ticks
         self.xticks = ds.index
@@ -240,16 +246,13 @@ class MplCanvas(FigureCanvasQTAgg):
         self.smart_yticks()
 
     def ultrapassagensPlot(self, ds, resultados):
-        # Limpar o plot atual
-        self.reset()
-
         # prepara os resultados
         padrao = self.p.GraficoTab.value_limite.value()
 
         # Extraindo a maxima, segunda maxima e o numero de ultrapassagens.
         maxima = np.full(ds.shape[1], np.nan)
         segunda_maxima = np.full(ds.shape[1], np.nan)
-        ultrapassagens = np.full(ds.shape[1], 0)
+        ultrapassagens = np.zeros(ds.shape[1])
         colunas = ds.get_columns()
         for i, col in enumerate(colunas):
             ordenado = np.sort(resultados[col][~np.isnan(resultados[col])])
@@ -261,21 +264,38 @@ class MplCanvas(FigureCanvasQTAgg):
         x = np.arange(ds.shape[1])
         div = 3
         width = 0.8
-        cmap = cm.get_cmap("jet")
+        cmap = cm.get_cmap("rainbow")
         cores = np.linspace(0, 1, div)
         labels = ["Máxima", "Segunda Máxima", "Nº de Ultrapassagens"]
         for i, arr in enumerate([maxima, segunda_maxima, ultrapassagens]):
-            cor = self.colors.get(labels[i], cmap(cores[i]))
-            rect = self.axes.bar(x + width/div*(i - div//2), arr, width/div, label = labels[i], edgecolor = "none", color = cor)
+            id_ = labels[i]
+            cor = self.colors.get(id_, cmap(cores[i]))
+            rect = self.axes.bar(x + width/div*(i - div//2), arr, width/div, label = id_, edgecolor = "none", color = cor)
             self.axes.bar_label(rect, padding=3, fmt = "%.0f", fontname = "Arial", weight = "bold")
-            self.colors[labels[i]] = cor
+            self.colors[id_] = cor
+            if not id_ in self.alias:
+                self.alias[id_] = labels[i]
             
         # X ticks
+        new_labels = ["-".join(string.split('-')[:-1]) for string in colunas]
         self.xticks = x
-        self.xtick_labels = colunas
-        self.smart_xticks()
+        self.xtick_labels = new_labels
+        self.xtick_min = np.min(x) - 1
+        self.xtick_max = np.max(x) + 1
+        self.xtick_size = x.shape[0] + 2
+        self.axes.set_xticks(x)
+        self.axes.set_xticklabels(new_labels)
+        self.axes.set_xlim(self.xtick_min, self.xtick_max)
+        # self.smart_xticks()
 
         # Y ticks
+        everything = np.stack((maxima, segunda_maxima, ultrapassagens))
+        max_ = np.nanmax(everything)
+        min_ = np.nanmin(everything)
+        if self.ytick_max < max_:
+            self.ytick_max = np.ceil(max_)*1.3
+        if np.nanmin(min_) < 0:
+            self.ytick_min = np.floor(np.nanmin(min_))*0.8
         self.smart_yticks()
 
     def smart_xticks(self, **kwargs):
@@ -362,13 +382,15 @@ class MplCanvas(FigureCanvasQTAgg):
         self.draw()
         return None
 
-    def hline_faixa(self, yvalue, label):
+    def hline_faixa(self, yvalue):
+        id_ = 'Faixa Limite'
         left, right = self.axes.get_xlim()
         bottom, top = self.axes.get_ylim()
-        color = self.colors.get(label, (1, 0, 0))
-        props = dict(color = color, linestyle = "-", label = label, linewidth = 4)
+        color = self.colors.get(id_, (1, 0, 0))
+        props = dict(color = color, linestyle = "-", label = id_, linewidth = 4)
         self.axes.hlines(yvalue, xmin = left - 1, xmax = right + 1, **props)
-        self.colors[label] = color
+        self.colors[id_] = color
+        self.alias[id_] = self.alias.get(id_, "Limite")
 
         self.axes.set_xlim(left, right)
         self.axes.set_ylim(bottom, top)

@@ -4,16 +4,17 @@ import utilitarios
 import gc
 import graphictools
 import os
-import pathlib
 import data_management
 import numpy as np
 import matplotlib as mpl
+from ui_splash_screen import SplashScreen
 from PySide6.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
 QFileDialog, QMainWindow, QTreeWidget, QHBoxLayout, QWidget, QPushButton,
 QLabel, QDateEdit, QVBoxLayout, QComboBox, QLineEdit, QSpinBox, QWidget,
 QTabWidget, QGroupBox, QTableWidget, QTableWidgetItem, QColorDialog,
-QCheckBox, QHeaderView, QDialog, QMessageBox)
-from PySide6.QtCore import QDate, Qt, Slot
+QCheckBox, QHeaderView, QDialog, QMessageBox,
+QStyle, QTabBar, QStylePainter, QProxyStyle, QStyleOptionTab)
+from PySide6.QtCore import QDate, Qt, Slot, QRect, QPoint
 from PySide6.QtGui import QColor, QAction, QIcon
 from PySide6.QtGui import QFontDatabase
 
@@ -250,14 +251,11 @@ class PropriedadesTab(QWidget):
         self.legend_cols = QSpinBox()
         self.legend_fontsize = QSpinBox()
         #
-        self.aplicar_limite = QPushButton(text = "Aplicar")
-        LimiteGroup = QGroupBox("Faixa de Limite")
+        LimiteGroup = QGroupBox("")
         TipoGroup = QGroupBox("Tipo de gráfico")
-        self.legend_limite = QLineEdit()
         self.grafico_tipo = QComboBox()
         self.check_limite = QCheckBox()
         self.value_limite = QSpinBox()
-        self.nome_limite = QLineEdit()
         
         # configurando widgets
         self.bold.setStyleSheet("font-weight: bold")
@@ -275,16 +273,31 @@ class PropriedadesTab(QWidget):
         self.value_limite.setMaximum(10000)
 
         # Layouts
+        SubLayout = QVBoxLayout()
+        SubLayout.addWidget(QLabel("Elementos dos eixos"))
+        SubLayout.addWidget(self.eixos)
+        #
+        FormatLayout2 = QGridLayout()
+        FormatLayout2.addWidget(self.elementos, 0, 0, 1, 3)
+        FormatLayout2.addWidget(self.textline, 1, 0)
+        FormatLayout2.addWidget(self.fontsize, 1, 1)
+        FormatLayout2.addWidget(self.bold, 1, 2)
+        formatGroup.setLayout(FormatLayout2)
+        #
+        LimiteLayout = QHBoxLayout()
+        LimiteLayout.addWidget(QLabel("Incluir limite"))
+        LimiteLayout.addWidget(self.check_limite)
+        LimiteLayout.addWidget(QLabel("Valor"))
+        LimiteLayout.addWidget(self.value_limite)
+        LimiteLayout.setStretch(3, 10)
+        LimiteGroup.setLayout(LimiteLayout)
+        grafico_tipo_Layout = QHBoxLayout()
+        grafico_tipo_Layout.addWidget(self.grafico_tipo)
+        TipoGroup.setLayout(grafico_tipo_Layout)
         FormatLayout = QVBoxLayout()
-        FormatLayout.addWidget(self.elementos)
-        FormatLayout2 = QHBoxLayout()
-        FormatLayout2.addWidget(self.textline)
-        FormatLayout2.addWidget(self.fontsize)
-        FormatLayout2.addWidget(self.bold)
-        FormatLayout.addLayout(FormatLayout2)
-        FormatLayout.addWidget(QLabel("Elementos dos eixos"))
-        FormatLayout.addWidget(self.eixos)
-        formatGroup.setLayout(FormatLayout)
+        FormatLayout.addWidget(LimiteGroup)
+        FormatLayout.addWidget(formatGroup)        
+        FormatLayout.addWidget(TipoGroup)
         #
         positionLayout = QHBoxLayout()
         positionLayout.addWidget(QLabel("Colunas"))
@@ -297,32 +310,15 @@ class PropriedadesTab(QWidget):
         displayLayout.addWidget(self.legend_colors)
         legendGroup.setLayout(displayLayout)
         #
-        SubLayout = QVBoxLayout()
-        TipoLayout = QHBoxLayout()
-        TipoLayout.addWidget(self.grafico_tipo)
-        TipoGroup.setLayout(TipoLayout)
-        LimiteLayout = QGridLayout()
-        LimiteLayout.addWidget(QLabel("Incluir?"), 0, 0)
-        LimiteLayout.addWidget(self.check_limite, 0, 1)
-        LimiteLayout.addWidget(QLabel("Valor"), 1, 0)
-        LimiteLayout.addWidget(self.value_limite, 1, 1)
-        LimiteLayout.addWidget(QLabel("Legenda"), 2, 0)
-        LimiteLayout.addWidget(self.legend_limite, 2, 1)
-        LimiteLayout.addWidget(self.aplicar_limite, 3, 0, 3, 2)
-        LimiteGroup.setLayout(LimiteLayout)
-        SubLayout.addWidget(TipoGroup)
-        SubLayout.addWidget(LimiteGroup)
-        #
         MainLayout = QHBoxLayout()
+        MainLayout.addLayout(FormatLayout)
         MainLayout.addLayout(SubLayout)
-        MainLayout.addWidget(formatGroup)
         MainLayout.addWidget(legendGroup)
-        MainLayout.setStretch(1, 2)
-        MainLayout.setStretch(2, 2)
         self.setLayout(MainLayout)
 
         # Signals and Slots
         self.legend_colors.cellDoubleClicked.connect(self.choose_color)
+        self.legend_colors.cellChanged.connect(self.change_label)
         self.legend_cols.valueChanged.connect(self.updateLegendFormat)
         self.legend_fontsize.valueChanged.connect(self.updateLegendFormat)
         self.elementos.activated.connect(self.format_options)
@@ -336,22 +332,35 @@ class PropriedadesTab(QWidget):
     def updateLegendFormat(self):
         ncols = self.legend_cols.value()
         size = self.legend_fontsize.value()
-        self.canvas.updateLegend(self.legend_limite.text(), ncols, size)
+        self.canvas.updateLegend(ncols, size)
         return None
 
+    def change_label(self, row, column):
+        if column != 0:
+            return None
+        
+        new_label = self.legend_colors.item(row, column).text()
+        item_id = self.legend_colors.item(row, 2).text()
+        
+        self.canvas.alias[item_id] = new_label
+        self.canvas.updateLegend()
+
+        return None
+
+        
     def choose_color(self, row, column):
         if column != 1:
-            pass
+            return None
+            
         item = self.legend_colors.item(row, column)
         Color = item.background().color()
-        name = self.legend_colors.item(row, 0).text()
+        id_ = self.legend_colors.item(row, 2).text()
         color_picker = QColorDialog().getColor(Color, title = "Gerenciador de cores")
         if color_picker.isValid():
             rgba = color_picker.getRgb()
             item.setBackground(QColor.fromRgb(*rgba))
-            self.canvas.updateColor(name, tuple(i/255 for i in rgba))
-            ncols = self.legend_cols.value()
-            self.canvas.updateLegend(self.legend_limite.text(), ncols)
+            self.canvas.updateColor(id_, tuple(i/255 for i in rgba))
+
         return None
 
     def set_label(self):
@@ -399,24 +408,31 @@ class PropriedadesTab(QWidget):
         return None
 
     def update_table(self):
-        i = 0
         colors = self.canvas.colors
-        handles, labels = self.canvas.axes.get_legend_handles_labels()
+        alias = self.canvas.alias
+        h, labels = self.canvas.axes.get_legend_handles_labels()
         self.legend_colors.setRowCount(len(labels))
-        self.legend_colors.setColumnCount(2)
+        self.legend_colors.setColumnCount(3)
         self.legend_colors.setHorizontalHeaderLabels(["Nome",
-            "Cor da Legenda"])
-        for label in labels:
-            if self.legend_limite.text() == label:
-                label = "Faixa Limite"
-            item_name = QTableWidgetItem(label)
+            "Cor da Legenda", "ID"])
+        self.legend_colors.setColumnHidden(2, True)
+        # IDs = {}
+        # if not isinstance(self.canvas.p.ds, type(None)):
+        #     IDs = self.canvas.p.ds.ID
+        i = 0
+        for id_ in labels:
+            item_name = QTableWidgetItem(alias[id_])
             item_color = QTableWidgetItem()
-            temp = (np.array(colors[label])*255).astype(int)
+            item_id = QTableWidgetItem(id_)
+            temp = (np.array(colors[id_])*255).astype(int)
             item_color.setBackground(QColor.fromRgb(*temp))
-            item_name.setFlags(item_name.flags() & ~Qt.ItemIsEditable)
+            #
+            item_name.setFlags(item_name.flags())
             item_color.setFlags(item_color.flags() & ~Qt.ItemIsEditable)
-            self.legend_colors.setItem(i, 0, item_name)
+            #
+            self.legend_colors.setItem(i, 2, item_id)
             self.legend_colors.setItem(i, 1, item_color)
+            self.legend_colors.setItem(i, 0, item_name)
             i += 1
 
         self.stretchHeader()
@@ -427,6 +443,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        # splash = SplashScreen()
+
         # Propriedades da janela
         self.setWindowTitle("ArES")
         self.resize(1000, 700) # largura, altura
@@ -441,6 +459,7 @@ class MainWindow(QMainWindow):
         self.signature = []
         self.arquivos = []
         self.inventory = data_management.Inventario(parent = self)
+        # self.first_conection()
         self.lista_calculo = ["Nenhum",  "Média móvel", "Média aritmética",
                                 "Média geométrica", "Média harmônica"]
         self.representatividade = {
@@ -529,9 +548,20 @@ class MainWindow(QMainWindow):
         self.botao_remover.clicked.connect(self.remover_arquivo)
         self.botao_limpar.clicked.connect(self.clean_files)
         self.botao_processar.clicked.connect(self.processar)
-        self.GraficoTab.aplicar_limite.clicked.connect(self.updateGraph)
+        self.GraficoTab.check_limite.stateChanged.connect(self.updateGraph)
         self.GraficoTab.grafico_tipo.currentTextChanged.connect(self.updateGraph)
         self.botao_configs.clicked.connect(self.openConfigWindow)
+        # splash.close()
+
+    def first_conection(self):
+        try:
+            self.inventory.connect(
+                'lucassm',
+                '174784'
+                )
+
+        except:
+            pass
 
     def openConfigWindow(self):
 
@@ -649,6 +679,9 @@ class MainWindow(QMainWindow):
         return lim
 
     def updateGraph(self):
+        # Limpar o plot atual
+        self.canvas.reset()
+
         if self.ds != None:
             graphTypes = [
                 self.canvas.linePlot,
@@ -661,12 +694,11 @@ class MainWindow(QMainWindow):
 
         if self.GraficoTab.check_limite.isChecked():
             value = self.GraficoTab.value_limite.value()
-            self.canvas.hline_faixa(value, "Faixa limite")
+            self.canvas.hline_faixa(value)
 
-        label = self.GraficoTab.legend_limite.text()
         ncols = self.GraficoTab.legend_cols.value()
         size = self.GraficoTab.legend_fontsize.value()
-        self.canvas.updateLegend(label, ncols, size)
+        self.canvas.updateLegend(ncols, size)
         self.GraficoTab.eixos.updateProperties()
         self.GraficoTab.update_table()
 
@@ -711,6 +743,9 @@ class MainWindow(QMainWindow):
 
 
 class MyDialog(QDialog):
+    '''
+    Diálogo de Configurações
+    '''
 
     def __init__(self, master):
         QDialog.__init__(self)
@@ -729,8 +764,8 @@ class MyDialog(QDialog):
         self.username_widget = QLineEdit(group)
         self.password_widget = QLineEdit(group)
         self.connect_button = QPushButton("Conectar")
-        
         self.hostname = QLineEdit(self.master.inventory.host)
+        self.Tabs = TabWidget()
 
         # Configuracoes dos Widgets
         self.hostname.setReadOnly(True)
@@ -746,12 +781,8 @@ class MyDialog(QDialog):
             self.valueRepresentatividade[k].setValue(v)
         self.WidgetRepresentatividade.setRowCount(len(self.valueRepresentatividade))
         self.runWidget()
-        
+
         # Layouts
-        Layout = QHBoxLayout()
-        Layout.addWidget(self.salvar)
-        Layout.addWidget(self.fechar)
-        #
         LoginLayout = QGridLayout()
         LoginLayout.addWidget(QLabel(text = "Host"), 0, 0)
         LoginLayout.addWidget(QLabel(text = "Usuário"), 1, 0)
@@ -760,20 +791,24 @@ class MyDialog(QDialog):
         LoginLayout.addWidget(self.username_widget, 1, 1, 1, 2)
         LoginLayout.addWidget(self.password_widget, 2, 1, 1, 2)
         LoginLayout.addWidget(self.connect_button, 3, 2)
-        group.setLayout(LoginLayout)
         LoginLayout.setRowStretch(4, 5)
-        #
-        MainLayout = QGridLayout()
-        MainLayout.addWidget(self.WidgetRepresentatividade, 0, 0)
-        MainLayout.addWidget(group, 0, 1)
-        MainLayout.addLayout(Layout, 1, 1)
-        #
-        self.setLayout(MainLayout)
+        group.setLayout(LoginLayout)
+        
+        self.Tabs.addTab(self.WidgetRepresentatividade, "Representatividade")
+        self.Tabs.addTab(group, "Conexão")
+    
+        # Widgets para troca
+        self.MainLayout = QHBoxLayout()
+        self.MainLayout.addWidget(self.Tabs)
+        self.list_layouts = [self.WidgetRepresentatividade, LoginLayout]
 
         # Signals and Slots
         self.salvar.clicked.connect(self.saveAndClose)
         self.fechar.clicked.connect(self.close)
         self.connect_button.clicked.connect(self.connect_sql)
+
+        # init
+        self.setLayout(self.MainLayout)
 
     def connect_sql(self):
         username = self.username_widget.text()
@@ -820,6 +855,51 @@ class MyDialog(QDialog):
 
         self.close()
 
+class TabBar(QTabBar):
+    def tabSizeHint(self, index):
+        s = QTabBar.tabSizeHint(self, index)
+        s.transpose()
+        return s
+
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        opt = QStyleOptionTab()
+
+        for i in range(self.count()):
+            self.initStyleOption(opt, i)
+            painter.drawControl(QStyle.CE_TabBarTabShape, opt)
+            painter.save()
+
+            s = opt.rect.size()
+            s.transpose()
+            r = QRect(QPoint(), s)
+            r.moveCenter(opt.rect.center())
+            opt.rect = r
+
+            c = self.tabRect(i).center()
+            painter.translate(c)
+            painter.rotate(90)
+            painter.translate(-c)
+            painter.drawControl(QStyle.CE_TabBarTabLabel, opt);
+            painter.restore()
+
+
+class TabWidget(QTabWidget):
+    def __init__(self, *args, **kwargs):
+        QTabWidget.__init__(self, *args, **kwargs)
+        self.setTabBar(TabBar(self))
+        self.setTabPosition(QTabWidget.West)
+
+class ProxyStyle(QProxyStyle):
+    def drawControl(self, element, opt, painter, widget):
+        if element == QStyle.CE_TabBarTabLabel:
+            ic = self.pixelMetric(QStyle.PM_TabBarIconSize)
+            r = QRect(opt.rect)
+            w =  0 if opt.icon.isNull() else opt.rect.width() + self.pixelMetric(QStyle.PM_TabBarIconSize)
+            r.setHeight(opt.fontMetrics.width(opt.text) + w)
+            r.moveBottom(opt.rect.bottom())
+            opt.rect = r
+        QProxyStyle.drawControl(self, element, opt, painter, widget)
 
 class DatasetDialog(QDialog):
 

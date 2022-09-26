@@ -25,7 +25,11 @@ VARIAVEIS = [
    'Pressão Atmosférica',
    'Partículas Totais em Suspensão',
    'Partículas Inaláveis (<2,5µm)',
+   'Partículas Inaláveis <2,5µm)',
+   'Partículas Inaláveis (<2,5µm',
    'Partículas Inaláveis (<10µm)',
+   'Partículas Inaláveis (<10µm',
+   'Partículas Inaláveis <10µm)',
    'Monóxido de Nitrogênio',
    'Dióxido de Nitrogênio',
    'Óxidos de Nitrogênio',
@@ -46,6 +50,10 @@ VAR_ALIAS = [
    'Pressao Atm.',
    'PTS',
    'MP2,5',
+   'MP2,5',
+   'MP2,5',
+   'MP10',
+   'MP10',
    'MP10',
    'NO',
    'NO2',
@@ -112,6 +120,23 @@ def get_dateindex(tipo, freq:np.timedelta64, start_date:datetime, end_date:datet
    return index
 
 
+def get_id(string, tipo):
+   '''
+   Gera uma ID unica para uma estacao e variavel especifica.
+   Baseada no municipio, nome da estacao e nome do parametro
+   '''
+   separa = string.split('-')
+   for i in range(len(separa)):
+      separa[i] = separa[i].strip()
+
+   Municipio = separa[0]
+   Nome = re.compile('\s+').split(separa[1])
+   Siglas_nome = ''.join([Nome[i][:3] for i in range(len(Nome))])
+   Parametro = separa[2]
+   ID = tipo[0] + Municipio + Parametro + Siglas_nome
+
+   return ID
+
 def organize(parent, start_date:datetime, end_date:datetime, tipo):
    '''
    Reune a serie temporal dos parametros selecionados e referentes a cada estacao
@@ -146,20 +171,22 @@ def organize(parent, start_date:datetime, end_date:datetime, tipo):
       )
    collection = {}
    parameters = {}
+   id_ = {}
    for i in range(n):
       entity = parent.arquivos[i]
       name = entity.nome
       for j in range(len(entity.vars)):
          if entity.vars_selected[j]:
-            id_ = name + " - " + get_alias(entity.vars[j])
-            collection[id_] = entity.reindex(entity.vars[j], new_index)
-            parameters[id_] = entity.vars[j]
+            name_ = name + " - " + get_alias(entity.vars[j])
+            collection[name_] = entity.reindex(entity.vars[j], new_index)
+            parameters[name_] = entity.vars[j]
+            id_[name_] = get_id(name_, parent.arquivos[0].tipo)
 
    # provoca um erro se nenhum parametro for selecionado
    if len(parameters) == 0:
       raise ValueError
 
-   return VarDataset(parameters, freq, valores = collection, index = new_index)
+   return VarDataset(parameters, freq, valores = collection, index = new_index, id = id_)
 
 
 def xls2file(file_path:str) -> Entity:
