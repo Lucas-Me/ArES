@@ -132,7 +132,7 @@ def get_id(string, tipo):
    Municipio = separa[0]
    Nome = re.compile('\s+').split(separa[1])
    Siglas_nome = ''.join([Nome[i][:3] for i in range(len(Nome))])
-   Parametro = separa[2]
+   Parametro = separa[-1]
    ID = tipo[0] + Municipio + Parametro + Siglas_nome
 
    return ID
