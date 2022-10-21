@@ -626,17 +626,17 @@ class MainWindow(QMainWindow):
         # Operacoes
 
         # debug
-        self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
-        # try:
-        #     # provoca um erro se nenhum paramtro for selecionado
-        #     self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
-        # except:
-        #     x = QMessageBox(QMessageBox.Warning, "Erro",
-        #             'Não é possível realizar o processamento', parent = self)
-        #     x.addButton(QMessageBox.Ok)
-        #     x.setInformativeText("Por favor, selecione pelo menos um parâmetro.")
-        #     x.exec()
-        #     return None
+        # self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
+        try:
+            # provoca um erro se nenhum paramtro for selecionado
+            self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
+        except:
+            x = QMessageBox(QMessageBox.Warning, "Erro",
+                    'Não é possível realizar o processamento', parent = self)
+            x.addButton(QMessageBox.Ok)
+            x.setInformativeText("Por favor, selecione pelo menos um parâmetro.")
+            x.exec()
+            return None
 
         utilitarios.rotina_operacoes(self, unique_type[0])
         gc.collect() # Chama o coletor de lixo, para liberar espaço
