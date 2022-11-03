@@ -208,7 +208,6 @@ def xls2file(file_path:str) -> Entity:
    empresa = sh.cell_value(0, 1)
    estacao = sh.cell_value(1, 1)
    nome_estacao = " ".join(estacao.split(" ")[2:])
-   tipo_estacao = estacao.split(" ")[0]
 
    # codigo abaixo (1) procura a linha onde o cabecalho "DATA" esta escrito e (2) Identifica os parametros e unidades existentes
    data_index = 0
@@ -258,6 +257,21 @@ def xls2file(file_path:str) -> Entity:
          var_values[row - data_index] = cell_value
 
       valores[variaveis[i]] = var_values
+
+   # Deduzindo a frequencia dos dados
+   x = dates
+   dx = np.roll(x, 1) - x
+   unique, counts = np.unique(dx, return_counts=True)
+   freq = np.asarray((unique, counts)).T
+   ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
+   dx = np.abs(freq[ii, 0])
+   horas = dx.astype('timedelta64[h]')
+   if horas == 1:
+      tipo_estacao = 'AUTO'
+   else:
+      tipo_estacao = 'SEMI'
+
+   # tipo_estacao = estacao.split(" ")[0]
 
    # criando o objeto estacao
    objeto = Entity(

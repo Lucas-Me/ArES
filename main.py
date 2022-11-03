@@ -7,16 +7,16 @@ import os
 import data_management
 import numpy as np
 import matplotlib as mpl
-from ui_splash_screen import SplashScreen
-from PySide6.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
+
+from PyQt5.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
 QFileDialog, QMainWindow, QTreeWidget, QHBoxLayout, QWidget, QPushButton,
 QLabel, QDateEdit, QVBoxLayout, QComboBox, QLineEdit, QSpinBox, QWidget,
 QTabWidget, QGroupBox, QTableWidget, QTableWidgetItem, QColorDialog,
-QCheckBox, QHeaderView, QDialog, QMessageBox,
+QCheckBox, QHeaderView, QDialog, QMessageBox, QAction,
 QStyle, QTabBar, QStylePainter, QProxyStyle, QStyleOptionTab)
-from PySide6.QtCore import QDate, Qt, Slot, QRect, QPoint
-from PySide6.QtGui import QColor, QAction, QIcon
-from PySide6.QtGui import QFontDatabase
+from PyQt5.QtCore import QDate, Qt, QRect, QPoint
+from PyQt5.QtGui import QColor, QIcon
+from PyQt5.QtGui import QFontDatabase
 
 
 class Tabela(QTreeWidget):
@@ -24,7 +24,7 @@ class Tabela(QTreeWidget):
     def __init__(self, parent = None):
         super().__init__()
         self.setHeaderLabels(["Estações de monitoramento"])
-        self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.header().setSectionResizeMode(QHeaderView.ResizeMode(3))
         self.header().resizeSections()
         self.parentWidget = parent
         self.setColumnCount(1)
@@ -152,14 +152,14 @@ class TabelaEixos(QTreeWidget):
         self.rotation_x.setRange(0, 180)
         mplcanvas = self.parentWidget.canvas
         self.size_x.setMaximum(mplcanvas.xticks.shape[0])
-        self.size_x.setValue(mplcanvas.xtick_size)
-        self.size_y.setValue(mplcanvas.ytick_size)
-        self.max_y.setValue(mplcanvas.ytick_max)
-        self.min_y.setValue(mplcanvas.ytick_min)
-        self.max_x.setValue(mplcanvas.xtick_max)
-        self.min_x.setValue(mplcanvas.xtick_min)
-        self.fontsize_x.setValue(mplcanvas.xticks_fontsize)
-        self.fontsize_y.setValue(mplcanvas.yticks_fontsize)
+        self.size_x.setValue(int(mplcanvas.xtick_size))
+        self.size_y.setValue(int(mplcanvas.ytick_size))
+        self.max_y.setValue(int(mplcanvas.ytick_max))
+        self.min_y.setValue(int(mplcanvas.ytick_min))
+        self.max_x.setValue(int(mplcanvas.xtick_max))
+        self.min_x.setValue(int(mplcanvas.xtick_min))
+        self.fontsize_x.setValue(int(mplcanvas.xticks_fontsize))
+        self.fontsize_y.setValue(int(mplcanvas.yticks_fontsize))
     
         # procedimentos
         self.run()
@@ -198,10 +198,10 @@ class TabelaEixos(QTreeWidget):
         return None
 
     def updateProperties(self):
-        self.max_y.setValue(self.parentWidget.canvas.ytick_max)
-        self.min_y.setValue(self.parentWidget.canvas.ytick_min)
-        self.max_x.setValue(self.parentWidget.canvas.xtick_max)
-        self.min_x.setValue(self.parentWidget.canvas.xtick_min)
+        self.max_y.setValue(int(self.parentWidget.canvas.ytick_max))
+        self.min_y.setValue(int(self.parentWidget.canvas.ytick_min))
+        self.max_x.setValue(int(self.parentWidget.canvas.xtick_max))
+        self.min_x.setValue(int(self.parentWidget.canvas.xtick_min))
         return None
 
     def run(self):
@@ -342,8 +342,10 @@ class PropriedadesTab(QWidget):
         new_label = self.legend_colors.item(row, column).text()
         item_id = self.legend_colors.item(row, 2).text()
         
+        ncols = self.legend_cols.value()
+        size = self.legend_fontsize.value()
         self.canvas.alias[item_id] = new_label
-        self.canvas.updateLegend()
+        self.canvas.updateLegend(ncols, size)
 
         return None
 
@@ -396,7 +398,7 @@ class PropriedadesTab(QWidget):
         self.textline.setText(
             eval("self.canvas{}{}".format(idx, "")))
         self.fontsize.setValue(
-            eval("self.canvas{}{}".format(idx, "_fontsize")))
+            eval("int(self.canvas{}{})".format(idx, "_fontsize")))
         self.bold.setChecked(
             eval("self.canvas{}{}".format(idx, "_fontweight"))== "bold")
         return None
@@ -579,8 +581,8 @@ class MainWindow(QMainWindow):
         return None
 
     def processar(self):
-        ini = self.data_ini.date().toPython()
-        fim = self.data_fim.date().toPython()
+        ini = self.data_ini.date().toPyDate()
+        fim = self.data_fim.date().toPyDate()
 
         # checa por inconsistencias
         n = len(self.arquivos)
@@ -730,7 +732,7 @@ class MainWindow(QMainWindow):
         fname, filter = QFileDialog.getSaveFileName(
             parent = self,
             caption = "Salvar tabela como...",
-            dir = start,
+            directory = start,
             filter = "Excel files (*.xlsx)",
         )
         if len(fname) > 0 and self.ds.shape[0] > 0:
@@ -975,7 +977,7 @@ class DatasetDialog(QDialog):
         start = os.path.join(startpath)
         caminho, x = QFileDialog.getOpenFileNames(self, "Selecione um arquivo",
             filter = "Excel files (*.xls)",
-            dir = start
+            directory= start
         )
         self.atmos_path.setText(str(caminho)[1:-1])
 
@@ -1010,7 +1012,6 @@ class DatasetDialog(QDialog):
         self.search_entidades(self.empresas.currentText())
         return None
 
-    @Slot(str)
     def search_entidades(self, empresa):
         empresas = np.array(self.master.inventory.estacao_empresas)
         if empresas.shape[0] > 0:
@@ -1033,8 +1034,8 @@ class OperationsTable(QTableWidget):
             ["", "Operação", "Agrupar por"]
             )
         Header = self.horizontalHeader()
-        Header.setSectionResizeMode(1, QHeaderView.Stretch)
-        Header.setSectionResizeMode(2, QHeaderView.Stretch)
+        Header.setSectionResizeMode(1, QHeaderView.ResizeMode(1))
+        Header.setSectionResizeMode(2, QHeaderView.ResizeMode(1))
         Header.resizeSections()
         
         # variaveis da classe
@@ -1051,8 +1052,8 @@ class OperationsTable(QTableWidget):
 
         # configura widget
         self.setCellWidget(self.row_track, 0, self.add_button)
-        self.blank_cell1.setFlags(self.blank_cell1.flags() & ~Qt.ItemIsEditable)
-        self.blank_cell2.setFlags(self.blank_cell2.flags() & ~Qt.ItemIsEditable)
+        self.blank_cell1.setFlags(self.blank_cell1.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        self.blank_cell2.setFlags(self.blank_cell2.flags() & ~Qt.ItemFlag.ItemIsEditable)
         self.setItem(self.row_track, 1, self.blank_cell1)
         self.setItem(self.row_track, 2, self.blank_cell2)
 

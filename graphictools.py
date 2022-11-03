@@ -29,7 +29,7 @@ class NavigationToolbar(NavigationToolbar2QT):
             # ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), (None, None, None, None),
             ('Save', 'Salvar a figura', 'filesave', 'save_figure')
         )
-        super().__init__(canvas, parent)
+        super().__init__(parent = None, canvas = canvas)
 
     # sobrescreve a função "save_figure"
     def save_figure(self, *args):
