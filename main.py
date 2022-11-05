@@ -7,6 +7,7 @@ import os
 import data_management
 import numpy as np
 import matplotlib as mpl
+import xlsxwriter
 
 from PyQt5.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
 QFileDialog, QMainWindow, QTreeWidget, QHBoxLayout, QWidget, QPushButton,
@@ -551,6 +552,7 @@ class MainWindow(QMainWindow):
         self.botao_limpar.clicked.connect(self.clean_files)
         self.botao_processar.clicked.connect(self.processar)
         self.GraficoTab.check_limite.stateChanged.connect(self.updateGraph)
+        self.GraficoTab.value_limite.editingFinished.connect(self.updateGraph)
         self.GraficoTab.grafico_tipo.currentTextChanged.connect(self.updateGraph)
         self.botao_configs.clicked.connect(self.openConfigWindow)
         # splash.close()
@@ -737,7 +739,16 @@ class MainWindow(QMainWindow):
         )
         if len(fname) > 0 and self.ds.shape[0] > 0:
             self.save_dir = os.path.dirname(fname)
-            utilitarios.save_excel(self.ds, fname)
+            try:
+                utilitarios.save_excel(self.ds, fname)
+
+            except xlsxwriter.exceptions.FileCreateError as e:
+                x = QMessageBox(QMessageBox.Critical, "Erro", "Erro ao salvar", parent = self)
+                x.addButton(QMessageBox.Ok)
+                x.setInformativeText('Não foi possível salvar a planilha de dados. '
+                                    '\nVerifique se ela esta aberta em outro programa.')
+                x.exec()
+                return None
 
     def closeEvent(self, event) -> None:
         if not self.dataset_dialog.isHidden():
@@ -763,8 +774,6 @@ class MyDialog(QDialog):
         # Widgets
         self.WidgetRepresentatividade = QTableWidget()
         self.valueRepresentatividade = {}
-        self.salvar = QPushButton("Aplicar")
-        self.fechar = QPushButton("Cancelar")
         group = QGroupBox("Conexão do banco de dados", parent = self)
         self.username_widget = QLineEdit(group)
         self.password_widget = QLineEdit(group)
@@ -773,7 +782,6 @@ class MyDialog(QDialog):
         self.Tabs = TabWidget()
 
         # Configuracoes dos Widgets
-        self.hostname.setReadOnly(True)
         self.password_widget.setEchoMode(QLineEdit.EchoMode.Password)
         Header = self.WidgetRepresentatividade.horizontalHeader()
         Header.setSectionResizeMode(QHeaderView.Stretch)
@@ -808,8 +816,6 @@ class MyDialog(QDialog):
         self.list_layouts = [self.WidgetRepresentatividade, LoginLayout]
 
         # Signals and Slots
-        self.salvar.clicked.connect(self.saveAndClose)
-        self.fechar.clicked.connect(self.close)
         self.connect_button.clicked.connect(self.connect_sql)
 
         # init
@@ -853,12 +859,12 @@ class MyDialog(QDialog):
             self.WidgetRepresentatividade.setItem(i, 0, item)
             i += 1
 
-    def saveAndClose(self):
-        ''' Salva as modificacoes e fecha a janela'''
+    def closeEvent(self, event) -> None:
+        ''' Salva as modificacoes ao fechar a janela'''
         for k, v in self.valueRepresentatividade.items():
             self.master.representatividade[k] = v.value()
 
-        self.close()
+        return super().closeEvent(event)
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
