@@ -4,9 +4,9 @@ import matplotlib.cm as cm
 
 # canvas do matplotlib
 import matplotlib as mpl
-mpl.use("Qt5Agg")
+mpl.use("QtAgg")
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.backends.qt_compat import (
     QtWidgets, __version__,
     _enum,  _getSaveFileName
@@ -57,7 +57,7 @@ class NavigationToolbar(NavigationToolbar2QT):
             if startpath != "":
                 mpl.rcParams['savefig.directory'] = os.path.dirname(fname)
             try:
-                self.canvas.figure.savefig(fname, figsize = (14, 9), dpi = 300, bbox_inches="tight")
+                self.canvas.figure.savefig(fname, dpi = 300, bbox_inches="tight")
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
                     self, "Erro ao salvar o arquivo", str(e),
@@ -133,6 +133,7 @@ class MplCanvas(FigureCanvasQTAgg):
             )
             
         self.legend = self.fig.legend(handles, IDs, **props)
+        self.legend.get_frame().set_linewidth(0.0)
         self.draw()
 
     def updateColor(self, id_, color):
@@ -171,13 +172,11 @@ class MplCanvas(FigureCanvasQTAgg):
     def barPlot(self, ds, resultados):
         # Deduzindo a frequencia do eixo X
         x = ds.index
+        dx = ds.freq
+        x2 = x[0].astype('datetime64[h]') + dx.astype('timedelta64[h]')
         x = mdates.date2num(x)
-        dx = np.roll(x, 1) - x
-        unique, counts = np.unique(dx, return_counts=True)
-        freq = np.asarray((unique, counts)).T
-        ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
-        dx = np.abs(freq[ii, 0])
-     
+        dx = mdates.date2num(x2) - x[0]
+
         # insere no plot atual
         width = 0.8 * dx
         div = ds.shape[1]
@@ -187,6 +186,10 @@ class MplCanvas(FigureCanvasQTAgg):
         max_ = np.zeros(len(colunas))
         min_ = np.zeros(len(colunas))
 
+        # propriedades estaticas do plot
+        bar_kwargs = {'edgecolor': 'none', 'width' : width / div}      
+
+        # plot
         for i, col in enumerate(colunas):
             id_ = ds.ID[col]
             times = mdates.num2date(x + width / div * (i - div // 2))
@@ -194,7 +197,8 @@ class MplCanvas(FigureCanvasQTAgg):
             max_[i] = np.nanmax(y, axis = 0)
             min_[i] = np.nanmin(y, axis = 0)
             cor = self.colors.get(id_, cmap(cores[i]))
-            self.axes.bar(times, y, width = width/div, label = id_, edgecolor = "none", color = cor)
+
+            bars = self.axes.bar(times, y, label = id_, color = cor, **bar_kwargs)
             self.colors[id_] = cor
             if not id_ in self.alias:
                 self.alias[id_] = col
@@ -345,10 +349,12 @@ class MplCanvas(FigureCanvasQTAgg):
             # atualiza as variavies na classe
             self.xlabel_dateformat = range_format
             self.xlabel_daterange = date_range
-            dx = self.xticks[2] - self.xticks[1]
-            max_ = np.max(self.xticks) + dx
-            min_ = np.min(self.xticks) - dx
-            self.axes.set_xlim(min_, max_)
+
+            if self.xticks.shape[0] > 1:
+                dx = self.xticks[1] - self.xticks[0]
+                max_ = np.max(self.xticks) + dx
+                min_ = np.min(self.xticks) - dx
+                self.axes.set_xlim(min_, max_)
 
         # Testes para formatacao dos rotulos no eixo X.
         self.axes.tick_params(axis='x', which='major', labelsize=fontsize)

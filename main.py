@@ -7,7 +7,8 @@ import os
 import data_management
 import numpy as np
 import matplotlib as mpl
-from ui_splash_screen import SplashScreen
+import xlsxwriter
+
 from PySide6.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
 QFileDialog, QMainWindow, QTreeWidget, QHBoxLayout, QWidget, QPushButton,
 QLabel, QDateEdit, QVBoxLayout, QComboBox, QLineEdit, QSpinBox, QWidget,
@@ -15,7 +16,7 @@ QTabWidget, QGroupBox, QTableWidget, QTableWidgetItem, QColorDialog,
 QCheckBox, QHeaderView, QDialog, QMessageBox,
 QStyle, QTabBar, QStylePainter, QProxyStyle, QStyleOptionTab)
 from PySide6.QtCore import QDate, Qt, Slot, QRect, QPoint
-from PySide6.QtGui import QColor, QAction, QIcon
+from PySide6.QtGui import QColor, QIcon, QAction
 from PySide6.QtGui import QFontDatabase
 
 
@@ -152,14 +153,14 @@ class TabelaEixos(QTreeWidget):
         self.rotation_x.setRange(0, 180)
         mplcanvas = self.parentWidget.canvas
         self.size_x.setMaximum(mplcanvas.xticks.shape[0])
-        self.size_x.setValue(mplcanvas.xtick_size)
-        self.size_y.setValue(mplcanvas.ytick_size)
-        self.max_y.setValue(mplcanvas.ytick_max)
-        self.min_y.setValue(mplcanvas.ytick_min)
-        self.max_x.setValue(mplcanvas.xtick_max)
-        self.min_x.setValue(mplcanvas.xtick_min)
-        self.fontsize_x.setValue(mplcanvas.xticks_fontsize)
-        self.fontsize_y.setValue(mplcanvas.yticks_fontsize)
+        self.size_x.setValue(int(mplcanvas.xtick_size))
+        self.size_y.setValue(int(mplcanvas.ytick_size))
+        self.max_y.setValue(int(mplcanvas.ytick_max))
+        self.min_y.setValue(int(mplcanvas.ytick_min))
+        self.max_x.setValue(int(mplcanvas.xtick_max))
+        self.min_x.setValue(int(mplcanvas.xtick_min))
+        self.fontsize_x.setValue(int(mplcanvas.xticks_fontsize))
+        self.fontsize_y.setValue(int(mplcanvas.yticks_fontsize))
     
         # procedimentos
         self.run()
@@ -198,10 +199,10 @@ class TabelaEixos(QTreeWidget):
         return None
 
     def updateProperties(self):
-        self.max_y.setValue(self.parentWidget.canvas.ytick_max)
-        self.min_y.setValue(self.parentWidget.canvas.ytick_min)
-        self.max_x.setValue(self.parentWidget.canvas.xtick_max)
-        self.min_x.setValue(self.parentWidget.canvas.xtick_min)
+        self.max_y.setValue(int(self.parentWidget.canvas.ytick_max))
+        self.min_y.setValue(int(self.parentWidget.canvas.ytick_min))
+        self.max_x.setValue(int(self.parentWidget.canvas.xtick_max))
+        self.min_x.setValue(int(self.parentWidget.canvas.xtick_min))
         return None
 
     def run(self):
@@ -342,11 +343,12 @@ class PropriedadesTab(QWidget):
         new_label = self.legend_colors.item(row, column).text()
         item_id = self.legend_colors.item(row, 2).text()
         
+        ncols = self.legend_cols.value()
+        size = self.legend_fontsize.value()
         self.canvas.alias[item_id] = new_label
-        self.canvas.updateLegend()
+        self.canvas.updateLegend(ncols, size)
 
         return None
-
         
     def choose_color(self, row, column):
         if column != 1:
@@ -360,7 +362,10 @@ class PropriedadesTab(QWidget):
             rgba = color_picker.getRgb()
             item.setBackground(QColor.fromRgb(*rgba))
             self.canvas.updateColor(id_, tuple(i/255 for i in rgba))
-
+            
+        ncols = self.legend_cols.value()
+        size = self.legend_fontsize.value()
+        self.canvas.updateLegend(ncols, size)
         return None
 
     def set_label(self):
@@ -396,7 +401,7 @@ class PropriedadesTab(QWidget):
         self.textline.setText(
             eval("self.canvas{}{}".format(idx, "")))
         self.fontsize.setValue(
-            eval("self.canvas{}{}".format(idx, "_fontsize")))
+            eval("int(self.canvas{}{})".format(idx, "_fontsize")))
         self.bold.setChecked(
             eval("self.canvas{}{}".format(idx, "_fontweight"))== "bold")
         return None
@@ -549,6 +554,7 @@ class MainWindow(QMainWindow):
         self.botao_limpar.clicked.connect(self.clean_files)
         self.botao_processar.clicked.connect(self.processar)
         self.GraficoTab.check_limite.stateChanged.connect(self.updateGraph)
+        self.GraficoTab.value_limite.editingFinished.connect(self.updateGraph)
         self.GraficoTab.grafico_tipo.currentTextChanged.connect(self.updateGraph)
         self.botao_configs.clicked.connect(self.openConfigWindow)
         # splash.close()
@@ -735,7 +741,16 @@ class MainWindow(QMainWindow):
         )
         if len(fname) > 0 and self.ds.shape[0] > 0:
             self.save_dir = os.path.dirname(fname)
-            utilitarios.save_excel(self.ds, fname)
+            try:
+                utilitarios.save_excel(self.ds, fname)
+
+            except xlsxwriter.exceptions.FileCreateError as e:
+                x = QMessageBox(QMessageBox.Critical, "Erro", "Erro ao salvar", parent = self)
+                x.addButton(QMessageBox.Ok)
+                x.setInformativeText('Não foi possível salvar a planilha de dados. '
+                                    '\nVerifique se ela esta aberta em outro programa.')
+                x.exec()
+                return None
 
     def closeEvent(self, event) -> None:
         if not self.dataset_dialog.isHidden():
@@ -761,8 +776,6 @@ class MyDialog(QDialog):
         # Widgets
         self.WidgetRepresentatividade = QTableWidget()
         self.valueRepresentatividade = {}
-        self.salvar = QPushButton("Aplicar")
-        self.fechar = QPushButton("Cancelar")
         group = QGroupBox("Conexão do banco de dados", parent = self)
         self.username_widget = QLineEdit(group)
         self.password_widget = QLineEdit(group)
@@ -771,7 +784,6 @@ class MyDialog(QDialog):
         self.Tabs = TabWidget()
 
         # Configuracoes dos Widgets
-        self.hostname.setReadOnly(True)
         self.password_widget.setEchoMode(QLineEdit.EchoMode.Password)
         Header = self.WidgetRepresentatividade.horizontalHeader()
         Header.setSectionResizeMode(QHeaderView.Stretch)
@@ -788,11 +800,11 @@ class MyDialog(QDialog):
         # Layouts
         LoginLayout = QGridLayout()
         LoginLayout.addWidget(QLabel(text = "Host"), 0, 0)
-        LoginLayout.addWidget(QLabel(text = "Usuário"), 1, 0)
-        LoginLayout.addWidget(QLabel(text = "Senha"), 2, 0)
+        # LoginLayout.addWidget(QLabel(text = "Usuário"), 1, 0)
+        # LoginLayout.addWidget(QLabel(text = "Senha"), 2, 0)
         LoginLayout.addWidget(self.hostname, 0, 1, 1, 2)
-        LoginLayout.addWidget(self.username_widget, 1, 1, 1, 2)
-        LoginLayout.addWidget(self.password_widget, 2, 1, 1, 2)
+        # LoginLayout.addWidget(self.username_widget, 1, 1, 1, 2)
+        # LoginLayout.addWidget(self.password_widget, 2, 1, 1, 2)
         LoginLayout.addWidget(self.connect_button, 3, 2)
         LoginLayout.setRowStretch(4, 5)
         group.setLayout(LoginLayout)
@@ -806,16 +818,16 @@ class MyDialog(QDialog):
         self.list_layouts = [self.WidgetRepresentatividade, LoginLayout]
 
         # Signals and Slots
-        self.salvar.clicked.connect(self.saveAndClose)
-        self.fechar.clicked.connect(self.close)
         self.connect_button.clicked.connect(self.connect_sql)
 
         # init
         self.setLayout(self.MainLayout)
 
     def connect_sql(self):
-        username = self.username_widget.text()
-        password = self.password_widget.text()
+        # username = self.username_widget.text()
+        # password = self.password_widget.text()
+        username = "lucassm"
+        password = "174784"
         code = self.master.inventory.connect(username, password)
         if code != 1:
             if code == 1045:
@@ -851,12 +863,12 @@ class MyDialog(QDialog):
             self.WidgetRepresentatividade.setItem(i, 0, item)
             i += 1
 
-    def saveAndClose(self):
-        ''' Salva as modificacoes e fecha a janela'''
+    def closeEvent(self, event) -> None:
+        ''' Salva as modificacoes ao fechar a janela'''
         for k, v in self.valueRepresentatividade.items():
             self.master.representatividade[k] = v.value()
 
-        self.close()
+        return super().closeEvent(event)
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
@@ -975,7 +987,7 @@ class DatasetDialog(QDialog):
         start = os.path.join(startpath)
         caminho, x = QFileDialog.getOpenFileNames(self, "Selecione um arquivo",
             filter = "Excel files (*.xls)",
-            dir = start
+            dir= start
         )
         self.atmos_path.setText(str(caminho)[1:-1])
 
@@ -1010,7 +1022,6 @@ class DatasetDialog(QDialog):
         self.search_entidades(self.empresas.currentText())
         return None
 
-    @Slot(str)
     def search_entidades(self, empresa):
         empresas = np.array(self.master.inventory.estacao_empresas)
         if empresas.shape[0] > 0:

@@ -7,6 +7,7 @@ import xlrd
 import stats
 import xlsxwriter
 import numpy as np
+import matplotlib.dates as mdates
 from datetime import datetime, timedelta, date
 from data_management import VarDataset, Entity
 
@@ -186,7 +187,7 @@ def organize(parent, start_date:datetime, end_date:datetime, tipo):
    if len(parameters) == 0:
       raise ValueError
 
-   return VarDataset(parameters, freq, valores = collection, index = new_index, id = id_)
+   return VarDataset(parameters, freq.astype('timedelta64[h]'), valores = collection, index = new_index, id = id_)
 
 
 def xls2file(file_path:str) -> Entity:
@@ -208,7 +209,6 @@ def xls2file(file_path:str) -> Entity:
    empresa = sh.cell_value(0, 1)
    estacao = sh.cell_value(1, 1)
    nome_estacao = " ".join(estacao.split(" ")[2:])
-   tipo_estacao = estacao.split(" ")[0]
 
    # codigo abaixo (1) procura a linha onde o cabecalho "DATA" esta escrito e (2) Identifica os parametros e unidades existentes
    data_index = 0
@@ -259,11 +259,19 @@ def xls2file(file_path:str) -> Entity:
 
       valores[variaveis[i]] = var_values
 
+   # Deduzindo a frequencia dos dados
+   horas = dt_guess(dates).astype('timedelta64[h]')
+   if horas == 1:
+      tipo_estacao = 'AUTO'
+   else:
+      tipo_estacao = 'SEMI'
+
    # criando o objeto estacao
    objeto = Entity(
       valores = valores,
       index = dates,
       tipo = tipo_estacao.upper(),
+      dt = horas, 
       nome = nome_estacao,
       empresa = empresa
       )
@@ -271,6 +279,20 @@ def xls2file(file_path:str) -> Entity:
    # Fim
    return objeto
 
+def dt_guess(dates, return_time = True):
+   '''
+   Adivinha a frequencia dos dados atraves dos seus indices
+   '''
+   if not return_time:
+      dates = mdates.date2num(dates)
+
+   dt = np.roll(dates, 1) - dates
+   unique, counts = np.unique(dt, return_counts=True)
+   freq = np.asarray((unique, counts)).T
+   ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
+   result = np.abs(freq[ii, 0])
+
+   return result
 
 def save_excel(output : VarDataset, fname : str):
    workbook = xlsxwriter.Workbook(fname)
@@ -322,7 +344,8 @@ def save_excel(output : VarDataset, fname : str):
          try:
             worksheet.write(ini + row, 1 + col*2, output.valores[estacoes[col]][row], dados_fmt)
          except:
-            pass
+            worksheet.write_formula(ini + row, 1 + col*2, "=NA()")
+
          worksheet.write(ini + row, 2 + col*2, output.validos[estacoes[col]][row]/100, validacao_fmt)
    
    worksheet.set_column(0, last_columnm, 10)
@@ -353,6 +376,7 @@ def rotina_operacoes(parent, tipo):
    methods = [stats.media_movel, stats.media, stats.media_geometrica, stats.media_harmonica, np.nanmax]
    time_freq = ["Média móvel", "Diária", "Mensal", "Anual"]
    atributos = ["%Y-%m-%d", "%Y-%m-01", "%Y-01-01"]
+   atributos_freq = [np.timedelta64(1, 'D'), np.timedelta64(1, 'm'), np.timedelta64(1, 'Y')]
    funcValidos = [stats.dadosValidosDiarios, stats.dadosValidosMensais, stats.dadosValidosAnuais]
    lim = 0
    user_operations = parent.user_operations
@@ -391,6 +415,7 @@ def rotina_operacoes(parent, tipo):
          parent.ds.groupby(new_groups)
          parent.ds.updateValidos({k:stats.porcentagemValidos(v, esperados) for k,v in parent.ds.valores.items()})
          parent.ds = parent.ds.apply(func, map_ = True)
+         parent.ds.freq = atributos_freq[idx]
 
       else:
          parent.ds = parent.ds.apply(func, map_ = False)

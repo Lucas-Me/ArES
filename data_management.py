@@ -4,6 +4,7 @@
 import copy
 import warnings
 import numpy as np
+import utilitarios
 from mysql.connector import connect, errorcode, Error
 
 __all__ = ["inventario", "station", "dataset"]
@@ -12,7 +13,7 @@ __all__ = ["inventario", "station", "dataset"]
 class Entity():
    '''Classe responsável por representar cada estacao/entidade adicionada.
    Deve conter o nome, empreendimento, parametros e seus respectivos dados'''
-   def __init__(self, valores : dict, index : np.array, tipo : str,
+   def __init__(self, valores : dict, index : np.array, tipo : str, dt, 
                 nome : str = "", empresa : str = "") -> None:
       self.vars = list(valores.keys())
       self.nome = nome # nome da estacao
@@ -20,6 +21,7 @@ class Entity():
       self.valores = valores # Valores referente a cada parametro
       # self.flags = flags # Flags referente a cada parametro
       self.tipo = tipo # Tipo de estacao
+      self.dt = dt
       self.index = index # Todas as datas do conjunto de dados
       self.ini = np.min(self.index, axis = 0) # Data inicial
       self.fim = np.max(self.index, axis = 0) # Data final
@@ -161,8 +163,8 @@ class VarDataset():
 
 class EntitySQL(Entity):
 
-   def __init__(self, nome, empresa, index, vars, filename, tipo, parent) -> None:
-      super().__init__({}, index, tipo, nome, empresa)
+   def __init__(self, nome, empresa, dt, index, vars, filename, tipo, parent) -> None:
+      super().__init__({}, index, tipo, dt, nome, empresa)
       self.vars = vars
       self.filename = filename
       self.vars_selected = [0]*len(self.vars) # lista de 0 e 1
@@ -364,17 +366,17 @@ class Inventario():
       fim = cursor.fetchone()[0]
 
       # data final
+      order_n = 100
       query = (f"SELECT Campo1 FROM `{self.table_names[idx]}` "
-               "ORDER BY Campo1 LIMIT 2")
+               f"ORDER BY Campo1 LIMIT {order_n}")
       cursor.execute(query)
-      ini = cursor.fetchone()[0]
-      segundo = cursor.fetchone()[0]
 
       # array de data
-      dates = np.array([ini, segundo, fim], dtype = np.datetime64)
+      dates = [cursor.fetchone()[0] for i in range(order_n)] + [fim]
+      dates = np.array(dates, dtype = np.datetime64)
 
       # estimando o tipo de estacao
-      dt_horas = (dates[1] - dates[0])//np.timedelta64(1, "s")//3600
+      dt_horas = utilitarios.dt_guess(dates).astype('timedelta64[h]')
       tipo_estacao = "AUTO"
       if dt_horas != 1:
          tipo_estacao = "SEMI"
@@ -383,6 +385,7 @@ class Inventario():
       objeto = EntitySQL(
          vars = self.table_vars[nome][0],
          index = dates,
+         dt = dt_horas, 
          tipo = tipo_estacao,
          nome = self.estacao_nomes[idx],
          empresa = self.estacao_empresas[idx],
