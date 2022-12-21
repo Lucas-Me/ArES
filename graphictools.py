@@ -211,9 +211,11 @@ class MplCanvas(FigureCanvasQTAgg):
         # Y ticks
         max_ = np.nanmax(max_)
         if self.ytick_max < max_:
-            self.ytick_max = np.ceil(max_)*1.3
+            self.ytick_max = np.ceil(max_) * 1.2
+
         if np.nanmin(min_) < 0:
-            self.ytick_min = np.floor(np.nanmin(min_))*0.8
+            self.ytick_min = np.nanmin(min_) * 1.2
+
         self.smart_yticks()
 
     def linePlot(self, ds, resultados):
@@ -244,9 +246,11 @@ class MplCanvas(FigureCanvasQTAgg):
         # Y ticks
         max_ = np.nanmax(max_)
         if self.ytick_max < max_:
-            self.ytick_max = np.ceil(max_)*1.3
+            self.ytick_max = max_ * 1.2
+
         if np.nanmin(min_) < 0:
-            self.ytick_min = np.floor(np.nanmin(min_))*1.2
+            self.ytick_min = np.nanmin(min_) * 1.2
+
         self.smart_yticks()
 
     def ultrapassagensPlot(self, ds, resultados):
@@ -297,9 +301,10 @@ class MplCanvas(FigureCanvasQTAgg):
         max_ = np.nanmax(everything)
         min_ = np.nanmin(everything)
         if self.ytick_max < max_:
-            self.ytick_max = np.ceil(max_)*1.3
+            self.ytick_max = max_ * 1.2
         if np.nanmin(min_) < 0:
-            self.ytick_min = np.floor(np.nanmin(min_))*0.8
+            self.ytick_min = np.nanmin(min_) * 1.2
+            
         self.smart_yticks()
 
     def smart_xticks(self, **kwargs):
@@ -374,7 +379,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
         # procedimentos
         ticks = np.linspace(min_, max_, size)
-        ticks = np.unique(np.ceil(ticks).astype(int))
+        # ticks = np.unique(np.ceil(ticks).astype(float))
         self.axes.set_yticks(ticks)
         self.axes.set_ylim(min_, max_)
         self.axes.tick_params(axis='y', which='major', labelsize=fontsize)

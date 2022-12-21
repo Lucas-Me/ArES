@@ -179,8 +179,18 @@ def organize(parent, start_date:datetime, end_date:datetime, tipo):
       for j in range(len(entity.vars)):
          if entity.vars_selected[j]:
             name_ = name + " - " + get_alias(entity.vars[j])
-            collection[name_] = entity.reindex(entity.vars[j], new_index)
-            parameters[name_] = entity.vars[j]
+            collection[name_] = entity.reindex(
+               entity.vars[j],
+               new_index,
+               include = parent.criterios_select
+               )
+            if parent.ppb2ppm and 'ppb' in entity.vars[j]:
+               collection[name_] = collection[name_] * 1e-3
+               parameters[name_] = entity.vars[j].replace('ppb', 'ppm')
+
+            else: 
+               parameters[name_] = entity.vars[j]
+               
             id_[name_] = get_id(name_, parent.arquivos[0].tipo)
 
    # provoca um erro se nenhum parametro for selecionado
@@ -198,8 +208,8 @@ def xls2file(file_path:str) -> Entity:
       - file_path: caminho no computador ate o arquivo.
    
    returns:
-      - DataFrame cujas linhas sao a data/hora e coluna sao os parametros. Os valores
-      do DataFrame correspondem as concentracoes em uma dada hora de um dado poluente.
+      - Objeto Entity contendo as informacoes de todas as variaveis e flags da estacao
+       de monitoramento.
    '''
    # abre o arquivo
    xls = xlrd.open_workbook(file_path, logfile=open(os.devnull, 'w'))
@@ -243,21 +253,24 @@ def xls2file(file_path:str) -> Entity:
    
    # extraindo os dados, i.e, valores, flags e datas
    valores = {}
-   #flags = {}
+   flags = {}
    dates = np.array([xlrd.xldate_as_datetime(sh.cell_value(row, 0), 0) for row in range(data_index, sh.nrows)], dtype='datetime64')
    for i in range(len(variaveis)):
       # cada variavel contem duas colunas, a primeira: o valor, a segunda: a flag correspondente.
       var_col = 2*i + 1
       var_values = [0]*(sh.nrows - data_index)
-      #var_flags = [0]*(sh.nrows - data_index)
+      var_flags = [0]*(sh.nrows - data_index)
       for row in range(data_index, sh.nrows):
-         #var_flags[row - data_index] = sh.cell_value(row, var_col + 1)
+         cell_flag = sh.cell_value(row, var_col + 1)
          cell_value = sh.cell_value(row, var_col)
          if isinstance(cell_value, str):
             cell_value = np.nan
-         var_values[row - data_index] = cell_value
 
-      valores[variaveis[i]] = var_values
+         var_values[row - data_index] = cell_value
+         var_flags[row - data_index] = cell_flag
+
+      valores[variaveis[i]] = np.array(var_values)
+      flags[variaveis[i]] = np.array(var_flags)
 
    # Deduzindo a frequencia dos dados
    horas = dt_guess(dates).astype('timedelta64[h]')
@@ -273,11 +286,13 @@ def xls2file(file_path:str) -> Entity:
       tipo = tipo_estacao.upper(),
       dt = horas, 
       nome = nome_estacao,
-      empresa = empresa
+      empresa = empresa,
+      flags = flags
       )
 
    # Fim
    return objeto
+
 
 def dt_guess(dates, return_time = True):
    '''
@@ -363,6 +378,36 @@ def save_excel(output : VarDataset, fname : str):
       worksheet.write(2 + i, last_columnm + 4, output.agrupar[i], fmt)
    worksheet.set_column(last_columnm + 2, last_columnm + 4, 10)
    workbook.close()
+
+
+def flag_check(values, flags, include = [1, 0, 0]):
+   '''
+   Filtra os dados baseado nas flags. Três opcoes:
+   1. Validos
+   2. Invalidos
+   3. Suspeitos
+   '''
+   
+   booleans = np.full(values.shape[0], False)
+   for i in range(3):
+      if include[i]:
+
+         if i == 0:
+            validos = np.char.startswith(flags, "V") | (np.char.str_len(flags) == 0) 
+            booleans = booleans | validos
+
+         elif i == 1:
+            invalidos = np.char.startswith(flags, "I")
+            booleans = booleans | invalidos
+
+         else:
+            suspeitos = np.char.startswith(flags, "?")
+            booleans = booleans | suspeitos
+
+   
+   values[~booleans] = np.nan
+   return values
+
 
 def rotina_operacoes(parent, tipo):
    ''' 

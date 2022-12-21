@@ -13,12 +13,16 @@ from PySide6.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
 QFileDialog, QMainWindow, QTreeWidget, QHBoxLayout, QWidget, QPushButton,
 QLabel, QDateEdit, QVBoxLayout, QComboBox, QLineEdit, QSpinBox, QWidget,
 QTabWidget, QGroupBox, QTableWidget, QTableWidgetItem, QColorDialog,
-QCheckBox, QHeaderView, QDialog, QMessageBox,
+QCheckBox, QHeaderView, QDialog, QMessageBox, QDoubleSpinBox, QFrame, 
 QStyle, QTabBar, QStylePainter, QProxyStyle, QStyleOptionTab)
 from PySide6.QtCore import QDate, Qt, Slot, QRect, QPoint
-from PySide6.QtGui import QColor, QIcon, QAction
-from PySide6.QtGui import QFontDatabase
+from PySide6.QtGui import QColor, QIcon, QAction, QFontDatabase
 
+class QHLine(QFrame):
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setFrameShape(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
 
 class Tabela(QTreeWidget):
 
@@ -119,11 +123,11 @@ class TabelaEixos(QTreeWidget):
         self.size_y = QSpinBox()
         self.fontsize_x = QSpinBox()
         self.fontsize_y = QSpinBox()
-        self.max_y = QSpinBox()
-        self.min_y = QSpinBox()
+        self.max_y = QDoubleSpinBox()
+        self.min_y = QDoubleSpinBox()
         self.size_x = QSpinBox()
-        self.max_x = QSpinBox()
-        self.min_x = QSpinBox()
+        self.max_x = QDoubleSpinBox()
+        self.min_x = QDoubleSpinBox()
         
         # widgets list
         self.widgets = [
@@ -155,10 +159,10 @@ class TabelaEixos(QTreeWidget):
         self.size_x.setMaximum(mplcanvas.xticks.shape[0])
         self.size_x.setValue(int(mplcanvas.xtick_size))
         self.size_y.setValue(int(mplcanvas.ytick_size))
-        self.max_y.setValue(int(mplcanvas.ytick_max))
-        self.min_y.setValue(int(mplcanvas.ytick_min))
-        self.max_x.setValue(int(mplcanvas.xtick_max))
-        self.min_x.setValue(int(mplcanvas.xtick_min))
+        self.max_y.setValue(float(mplcanvas.ytick_max))
+        self.min_y.setValue(float(mplcanvas.ytick_min))
+        self.max_x.setValue(float(mplcanvas.xtick_max))
+        self.min_x.setValue(float(mplcanvas.xtick_min))
         self.fontsize_x.setValue(int(mplcanvas.xticks_fontsize))
         self.fontsize_y.setValue(int(mplcanvas.yticks_fontsize))
     
@@ -199,10 +203,10 @@ class TabelaEixos(QTreeWidget):
         return None
 
     def updateProperties(self):
-        self.max_y.setValue(int(self.parentWidget.canvas.ytick_max))
-        self.min_y.setValue(int(self.parentWidget.canvas.ytick_min))
-        self.max_x.setValue(int(self.parentWidget.canvas.xtick_max))
-        self.min_x.setValue(int(self.parentWidget.canvas.xtick_min))
+        self.max_y.setValue(float(self.parentWidget.canvas.ytick_max))
+        self.min_y.setValue(float(self.parentWidget.canvas.ytick_min))
+        self.max_x.setValue(float(self.parentWidget.canvas.xtick_max))
+        self.min_x.setValue(float(self.parentWidget.canvas.xtick_min))
         return None
 
     def run(self):
@@ -421,9 +425,7 @@ class PropriedadesTab(QWidget):
         self.legend_colors.setHorizontalHeaderLabels(["Nome",
             "Cor da Legenda", "ID"])
         self.legend_colors.setColumnHidden(2, True)
-        # IDs = {}
-        # if not isinstance(self.canvas.p.ds, type(None)):
-        #     IDs = self.canvas.p.ds.ID
+
         i = 0
         for id_ in labels:
             item_name = QTableWidgetItem(alias[id_])
@@ -475,6 +477,8 @@ class MainWindow(QMainWindow):
             "Média móvel": 75,
             "Geral" : 75
         }
+        self.criterios_select = [True, False, False]
+        self.ppb2ppm = False
 
         # Widget Principal
         widget = QWidget(self)
@@ -632,17 +636,17 @@ class MainWindow(QMainWindow):
         # Operacoes
 
         # debug
-        # self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
-        try:
-            # provoca um erro se nenhum paramtro for selecionado
-            self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
-        except:
-            x = QMessageBox(QMessageBox.Warning, "Erro",
-                    'Não é possível realizar o processamento', parent = self)
-            x.addButton(QMessageBox.Ok)
-            x.setInformativeText("Por favor, selecione pelo menos um parâmetro.")
-            x.exec()
-            return None
+        self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
+        # try:
+        #     # provoca um erro se nenhum paramtro for selecionado
+        #     self.ds = utilitarios.organize(self, ini, fim, unique_type[0])
+        # except:
+        #     x = QMessageBox(QMessageBox.Warning, "Erro",
+        #             'Não é possível realizar o processamento', parent = self)
+        #     x.addButton(QMessageBox.Ok)
+        #     x.setInformativeText("Por favor, selecione pelo menos um parâmetro.")
+        #     x.exec()
+        #     return None
 
         utilitarios.rotina_operacoes(self, unique_type[0])
         gc.collect() # Chama o coletor de lixo, para liberar espaço
@@ -777,14 +781,18 @@ class MyDialog(QDialog):
         self.WidgetRepresentatividade = QTableWidget()
         self.valueRepresentatividade = {}
         group = QGroupBox("Conexão do banco de dados", parent = self)
-        self.username_widget = QLineEdit(group)
-        self.password_widget = QLineEdit(group)
         self.connect_button = QPushButton("Conectar")
         self.hostname = QLineEdit(self.master.inventory.host)
         self.Tabs = TabWidget()
+        #
+        data_group = QGroupBox(parent = self)
+        self.criterios_button = [QCheckBox(x) for x in ['Válidos', 'Inválidos', "Suspeitos"]]
+        for x in range(len(self.master.criterios_select)):
+            self.criterios_button[x].setChecked(self.master.criterios_select[x])
+        self.convert_ppm = QCheckBox("Converter unidade [ppb] para [ppm]")
+        self.convert_ppm.setChecked(self.master.ppb2ppm)
 
         # Configuracoes dos Widgets
-        self.password_widget.setEchoMode(QLineEdit.EchoMode.Password)
         Header = self.WidgetRepresentatividade.horizontalHeader()
         Header.setSectionResizeMode(QHeaderView.Stretch)
         Header.resizeSections()
@@ -800,17 +808,25 @@ class MyDialog(QDialog):
         # Layouts
         LoginLayout = QGridLayout()
         LoginLayout.addWidget(QLabel(text = "Host"), 0, 0)
-        # LoginLayout.addWidget(QLabel(text = "Usuário"), 1, 0)
-        # LoginLayout.addWidget(QLabel(text = "Senha"), 2, 0)
         LoginLayout.addWidget(self.hostname, 0, 1, 1, 2)
-        # LoginLayout.addWidget(self.username_widget, 1, 1, 1, 2)
-        # LoginLayout.addWidget(self.password_widget, 2, 1, 1, 2)
         LoginLayout.addWidget(self.connect_button, 3, 2)
         LoginLayout.setRowStretch(4, 5)
         group.setLayout(LoginLayout)
-        
+        #
+        criterios_layout = QVBoxLayout()
+        criterios_layout.addWidget(QLabel("Somente considerar dados:"))
+        for x in self.criterios_button:
+            criterios_layout.addWidget(x)
+
+        criterios_layout.addWidget(QHLine())
+        criterios_layout.addWidget(self.convert_ppm)
+        criterios_layout.addWidget(QHLine())
+        criterios_layout.addStretch(5)
+        data_group.setLayout(criterios_layout)
+        #
         self.Tabs.addTab(self.WidgetRepresentatividade, "Representatividade")
         self.Tabs.addTab(group, "Conexão")
+        self.Tabs.addTab(data_group, "Dados")
     
         # Widgets para troca
         self.MainLayout = QHBoxLayout()
@@ -868,7 +884,14 @@ class MyDialog(QDialog):
         for k, v in self.valueRepresentatividade.items():
             self.master.representatividade[k] = v.value()
 
+        for i in range(len(self.criterios_button)):
+            status = self.criterios_button[i].isChecked()
+            self.master.criterios_select[i] = status
+
+        self.master.ppb2ppm = self.convert_ppm.isChecked()
+
         return super().closeEvent(event)
+
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
@@ -905,6 +928,7 @@ class TabWidget(QTabWidget):
         self.setTabBar(TabBar(self))
         self.setTabPosition(QTabWidget.West)
 
+
 class ProxyStyle(QProxyStyle):
     def drawControl(self, element, opt, painter, widget):
         if element == QStyle.CE_TabBarTabLabel:
@@ -915,6 +939,7 @@ class ProxyStyle(QProxyStyle):
             r.moveBottom(opt.rect.bottom())
             opt.rect = r
         QProxyStyle.drawControl(self, element, opt, painter, widget)
+
 
 class DatasetDialog(QDialog):
 

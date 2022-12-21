@@ -1,0 +1,5 @@
+build.txt
+main.build/
+main.dist/
+ArES/
+*.rar

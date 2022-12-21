@@ -13,13 +13,13 @@ __all__ = ["inventario", "station", "dataset"]
 class Entity():
    '''Classe responsável por representar cada estacao/entidade adicionada.
    Deve conter o nome, empreendimento, parametros e seus respectivos dados'''
-   def __init__(self, valores : dict, index : np.array, tipo : str, dt, 
-                nome : str = "", empresa : str = "") -> None:
+   def __init__(self, valores : dict, index : np.array, tipo : str, dt, flags : dict = {},
+                nome : str = "", empresa : str = "")  -> None:
       self.vars = list(valores.keys())
       self.nome = nome # nome da estacao
       self.empresa = empresa # Nome da empresa responsavel pela estacoa
       self.valores = valores # Valores referente a cada parametro
-      # self.flags = flags # Flags referente a cada parametro
+      self.flags = flags # Flags referente a cada parametro
       self.tipo = tipo # Tipo de estacao
       self.dt = dt
       self.index = index # Todas as datas do conjunto de dados
@@ -27,9 +27,16 @@ class Entity():
       self.fim = np.max(self.index, axis = 0) # Data final
       self.vars_selected = [0]*len(self.vars) # lista de 0 e 1
 
-   def reindex(self, parameter, new_index):
+   def reindex(self, parameter, new_index, **kwargs):
       # Preparando valores
-      values_arr = self.valores[parameter]
+      values_arr = copy.deepcopy(self.valores[parameter])
+      flags_arr = self.flags[parameter]
+
+      # Filtando baseado na regra de dados: validos, suspeitos ou invalidos.
+      criterios = kwargs.get("include", [True, False, False])
+      values_arr = utilitarios.flag_check(values_arr, flags_arr, criterios)
+
+      # organizando de acordo com os noves indices / datas
       new_arr = np.empty(new_index.shape)
       new_arr[:] = np.nan
 
@@ -170,7 +177,7 @@ class EntitySQL(Entity):
       self.vars_selected = [0]*len(self.vars) # lista de 0 e 1
       self.inventario = parent
 
-   def reindex(self, parameter, new_index):
+   def reindex(self, parameter, new_index, **kwargs):
       # Extraindo os valores do banco de dados
       cursor = self.inventario.cnx.cursor()
       vars_, campos = self.inventario.table_vars[self.nome]
@@ -194,15 +201,23 @@ class EntitySQL(Entity):
       cursor.execute(query, (start, end))
       dates = [''] * N
       values_arr = np.full(N, np.nan)
+      flags_arr = np.full(N, '')
       i = 0
       for (date, value, flag) in cursor:
          dates[i] = date
-         if flag is None or len(flag) == 0 or flag[0] != "I":
-            if not value is None:
-               values_arr[i] = value
+         if flag is not None:
+            flags_arr[i] = flag
+
+         if value is not None:
+            values_arr[i] = value
+
          i += 1
       
       dates = np.array(dates, dtype = np.datetime64)
+
+      # Filtando baseado na regra de dados: validos, suspeitos ou invalidos.
+      criterios = kwargs.get("include", [True, False, False])
+      values_arr = utilitarios.flag_check(values_arr, flags_arr, criterios)
 
       # Preparando valores
       new_arr = np.full(new_index.shape, np.nan)
@@ -375,7 +390,7 @@ class Inventario():
       dates = [cursor.fetchone()[0] for i in range(order_n)] + [fim]
       dates = np.array(dates, dtype = np.datetime64)
 
-      # estimando o tipo de estacao
+      # estimando o tipo de estacao baseado na frequencia de amostragem
       dt_horas = utilitarios.dt_guess(dates).astype('timedelta64[h]')
       tipo_estacao = "AUTO"
       if dt_horas != 1:
