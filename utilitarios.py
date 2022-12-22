@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta, date
 from data_management import VarDataset, Entity
+from copy import copy
 
 # Funcoes neste script
 __all__ = ["get_dateindex", 'xls2file', "organize",
@@ -91,7 +92,7 @@ def get_alias(varname : str) -> str:
    return alias
 
 
-def get_dateindex(tipo, freq:np.timedelta64, start_date:datetime, end_date:datetime, minutos = 0) -> np.array:
+def get_dateindex(tipo, freq:np.timedelta64, start_date:datetime, end_date:datetime, minutos = 0, reference = '2017-01-06') -> np.array:
    ''' Retorna um array de objetos datetime com o dias/horarios esperados para os registros
    de dados de uma estacao de monitoramento, dado o seu tipo e periodo especificado.
    Frequencia de operacao:
@@ -113,7 +114,7 @@ def get_dateindex(tipo, freq:np.timedelta64, start_date:datetime, end_date:datet
       index = np.arange(start_date + minutes, end_date + minutes, freq, dtype =  "datetime64")
 
    else:
-      ref = np.datetime64('2017-01-06') # data que se tem certeza de que tem uma amostragem semi-automatica. Modificar dps.
+      ref = np.datetime64(reference) # data que se tem certeza de que tem uma amostragem semi-automatica. Modificar dps.
       index = np.arange(start_date, end_date, np.timedelta64(1, "D"), dtype = "datetime64")
       diff = (index - ref) % freq
       index = index[np.equal(diff.astype('float'), 0)]
@@ -138,6 +139,7 @@ def get_id(string, tipo):
 
    return ID
 
+
 def organize(parent, start_date:datetime, end_date:datetime, tipo):
    '''
    Reune a serie temporal dos parametros selecionados e referentes a cada estacao
@@ -158,7 +160,7 @@ def organize(parent, start_date:datetime, end_date:datetime, tipo):
    # frequencia da serie temporal
    freq = np.timedelta64(1, 'h')
    if not parent.arquivos[0].tipo == "AUTO":
-      freq = np.timedelta64(6, "D")
+      freq = np.timedelta64(parent.configs['semiautomatica']['frequencia_dias'], "D")
 
    # preparar dados
    n = len(parent.arquivos)
@@ -168,29 +170,30 @@ def organize(parent, start_date:datetime, end_date:datetime, tipo):
       freq, 
       start_date,
       end_date + timedelta(days = 1),
-      minutos = minutos
+      minutos = minutos,
+      reference = parent.configs['semiautomatica']['data_referencia']
       )
    collection = {}
    parameters = {}
    id_ = {}
    for i in range(n):
       entity = parent.arquivos[i]
-      name = entity.nome
+      name = copy(entity.nome)
       for j in range(len(entity.vars)):
          if entity.vars_selected[j]:
             name_ = name + " - " + get_alias(entity.vars[j])
             collection[name_] = entity.reindex(
                entity.vars[j],
                new_index,
-               include = parent.criterios_select
+               include = parent.configs['criterios_dados']
                )
-            if parent.ppb2ppm and 'ppb' in entity.vars[j]:
+            if parent.configs['converter']['ppb2ppm'] and 'ppb' in entity.vars[j]:
                collection[name_] = collection[name_] * 1e-3
                parameters[name_] = entity.vars[j].replace('ppb', 'ppm')
 
             else: 
                parameters[name_] = entity.vars[j]
-               
+
             id_[name_] = get_id(name_, parent.arquivos[0].tipo)
 
    # provoca um erro se nenhum parametro for selecionado
@@ -308,6 +311,7 @@ def dt_guess(dates, return_time = True):
    result = np.abs(freq[ii, 0])
 
    return result
+
 
 def save_excel(output : VarDataset, fname : str):
    workbook = xlsxwriter.Workbook(fname)
@@ -442,7 +446,7 @@ def rotina_operacoes(parent, tipo):
       # Extrai somente os validos pro precaucao
       # açao importante caso haja necessidade de realizar + de 1 operacao
       parent.ds.valores = parent.ds.mask_invalidos(lim)
-      lim = parent.representatividade[time_freq[group_idx]]
+      lim = parent.configs['representatividade'][time_freq[group_idx]]
 
       func = methods[calc_idx]
       if calc_idx == 0:

@@ -171,7 +171,7 @@ class VarDataset():
 class EntitySQL(Entity):
 
    def __init__(self, nome, empresa, dt, index, vars, filename, tipo, parent) -> None:
-      super().__init__({}, index, tipo, dt, nome, empresa)
+      super().__init__({}, index, tipo, dt, {}, nome, empresa)
       self.vars = vars
       self.filename = filename
       self.vars_selected = [0]*len(self.vars) # lista de 0 e 1
@@ -239,7 +239,6 @@ class Inventario():
 
    def __init__(self, parent) -> None:
       self.parent = parent
-      self.host = 'PC-INV109399'
       self.cnx = None
       self.connected = False      
       self.estacao_empresas = [] # empresa estacao
@@ -250,15 +249,15 @@ class Inventario():
    def get_status(self):
       return self.connected
 
-   def connect(self, username, password):
+   def connect(self, username, password, hostname):
       self.disconnect()
       code = 1
       try:
          self.cnx = connect(
             user = username,
             password = password,
-            host = self.host,
-            database = 'banco_gear'
+            host = hostname,
+            database = self.parent.configs['conexao']['database']
          )
          self.connected = True
          self.atualizar_inventario()
@@ -402,7 +401,7 @@ class Inventario():
          index = dates,
          dt = dt_horas, 
          tipo = tipo_estacao,
-         nome = self.estacao_nomes[idx],
+         nome = nome,
          empresa = self.estacao_empresas[idx],
          filename = self.table_names[idx],
          parent = self

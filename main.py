@@ -8,6 +8,7 @@ import data_management
 import numpy as np
 import matplotlib as mpl
 import xlsxwriter
+import json
 
 from PySide6.QtWidgets import (QTreeWidgetItem, QGridLayout, QApplication,
 QFileDialog, QMainWindow, QTreeWidget, QHBoxLayout, QWidget, QPushButton,
@@ -15,7 +16,7 @@ QLabel, QDateEdit, QVBoxLayout, QComboBox, QLineEdit, QSpinBox, QWidget,
 QTabWidget, QGroupBox, QTableWidget, QTableWidgetItem, QColorDialog,
 QCheckBox, QHeaderView, QDialog, QMessageBox, QDoubleSpinBox, QFrame, 
 QStyle, QTabBar, QStylePainter, QProxyStyle, QStyleOptionTab)
-from PySide6.QtCore import QDate, Qt, Slot, QRect, QPoint
+from PySide6.QtCore import QDate, Qt, QRect, QPoint
 from PySide6.QtGui import QColor, QIcon, QAction, QFontDatabase
 
 class QHLine(QFrame):
@@ -451,6 +452,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         # splash = SplashScreen()
+        self.version = 1.1
 
         # Propriedades da janela
         self.setWindowTitle("ArES")
@@ -466,19 +468,9 @@ class MainWindow(QMainWindow):
         self.signature = []
         self.arquivos = []
         self.inventory = data_management.Inventario(parent = self)
-        # self.first_conection()
+        self.configs = self.first_launch()
         self.lista_calculo = ["Nenhum",  "Média móvel", "Média aritmética",
                                 "Média geométrica", "Média harmônica"]
-        self.representatividade = {
-            "Diária": 75,
-            "Mensal": 75,
-            "Anual": 50,
-            "No período": 0,
-            "Média móvel": 75,
-            "Geral" : 75
-        }
-        self.criterios_select = [True, False, False]
-        self.ppb2ppm = False
 
         # Widget Principal
         widget = QWidget(self)
@@ -563,16 +555,73 @@ class MainWindow(QMainWindow):
         self.botao_configs.clicked.connect(self.openConfigWindow)
         # splash.close()
 
-    def first_conection(self):
+    def first_launch(self):
+        userhome_directory = os.path.expanduser("~")
+        ArES_dir = os.path.join(userhome_directory, '.ArES')
+
+        # Criando JSON com as configuracoes iniciais
+        data = {}
+        data['conexao'] = dict(
+            host = "PC-INV109399",
+            username = 'lucassm',
+            database = "banco_gear"
+        )
+        data['representatividade'] = {
+            "Diária": 75,
+            "Mensal": 75,
+            "Anual": 50,
+            "No período": 0,
+            "Média móvel": 75,
+            "Geral" : 75
+            }
+        data['criterios_dados'] = [True, False, False]
+        data['converter'] = {
+            'ppb2ppm' : False
+        }
+        data['semiautomatica'] = {
+            'data_referencia' : '2017-01-06',
+            'frequencia_dias' : 6
+        }
+        data['version'] = self.version
+
+        fname = os.path.join(ArES_dir, 'launch_config.json')
+
+        # Manipulacoes
         try:
-            self.inventory.connect(
-                'lucassm',
-                '174784'
-                )
+            # Se o diretorio nao existir, cria ele
+            os.makedirs(ArES_dir, exist_ok=True)
 
-        except:
-            pass
+            # se o arquivo JSON com as configuracoes existir, provcoa um erro
+            exists = os.path.isfile(fname)
+            if not exists:
+                with open(fname, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=4)
 
+            else:
+                raise FileExistsError
+
+        except FileExistsError:
+            # se o diretorio e o arquivo existirem, importa ele no programa
+            with open(fname, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+            
+            for k, v in existing_data.items():
+                data[k] = v
+            
+            data['version'] = self.version
+
+        return data
+    
+    def save_configs(self):
+        data = self.configs
+        userhome_directory = os.path.expanduser("~")
+        ArES_dir = os.path.join(userhome_directory, '.ArES')
+        fname = os.path.join(ArES_dir, 'launch_config.json')
+        with open(fname, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+        
+        return None
+            
     def openConfigWindow(self):
 
         dialog = MyDialog(self)
@@ -688,7 +737,7 @@ class MainWindow(QMainWindow):
             ultima_operacao = groupby[-1].split(" ")[0]
             ultima_operacao = freq_dict.get(ultima_operacao, "Geral")
 
-        lim = self.representatividade[ultima_operacao]
+        lim = self.configs['representatividade'][ultima_operacao]
         return lim
 
     def updateGraph(self):
@@ -778,19 +827,30 @@ class MyDialog(QDialog):
         self.setWindowIcon(master.logo_icon)
 
         # Widgets
+        #
+        self.save_button = QPushButton("Salvar")
+        self.apply_button = QPushButton("Aplicar")
+        #
         self.WidgetRepresentatividade = QTableWidget()
         self.valueRepresentatividade = {}
         group = QGroupBox("Conexão do banco de dados", parent = self)
         self.connect_button = QPushButton("Conectar")
-        self.hostname = QLineEdit(self.master.inventory.host)
+        self.hostname = QLineEdit(self.master.configs['conexao']['host'])
         self.Tabs = TabWidget()
         #
         data_group = QGroupBox(parent = self)
         self.criterios_button = [QCheckBox(x) for x in ['Válidos', 'Inválidos', "Suspeitos"]]
-        for x in range(len(self.master.criterios_select)):
-            self.criterios_button[x].setChecked(self.master.criterios_select[x])
+        for x in range(len(self.master.configs['criterios_dados'])):
+            self.criterios_button[x].setChecked(self.master.configs['criterios_dados'][x])
         self.convert_ppm = QCheckBox("Converter unidade [ppb] para [ppm]")
-        self.convert_ppm.setChecked(self.master.ppb2ppm)
+        self.convert_ppm.setChecked(self.master.configs['converter']['ppb2ppm'])
+        #
+        data = [int(x) for x in self.master.configs['semiautomatica']['data_referencia'].split('-')]
+        self.semiautomatica = {
+            'reference_date' : QDateEdit(QDate(data[0], data[1], data[2])),
+            "frequency_days" : QSpinBox()
+            }
+        self.semiautomatica['frequency_days'].setValue(self.master.configs['semiautomatica']['frequencia_dias'])
 
         # Configuracoes dos Widgets
         Header = self.WidgetRepresentatividade.horizontalHeader()
@@ -798,7 +858,7 @@ class MyDialog(QDialog):
         Header.resizeSections()
         self.WidgetRepresentatividade.setColumnCount(2)
         self.WidgetRepresentatividade.setHorizontalHeaderLabels(["Representatividade", "Valor (%)"])
-        for k, v in master.representatividade.items():
+        for k, v in master.configs['representatividade'].items():
             self.valueRepresentatividade[k] = QSpinBox()
             self.valueRepresentatividade[k].setRange(0, 100)
             self.valueRepresentatividade[k].setValue(v)
@@ -821,6 +881,18 @@ class MyDialog(QDialog):
         criterios_layout.addWidget(QHLine())
         criterios_layout.addWidget(self.convert_ppm)
         criterios_layout.addWidget(QHLine())
+        criterios_layout.addWidget(QLabel("Estações Semiautomáticas ->"))
+        qhbox1 = QHBoxLayout()
+        qhbox1.addWidget(QLabel("Frequência de amostragem: "))
+        qhbox1.addWidget(self.semiautomatica['frequency_days'])
+        qhbox1.addWidget(QLabel(" Dias"))
+        qhbox1.addStretch(5)
+        criterios_layout.addLayout(qhbox1)
+        qhbox2 = QHBoxLayout()
+        qhbox2.addWidget(QLabel("Data de referência: "))
+        qhbox2.addWidget(self.semiautomatica['reference_date'])
+        qhbox2.addStretch(5)
+        criterios_layout.addLayout(qhbox2)
         criterios_layout.addStretch(5)
         data_group.setLayout(criterios_layout)
         #
@@ -829,12 +901,18 @@ class MyDialog(QDialog):
         self.Tabs.addTab(data_group, "Dados")
     
         # Widgets para troca
-        self.MainLayout = QHBoxLayout()
+        self.MainLayout = QVBoxLayout()
+        buttonLayout = QHBoxLayout()
         self.MainLayout.addWidget(self.Tabs)
-        self.list_layouts = [self.WidgetRepresentatividade, LoginLayout]
+        buttonLayout.addStretch(10)
+        buttonLayout.addWidget(self.save_button)
+        buttonLayout.addWidget(self.apply_button)
+        self.MainLayout.addLayout(buttonLayout)
 
         # Signals and Slots
         self.connect_button.clicked.connect(self.connect_sql)
+        self.save_button.clicked.connect(self.save_json)
+        self.apply_button.clicked.connect(lambda x: self.apply_changes(True))
 
         # init
         self.setLayout(self.MainLayout)
@@ -842,9 +920,10 @@ class MyDialog(QDialog):
     def connect_sql(self):
         # username = self.username_widget.text()
         # password = self.password_widget.text()
-        username = "lucassm"
+        username = self.master.configs['conexao']['username']
         password = "174784"
-        code = self.master.inventory.connect(username, password)
+        host = self.hostname.text()
+        code = self.master.inventory.connect(username, password, host)
         if code != 1:
             if code == 1045:
                 message = "Acesso negado."
@@ -853,14 +932,14 @@ class MyDialog(QDialog):
                 message = "Erro de conexão."
                 informative_text = "O host não existe ou se encontra offline."
             x = QMessageBox(QMessageBox.Warning, "Erro",
-                    message, parent = self.master)
+                    message, parent = self)
             x.addButton(QMessageBox.Ok)
             x.setInformativeText(informative_text)
             x.exec()
         else:
             message = "Conetado."
             informative_text = "A conexão com o servidor foi estabelecida."
-            x = QMessageBox(parent = self.master)
+            x = QMessageBox(parent = self)
             x.setText(message)
             x.addButton(QMessageBox.Ok)
             x.setInformativeText(informative_text)
@@ -880,18 +959,35 @@ class MyDialog(QDialog):
             i += 1
 
     def closeEvent(self, event) -> None:
-        ''' Salva as modificacoes ao fechar a janela'''
+        return super().closeEvent(event)
+
+    def apply_changes(self, close = True):
+        ''' Aplica as modificacoes e fecha a janela'''
         for k, v in self.valueRepresentatividade.items():
-            self.master.representatividade[k] = v.value()
+            self.master.configs['representatividade'][k] = v.value()
 
         for i in range(len(self.criterios_button)):
             status = self.criterios_button[i].isChecked()
-            self.master.criterios_select[i] = status
+            self.master.configs['criterios_dados'][i] = status
 
-        self.master.ppb2ppm = self.convert_ppm.isChecked()
+        self.master.configs['converter']['ppb2ppm'] = self.convert_ppm.isChecked()
+        
+        format = Qt.DateFormat.ISODateWithMs
+        date = self.semiautomatica["reference_date"].date().toString(format)
+        value = self.semiautomatica["frequency_days"].value()
+        self.master.configs['semiautomatica']['data_referencia'] = date
+        self.master.configs['semiautomatica']['frequencia_dias'] = value
 
-        return super().closeEvent(event)
+        if close:
+            return self.close()
 
+    def save_json(self):
+        ''' Salva e aplica as configuracoes, mas nao fecha'''
+
+        self.apply_changes(close = False)
+        self.master.save_configs()
+
+        return None
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
@@ -1020,11 +1116,11 @@ class DatasetDialog(QDialog):
         if self.tab.currentIndex() == 0:
             if not self.master.inventory.get_status():
                 return None
-            nome = self.entidades.currentText()
-            if not nome in self.master.signature:
+            name_ = self.entidades.currentText()
+            if not name_ in self.master.signature:
                 self.master.arquivos.append(
-                    self.master.inventory.extrair_estacao(nome))
-                self.master.signature.append(nome)
+                    self.master.inventory.extrair_estacao(name_))
+                self.master.signature.append(name_)
         else:
             caminho = eval('['+self.atmos_path.text()+']')
             if len(caminho) > 0:
