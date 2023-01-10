@@ -20,12 +20,19 @@ from PySide6.QtCore import QDate, Qt, QRect, QPoint
 from PySide6.QtGui import QColor, QIcon, QAction, QFontDatabase
 
 class QHLine(QFrame):
+    '''
+    Classe responsável por desenhar uma linha horizontal (Widget)
+    '''
     def __init__(self):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Sunken)
 
 class Tabela(QTreeWidget):
+    '''
+    Classe responsável pela operação da tabela do gerenciamento de estações
+    de monitoramento.
+    '''
 
     def __init__(self, parent = None):
         super().__init__()
@@ -38,7 +45,7 @@ class Tabela(QTreeWidget):
         self.items = []
 
     def update(self):
-        # Atualiza a tabela sempre que um item e excluido ou adicionado
+        # Atualiza a tabela sempre que um item é excluido ou adicionado
         self.clear()
         items = []
         for i in range(len(self.parentWidget.arquivos)):
@@ -82,6 +89,10 @@ class Tabela(QTreeWidget):
 
 
 class TabelaEixos(QTreeWidget):
+    '''
+    Classe responsável pela tabela relacionada a formatação dos eixos
+    horizontal e vertical, na aba "Gráfico".
+    '''
 
     def __init__(self, parentWidget = None):
         super().__init__()
@@ -152,7 +163,8 @@ class TabelaEixos(QTreeWidget):
         self.unidade.setCurrentIndex(1)
         self.size_x.setMinimum(1)
         self.size_y.setMinimum(2)
-        self.max_y.setRange(-10000, 10000)
+        self.max_y.setRange(-100000, 100000)
+        self.min_y.setRange(-100000, 100000)
         self.fontsize_x.setRange(1, 30)
         self.fontsize_y.setRange(1, 30)
         self.rotation_x.setRange(0, 180)
@@ -175,8 +187,8 @@ class TabelaEixos(QTreeWidget):
         self.fontsize_x.valueChanged.connect(self.changeHorizontalContents)
         self.fontsize_y.valueChanged.connect(self.changeVerticalContents)
         self.size_y.textChanged.connect(self.changeVerticalContents)
-        self.max_y.textChanged.connect(self.changeVerticalContents)
-        self.min_y.textChanged.connect(self.changeVerticalContents)
+        self.max_y.editingFinished.connect(self.changeVerticalContents)
+        self.min_y.editingFinished.connect(self.changeVerticalContents)
         self.rotation_x.textChanged.connect(self.changeHorizontalContents)
         self.intervalo.textChanged.connect(self.changeHorizontalContents)
         self.unidade.activated.connect(self.changeHorizontalContents)
@@ -235,6 +247,14 @@ class TabelaEixos(QTreeWidget):
 
 
 class PropriedadesTab(QWidget):
+    '''
+    Classe responsável pela tab "Gráfico" e funcionamento da:
+    -   linha horizontal (limite);
+    -   Cor e label dos objetos na legenda da figura;
+    -   Propriedades da legenda da figura;
+    -   Tipo de gráfico
+    -   Propriedades dos títulos do gráfico, eixo X e eixo Y.
+    '''
 
     def __init__(self, canvas = None):
         super().__init__()
@@ -448,6 +468,9 @@ class PropriedadesTab(QWidget):
 
 
 class MainWindow(QMainWindow):
+    '''
+    Janela principal do programa
+    '''
 
     def __init__(self):
         super().__init__()
@@ -1038,6 +1061,10 @@ class ProxyStyle(QProxyStyle):
 
 
 class DatasetDialog(QDialog):
+    '''
+    Classe responsável pela janela de diálogo que contém os widgets para importação
+    de dados através de planilhas .xls ou pelo banco de dados MySQL.
+    '''
 
     def __init__(self, master):
         QDialog.__init__(self)
@@ -1154,6 +1181,9 @@ class DatasetDialog(QDialog):
 
 
 class OperationsTable(QTableWidget):
+    '''
+    Classe responsável pelo funcionamento da tabela de operações, na aba "Dados"
+    '''
 
     def __init__(self, master):
         super().__init__(master)
