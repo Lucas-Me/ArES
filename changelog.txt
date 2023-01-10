@@ -1,6 +1,9 @@
 Historico de atualizacões do Programa ArES
 As últimas atualizações sempre serão listadas primeiro.
 
+ArES v1.2 - 10/01/2023
+- Correção no comportamento do Eixo Y.
+
 ArES v1.1 - 22/12/2022 
 - Corrigido bug ao exigir valores menores do que 1 como rótulos do eixo Y; 
 - Eixo Y agora aceita como rótulos valores com até 2 casas decimais;
