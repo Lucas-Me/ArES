@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="29.065817"
+   height="31.333473"
+   viewBox="0 0 7.6903307 8.2903148"
+   version="1.1"
+   id="svg17111"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="icon_calendar.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview17113"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="16.871996"
+     inkscape:cx="2.3411575"
+     inkscape:cy="10.075868"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs17108">
+    <linearGradient
+       id="linearGradient31469"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#6098bb;stop-opacity:1;"
+         offset="0"
+         id="stop31467" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-91.28123,-58.931253)">
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#650d0d;stroke-width:0.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="rect28565-5-5"
+       width="7.0903149"
+       height="7.0903144"
+       x="91.581245"
+       y="59.831253" />
+    <path
+       style="fill:#ff0000;stroke:#650d0d;stroke-width:0.794996;stroke-linejoin:bevel;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 91.281488,61.792742 7.689523,-0.005"
+       id="path9112" />
+    <path
+       style="fill:#ff0000;stroke:#650d0d;stroke-width:0.781382;stroke-linejoin:bevel;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 93.530126,60.927653 0.01861,-1.992752"
+       id="path9112-5" />
+    <path
+       style="fill:#ff0000;stroke:#650d0d;stroke-width:0.781382;stroke-linejoin:bevel;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 96.870347,60.927652 0.01861,-1.992751"
+       id="path9112-5-6" />
+  </g>
+</svg>
