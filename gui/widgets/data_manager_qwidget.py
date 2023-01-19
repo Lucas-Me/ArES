@@ -64,9 +64,13 @@ class DataManager(QWidget):
     def save_parameter_selection(self, args):
         state, row = args
         signature = self.ui.parameter_list.get_signature()
-        print(signature, row, state)
         if signature in self.selected_parameters:
             self.selected_parameters[signature][row] = state
+
+        ms = self.ui.monitoring_station_list
+        active_row = ms.active_row.value()
+        active_parameters = sum(self.selected_parameters[signature])
+        ms.itemWidget(ms.item(active_row)).marked.updateCount(active_parameters)
 
     def update_parameter_viewer(self):
         # Save selection of parameters before deleting

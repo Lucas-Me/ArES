@@ -78,7 +78,7 @@ class CountMark(QWidget):
         # OBJECTS
         self.count_marked = marked
         self.icon_color = icon_color
-        self.font = QFont('Open Sans', 12)
+        self.font = QFont('Open Sans', 10)
         self.pen = QPen()
 
         # SETTING UP PROPERTIES
@@ -89,7 +89,7 @@ class CountMark(QWidget):
         self.font.setBold(True)
         self.pen.setStyle(Qt.PenStyle.SolidLine)
         self.pen.setColor(QColor(digit_color))
-    
+
     def updateCount(self, n):
         self.count_marked = n
         self.update()
@@ -100,7 +100,7 @@ class CountMark(QWidget):
         # properties
         rect = self.rect()
         center = QPoint(self.width() // 2, self.height() // 2)
-        r = rect.width() / 2.5
+        r = rect.width() / 3
         
         # Setting up painter
         painter = QPainter(self)
@@ -113,7 +113,6 @@ class CountMark(QWidget):
             # PAINTING CIRCLE
             painter.setPen(Qt.NoPen)
             painter.setBrush(QBrush(QColor(self.icon_color)))
-            painter.fillRect(rect, QBrush(QColor(128, 128, 255, 0)))
             painter.drawEllipse(center, r, r)
 
             # painting number
