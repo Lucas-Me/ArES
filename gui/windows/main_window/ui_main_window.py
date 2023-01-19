@@ -61,7 +61,7 @@ class UI_MainWindow(object):
             'text_color' : self.background_color,
             'icon_color' : self.background_color,
             'btn_color' : self.left_menu_color,
-            'btn_hover' : '#b0f6e4',
+            'btn_hover' : '#ffb703',
             'width' : 135
         }
         self.btn_1 = PyPushButton("Início", icon_path='icon_home.svg', **btn_properties)

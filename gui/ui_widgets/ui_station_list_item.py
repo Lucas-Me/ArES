@@ -14,12 +14,17 @@ class UI_StationListItem(object):
             parent.setObjectName(u'station_item')
         
         # SET INITIAL PARAMETERS
-        parent.setMinimumHeight(parent.item_height - 5)
-        parent.setMaximumHeight(parent.item_height - 5)
+        parent.setMinimumHeight(parent.item_height)
+        parent.setMaximumHeight(parent.item_height)
         parent.setMaximumWidth(parent.item_width)
         parent.setMinimumWidth(parent.item_width)
         parent.setStyleSheet(f'''
-            background-color: {background_color};
+            QFrame {{
+                background-color: {background_color};
+                border: none;
+                border-bottom: 2px solid;
+                border-color: #b7c4c8;
+            }}
         ''')
 
         # CREATE MAIN LAYOUT
@@ -116,6 +121,7 @@ class UI_StationListItem(object):
         # ADD TO RIGHT BAR LAYOUT
         self.right_bar_layout.addWidget(self.close_button)
         self.right_bar_layout.addItem(self.right_bar_spacer)
+        self.right_bar_layout.addWidget(parent.marked)
         
         # INSERT RIGHT BAR TO MAIN LAYOUT
         self.item_main_layout.addLayout(self.right_bar_layout)

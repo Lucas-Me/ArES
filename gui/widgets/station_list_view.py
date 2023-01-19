@@ -17,7 +17,7 @@ class PyStationListView(QListWidget):
 
         # Properties
         self.parent = parent
-        self.itemWidth = 360
+        self.itemWidth = 390
         self.itemHeight = 60
         self.existing_items = 0
         self.deleted_items = []
@@ -26,6 +26,7 @@ class PyStationListView(QListWidget):
         # configuring widgets
         self.active_row.setRange(-1, 1000)
         self.active_row.setValue(-1)
+        self.verticalScrollBar().setSingleStep(1)
 
         # animation properties
         self.delete_parallel_animation = QParallelAnimationGroup()
@@ -38,6 +39,7 @@ class PyStationListView(QListWidget):
         # Signals and Slots
         self.delete_parallel_animation.finished.connect(self.reposition_animation)
         self.reposition_parallel_animation.finished.connect(self.delete_list_widget)
+        self.verticalScrollBar().valueChanged.connect(self.scroll_bar_adjust)
         self.itemClicked.connect(self.toggle_animation)
 
     def toggle_animation(self, WidgetItem : QListWidgetItem):
@@ -50,7 +52,7 @@ class PyStationListView(QListWidget):
             if active_row >= 0:
                 self.itemWidget(self.item(active_row)).change_color('#ffffff')
         
-            station_item.change_color('#88edd3')
+            station_item.change_color('#ededff', highlight = True)
             self.active_row.setValue(item_row)
 
     def add_station_item(self, station_object):
@@ -64,9 +66,6 @@ class PyStationListView(QListWidget):
             item_width = self.itemWidth,
             item_height = self.itemHeight
             )
-
-        y = self.existing_items * self.itemHeight + 2
-        station_item.setGeometry(2, y, self.itemWidth, self.itemHeight)
 
         # Setting Size Hint to ListWidgetItem
         SizeHint = QSize(self.itemWidth, self.itemHeight)
@@ -84,7 +83,30 @@ class PyStationListView(QListWidget):
         # station_item.insert_animation()
 
         # update private variable
-        self.existing_items += 1
+        self.updateExistingItems(1)
+
+    def updateExistingItems(self, value):
+        self.existing_items = self.existing_items + value
+        
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        self.scroll_bar_adjust()
+        return super().resizeEvent(e)
+
+    def scroll_bar_adjust(self):
+        sb = self.verticalScrollBar()
+        h = self.height()
+        hidden_n = 0
+        for i in range(self.count()):
+            hidden_n += self.item(i).isHidden()
+
+        n = self.count() - hidden_n
+        dh = self.itemHeight
+        height = dh * n
+        over = height - h
+        if over > 0:
+            sb.setMaximum(over + dh)
+        else:
+            sb.setMaximum(0)
 
     def remove_btn(self, ListWidgetItem : QListWidgetItem):
         if self.delete_parallel_animation.state() == QAbstractAnimation.State.Running: # If running
@@ -129,7 +151,7 @@ class PyStationListView(QListWidget):
         del self.parent.archives[station_item.station_object.metadata['signature']]
 
         self.deleted_items.append(row)
-        self.existing_items -= 1
+        self.updateExistingItems(-1)
 
     def reposition_animation(self):
         while self.delete_parallel_animation.animationCount() > 0:

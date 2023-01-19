@@ -28,16 +28,49 @@ class DataManager(QWidget):
 
         # SIGNALS AND SLOTS
         self.ui.import_xls_btn.clicked.connect(self.browse_xls_files)
+        self.ui.search_bar.editingFinished.connect(self.search_station)
         self.ui.monitoring_station_list.active_row.valueChanged.connect(self.update_parameter_viewer)
+        self.ui.parameter_list.stateChanged.connect(self.save_parameter_selection)
 
-    def save_parameter_selection(self, selection, signature):
+    def search_station(self):
+        # getting text and setting properties
+        text = self.ui.search_bar.text()
+        text = text.rstrip().strip()
+        chars = len(text)
+
+        # tests
+        station_list = self.ui.monitoring_station_list
+        rows = station_list.count()
+
+        # reset filter
+        for row in range(rows):
+            station_list.item(row).setHidden(False)
+        
+        if chars > 0:
+            keywords = re.split("\s+", text.lower())
+            for row in range(rows):
+                widget = station_list.item(row)
+                item = station_list.itemWidget(widget)
+                name = re.split('\s+', item.station_name_label.text().lower())
+                enterprise = re.split('\s+', item.station_enterprise_label.text().lower())
+                condition = False
+                for kw in keywords:
+                    condition1 = condition or any(map(lambda element: kw in element, name))
+                    condition2 = any(map(lambda element: kw in element, enterprise))
+                    condition = condition1 or condition2
+
+                widget.setHidden(not condition)
+
+    def save_parameter_selection(self, args):
+        state, row = args
+        signature = self.ui.parameter_list.get_signature()
+        print(signature, row, state)
         if signature in self.selected_parameters:
-            self.selected_parameters[signature] = selection
+            self.selected_parameters[signature][row] = state
 
     def update_parameter_viewer(self):
         # Save selection of parameters before deleting
-        old_results =  self.ui.parameter_list.reset_settings()
-        self.save_parameter_selection(*old_results)
+        self.ui.parameter_list.reset_settings()
 
         # geting new selected row
         monitoring_list  = self.ui.monitoring_station_list

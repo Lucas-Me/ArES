@@ -18,6 +18,7 @@ class StationListItem(QFrame):
         self.station_object = station_object
         self.item_width = item_width
         self.item_height = item_height
+        self.marked = CountMark(width=30, height=30)
 
         # animation properties
         self.animation = QPropertyAnimation()
@@ -31,10 +32,22 @@ class StationListItem(QFrame):
         self.ui = UI_StationListItem()
         self.ui.setup_ui(self)
 
-    def change_color(self, color):
-        self.setStyleSheet(f'''
-            background-color: {color};
-        ''')
+    def change_color(self, color, highlight = False):
+        if highlight:
+            self.setStyleSheet(f'''
+                background-color: {color};
+                border: 3px solid;
+                border-color: #88edd3;
+            ''')
+
+        else:
+            self.setStyleSheet(f'''
+                background-color: {color};
+                border: none;
+                border-bottom: 2px solid;
+                border-color: #b7c4c8;
+            ''')
+
 
     def insert_animation(self):
         # get current position and dimensions
@@ -56,3 +69,58 @@ class StationListItem(QFrame):
         self.animation.setEasingCurve(QEasingCurve.OutCirc)
         self.animation.start()
         
+
+class CountMark(QWidget):
+
+    def __init__(self, width, height, marked = 0, icon_color = '#fb8500', digit_color = '#ffffff'):
+        super().__init__()
+
+        # OBJECTS
+        self.count_marked = marked
+        self.icon_color = icon_color
+        self.font = QFont('Open Sans', 12)
+        self.pen = QPen()
+
+        # SETTING UP PROPERTIES
+        self.setFixedHeight(height)
+        self.setFixedWidth(width)
+
+        # CONFIGURING OBJECTS
+        self.font.setBold(True)
+        self.pen.setStyle(Qt.PenStyle.SolidLine)
+        self.pen.setColor(QColor(digit_color))
+    
+    def updateCount(self, n):
+        self.count_marked = n
+        self.update()
+
+    def paintEvent(self, event: QPaintEvent) -> None:
+        super().paintEvent(event)
+        
+        # properties
+        rect = self.rect()
+        center = QPoint(self.width() // 2, self.height() // 2)
+        r = rect.width() / 2.5
+        
+        # Setting up painter
+        painter = QPainter(self)
+        painter.save()
+        painter.beginNativePainting()
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.eraseRect(rect)
+        if self.count_marked > 0:
+
+            # PAINTING CIRCLE
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(QColor(self.icon_color)))
+            painter.fillRect(rect, QBrush(QColor(128, 128, 255, 0)))
+            painter.drawEllipse(center, r, r)
+
+            # painting number
+            painter.setFont(self.font)
+            painter.setPen(self.pen)
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, str(self.count_marked))
+            
+        # Finishing Painter
+        painter.endNativePainting()
+        painter.restore()

@@ -19,14 +19,12 @@ class UI_PyStationListView(object):
             }}
             QListWidget::item {{
                 border: none;
-                padding-left: 10px;
-                padding-right: 30px;
-                border-bottom: 1px solid {self.background_color};
-                border-top: 5px solid {self.background_color};
+                padding-left: 0px;
+                padding-right: 0px;
             }}
             QScrollBar:vertical {{              
                 border: none;
-                background: {self.secondary_color};
+                background: #b7c4c8;
                 width: 10px;
                 border-radius: 5px;
                 margin: 0px 0px 0px 0px;

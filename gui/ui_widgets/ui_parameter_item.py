@@ -48,7 +48,7 @@ class UI_ParameterListItem(object):
             color : {self.bold_color};
             font-size: 12pt;
             font-weight: bold;
-            font-family : "Microsoft New Tai Lue";
+            font-family : "Open Sans";
             text-align: left;
             vertical-align: middle;
         '''
@@ -57,7 +57,7 @@ class UI_ParameterListItem(object):
             font-size: 12pt;
             font-weight: 600;
             text-align: left;
-            font-family : "Microsoft New Tai Lue";
+            font-family : "Open Sans";
             vertical-align: middle;
         '''
         self.name_label.setStyleSheet(normal_stylesheet)
@@ -65,7 +65,7 @@ class UI_ParameterListItem(object):
         self.unit_label.setStyleSheet(bold_stylesheet)
 
         # width and height of objects
-        self.theme_label.setFixedWidth(200)
+        self.theme_label.setFixedWidth(150)
         self.unit_label.setFixedWidth(100)
 
         # INSERTING WIDGETS IN MAIN LAYOUT

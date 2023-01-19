@@ -3,7 +3,7 @@ from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.station_list_view import PyStationListView
-from gui.widgets.py_push_button import PyPushButton
+from gui.widgets.py_push_button import ClassicButton
 from gui.widgets.parameter_list_widget import ParameterSelectionWidget
 from gui.widgets.py_date_select import PyDoubleDateEdit
 
@@ -15,13 +15,13 @@ class UI_DataManager(object):
             parent.setObjectName(u'data_page')
 
         # Properties
-        self.font = 'Microsoft New Tai Lue'
+        self.font = 'Open Sans'
         self.border_color = '#b7c4c8'
         self.menu_color = '#4969b2'
         self.background_color = '#f5f5f5'
         self.inner_frame_color = "#ffffff"
         self.btn_color = '#fb8500'
-        self.btn_border_color = '#ffb703f'
+        self.btn_border_color = '#ffb703'
         self.frame_height = 500
 
         # MAIN LAYOUT
@@ -49,14 +49,14 @@ class UI_DataManager(object):
         self.table_station_label = QLabel("Estações de monitoramento")
         self.table_station_label.setFixedWidth(400)
         self.table_station_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.table_station_label.setStyleSheet('''
+        self.table_station_label.setStyleSheet(f'''
             font : bold 15pt "{self.font}";
             padding-left : 10px;
         ''')
         #
         self.parameter_list_label = QLabel("Parâmetros monitorados")
         self.parameter_list_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.parameter_list_label.setStyleSheet('''
+        self.parameter_list_label.setStyleSheet(f'''
             font : bold 15pt "{self.font}";
         ''')
 
@@ -83,9 +83,32 @@ class UI_DataManager(object):
         self.table_item_layout.setContentsMargins(0, 0, 0, 0)
         self.table_item_layout.setSpacing(0)
 
+        # VERICAL STATION LAYOUT
+        self.monitoring_station_layout = QVBoxLayout()
+        self.monitoring_station_layout.setContentsMargins(0, 0, 0, 0)
+        self.monitoring_station_layout.setSpacing(0)
+
+        # SEARCH BAR
+        self.search_bar = QLineEdit()
+        self.search_bar.setFixedWidth(400)
+        self.search_bar.setFixedHeight(50)
+        self.search_bar.setStyleSheet(f'''
+            border: none;
+            border-right: 2px solid;
+            border-bottom: 2px solid;
+            border-color: #b7c4c8;
+            color: #506369;
+            font: 700 12pt {self.font};
+        ''')
+        self.search_bar.setClearButtonEnabled(True)
+        image = QPixmap("./gui/images/icons/search.svg")
+        image.scaled(QSize(50, 50), Qt.AspectRatioMode.KeepAspectRatio)
+        self.search_bar.addAction(image, QLineEdit.LeadingPosition)
+        self.search_bar.setPlaceholderText("Buscar...")
+
         # MONITORING STATION LIST 
         self.monitoring_station_list = PyStationListView(parent = parent)
-        self.monitoring_station_list.setMinimumHeight(self.frame_height - 10)
+        self.monitoring_station_list.setMinimumHeight(self.frame_height)
         self.monitoring_station_list.setMinimumWidth(400)
         self.monitoring_station_list.setMaximumWidth(400)
         
@@ -95,7 +118,9 @@ class UI_DataManager(object):
         self.parameter_list.setMinimumWidth(600)
 
         # ADD LISTS TO MAIN TABLE LAYOUT
-        self.table_item_layout.addWidget(self.monitoring_station_list)
+        self.monitoring_station_layout.addWidget(self.search_bar)
+        self.monitoring_station_layout.addWidget(self.monitoring_station_list)
+        self.table_item_layout.addLayout(self.monitoring_station_layout)
         self.table_item_layout.addWidget(self.parameter_list)
                
         # BOTTOM WIDGETS
@@ -105,59 +130,50 @@ class UI_DataManager(object):
         # BUTTON LAYOUT
         self.bottom_btn_layout = QHBoxLayout()
 
+        # BUTTON STYLESHEET
+        self.button_style = f'''
+                QPushButton {{
+                    color : {self.menu_color};
+                    background-color: {self.inner_frame_color};
+                    font: 700 12pt {self.font};
+                    text-align: middle;
+                    vertical-align: middle;
+                    border: solid;
+                    border-width: 2px;
+                    padding-left: 65px;
+                    border-radius: 0px;
+                    border-color: {self.border_color};
+                    }}
+                QPushButton:hover {{
+                    border-color: #3f40f0;
+                    }}
+                '''
+
         # CREATING IMPORT XLS BUTTON
-        self.import_xls_btn = PyPushButton(
+        self.import_xls_btn = ClassicButton(
             text = "Importar\nXLS",
             icon_path = "icon_xls_file.svg",
-            icon_color = '#398e3d',
             height = 90,
             width = 175,
             icon_width = 80,
-            setup = False,
+            icon_allign = 'left',
+            icon_color="#398e3d"
         )
         self.import_xls_btn.setStyleSheet(
-            self.import_xls_btn.styleSheet() + f'''
-                QPushButton {{
-                    color : {self.menu_color};
-                    background-color: {self.inner_frame_color};
-                    font: 900 14pt "Microsoft New Tai Lue";
-                    text-align: middle;
-                    vertical-align: middle;
-                    border: solid;
-                    border-width: 4px;
-                    padding-left: 65px;
-                    border-radius: 0px;
-                    border-color: {self.border_color};
-                }}
-            '''
+            self.import_xls_btn.styleSheet() + self.button_style
         )
 
-
         # CREATING IMPORT DATABASE BUTTON
-        self.import_sql_btn = PyPushButton(
+        self.import_sql_btn = ClassicButton(
             text = "Importar\nSQL",
             icon_path = "icon_sql.svg",
-            icon_color = '#000000',
             height = 90,
             width = 175,
             icon_width = 80,
-            setup = False,
+            icon_color = '#232234'
         )
         self.import_sql_btn.setStyleSheet(
-            self.import_xls_btn.styleSheet() + f'''
-                QPushButton {{
-                    color : {self.menu_color};
-                    background-color: {self.inner_frame_color};
-                    font: 900 14pt "Microsoft New Tai Lue";
-                    text-align: middle;
-                    vertical-align: middle;
-                    border: solid;
-                    border-width: 4px;
-                    padding-left: 65px;
-                    border-radius: 0px;
-                    border-color: {self.border_color};
-                }}
-            '''
+            self.import_sql_btn.styleSheet() + self.button_style
         )
 
         # CREATNG SPACER

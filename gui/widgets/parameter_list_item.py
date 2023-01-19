@@ -6,6 +6,7 @@ from gui.ui_widgets.ui_parameter_item import UI_ParameterListItem
 
 # Paramater Selection Widget Class
 class ParameterListItem(QFrame):
+    stateChanged = Signal(bool)
 
     def __init__(
         self,
@@ -30,11 +31,14 @@ class ParameterListItem(QFrame):
         self.ui.setup_ui(self)
         self.ui.check_box.setChecked(active)
 
+        #
+        self.ui.check_box.clicked.connect(self.emit_signal)
+
     def set_color(self, color):
         old_style = self.styleSheet()
         self.setStyleSheet(old_style + f'''
             background-color : {color};
         ''')
 
-
-    
+    def emit_signal(self):
+        self.stateChanged.emit(self.ui.check_box.isChecked())
