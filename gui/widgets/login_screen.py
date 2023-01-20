@@ -13,6 +13,9 @@ class LoginScreen(QWidget):
 	def __init__(self):
 		super().__init__()
 
+		# LOGO
+		self.logo = Logo(100, 100)
+
 		# SETUP UI
 		self.ui = UI_LoginScreen()
 		self.ui.setup_ui(self)
@@ -36,5 +39,33 @@ class LoginScreen(QWidget):
 		self.setPalette(palette)
 
 
+class Logo(QWidget):
+
+	def __init__(self, width, height):
+		super().__init__()
+
+		# properties
+		self.setFixedHeight(height)
+		self.setFixedWidth(width)
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+		super().paintEvent(event)
+
+		# Painter
+		qp = QPainter()
+		qp.begin(self)
+		qp.setRenderHint(QPainter.Antialiasing)
+		qp.setPen(Qt.NoPen)
+
+		rect = QRect(0, 0, self.width(), self.height())
+
+		# format Path
+		icon_path =  get_imagepath('ArES_logo.svg', 'gui/images/icons')
+
+		# Draw icon
+		icon = QPixmap(icon_path)
+		qp.drawPixmap(self.rect(), icon)
+
+		qp.end()
 
 		
