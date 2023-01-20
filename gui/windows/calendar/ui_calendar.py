@@ -4,6 +4,9 @@ from qt_core import *
 # IMPORT BUILT-IN MODULES
 import os
 
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import get_icon
+
 # UI CALENDAR
 class UI_CalendarWidget(object):
 
@@ -15,8 +18,8 @@ class UI_CalendarWidget(object):
 		parent.setGridVisible(False)
 
 		# icons
-		next_arrow = self.get_icon('icon_calendar_next_arrow.svg', 'gui/images/icons')
-		prev_arrow = self.get_icon('icon_calendar_prev_arrow.svg', 'gui/images/icons')
+		next_arrow = get_icon('icon_calendar_next_arrow.svg', 'gui/images/icons')
+		prev_arrow = get_icon('icon_calendar_prev_arrow.svg', 'gui/images/icons')
 	
 		# STYLESHEET
 		parent.setStyleSheet(f'''
@@ -99,10 +102,3 @@ class UI_CalendarWidget(object):
 		parent.setMaximumWidth(parent.w)
 		parent.setMinimumHeight(parent.h)
 		parent.setMinimumWidth(parent.w)
-
-
-	def get_icon(self, icon_name, folder):
-		app_path = os.path.abspath(os.getcwd())
-		icons_folder = os.path.join(app_path, folder)
-
-		return os.path.join(icons_folder, icon_name).replace('\\', '/')

@@ -12,13 +12,13 @@ from gui.ui_widgets.ui_py_station_list_view import UI_PyStationListView
 
 class PyStationListView(QListWidget):
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent, scrollbar) -> None:
         super().__init__()
 
         # Properties
         self.parent = parent
-        self.itemWidth = 390
-        self.itemHeight = 60
+        self.itemWidth = self.width()
+        self.itemHeight = self.height() // 8
         self.existing_items = 0
         self.deleted_items = []
         self.active_row = QSpinBox()
@@ -26,7 +26,12 @@ class PyStationListView(QListWidget):
         # configuring widgets
         self.active_row.setRange(-1, 1000)
         self.active_row.setValue(-1)
+        self.setVerticalScrollBar(scrollbar)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.verticalScrollBar().setSingleStep(1)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.setSelectionRectVisible(False)
 
         # animation properties
         self.delete_parallel_animation = QParallelAnimationGroup()
@@ -41,6 +46,10 @@ class PyStationListView(QListWidget):
         self.reposition_parallel_animation.finished.connect(self.delete_list_widget)
         self.verticalScrollBar().valueChanged.connect(self.scroll_bar_adjust)
         self.itemClicked.connect(self.toggle_animation)
+
+    def updateItemDimensions(self, width, height):
+        self.itemWidth = width
+        self.itemHeight = height
 
     def toggle_animation(self, WidgetItem : QListWidgetItem):
         active_row = self.active_row.value()

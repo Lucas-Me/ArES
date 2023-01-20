@@ -23,6 +23,8 @@ class UI_StationListItem(object):
                 background-color: {background_color};
                 border: none;
                 border-bottom: 2px solid;
+                border-left: 2px solid;
+                border-right: 2px solid;
                 border-color: #b7c4c8;
             }}
         ''')
