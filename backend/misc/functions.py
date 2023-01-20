@@ -5,7 +5,7 @@
 import os
 
 
-def get_icon(icon_name, folder):
+def get_imagepath(icon_name, folder):
 		app_path = os.path.abspath(os.getcwd())
 		icons_folder = os.path.join(app_path, folder)
 

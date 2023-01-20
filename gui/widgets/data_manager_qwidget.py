@@ -127,5 +127,11 @@ class DataManager(QWidget):
                     # add station into list frame
                     self.ui.monitoring_station_list.add_station_item(v)
         
+    def paintEvent(self, event: QPaintEvent) -> None:
+        # super().paintEvent(event)
 
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
 

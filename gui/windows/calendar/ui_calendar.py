@@ -5,7 +5,7 @@ from qt_core import *
 import os
 
 # IMPORT CUSTOM FUNCTIONS
-from backend.misc.functions import get_icon
+from backend.misc.functions import get_imagepath
 
 # UI CALENDAR
 class UI_CalendarWidget(object):
@@ -18,8 +18,8 @@ class UI_CalendarWidget(object):
 		parent.setGridVisible(False)
 
 		# icons
-		next_arrow = get_icon('icon_calendar_next_arrow.svg', 'gui/images/icons')
-		prev_arrow = get_icon('icon_calendar_prev_arrow.svg', 'gui/images/icons')
+		next_arrow = get_imagepath('icon_calendar_next_arrow.svg', 'gui/images/icons')
+		prev_arrow = get_imagepath('icon_calendar_prev_arrow.svg', 'gui/images/icons')
 	
 		# STYLESHEET
 		parent.setStyleSheet(f'''

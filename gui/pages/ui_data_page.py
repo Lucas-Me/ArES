@@ -8,14 +8,14 @@ from gui.widgets.parameter_list_widget import ParameterSelectionWidget
 from gui.widgets.py_date_select import PyDoubleDateEdit
 
 # IMPORT CUSTOM MODULES
-from backend.misc.functions import get_icon
+from backend.misc.functions import get_imagepath
 
 # Data Manager Page UI Class
 class UI_DataManager(object):
     
     def setup_ui(self, parent):
-        if not parent.objectName():
-            parent.setObjectName(u'data_page')
+
+        parent.setObjectName(u'data_page')
 
         # Properties
         self.font = 'Open Sans'
@@ -84,7 +84,7 @@ class UI_DataManager(object):
         self.search_bar.setFixedWidth(400)
         self.search_bar.setFixedHeight(50)
         self.search_bar.setClearButtonEnabled(True)
-        image = QPixmap(get_icon('search.svg', 'gui/images/icons'))
+        image = QPixmap(get_imagepath('search.svg', 'gui/images/icons'))
         image.scaled(QSize(50, 50), Qt.AspectRatioMode.KeepAspectRatio)
         self.search_bar.addAction(image, QLineEdit.LeadingPosition)
         self.search_bar.setPlaceholderText("Buscar...")
@@ -202,12 +202,12 @@ class UI_DataManager(object):
         )
 
         # LEFT BUTTONS ON STATION LIST
-        pixmap_clear_btn = QPixmap(get_icon('clear_button.svg', 'gui/images/icons'))
+        pixmap_clear_btn = QPixmap(get_imagepath('clear_button.svg', 'gui/images/icons'))
         icon_clear_btn = QIcon(pixmap_clear_btn)
         self.clear_items_button.setIcon(icon_clear_btn)
         self.clear_items_button.setIconSize(pixmap_clear_btn.rect().size())
 
-        pixmap_unsel_btn = QPixmap(get_icon('unselect_button.svg', 'gui/images/icons'))
+        pixmap_unsel_btn = QPixmap(get_imagepath('unselect_button.svg', 'gui/images/icons'))
         icon_unsel_btn = QIcon(pixmap_unsel_btn)
         self.clear_selection_button.setIcon(icon_unsel_btn)
         self.clear_selection_button.setIconSize(self.clear_selection_button.rect().size())

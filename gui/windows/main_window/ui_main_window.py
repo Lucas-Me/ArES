@@ -89,7 +89,7 @@ class UI_MainWindow(object):
         # CONTENT
         # //////////////////////////////////////////////////////////////////////
         self.content = QFrame()
-        self.content.setStyleSheet(f"background-color: {self.background_color}")
+        # self.content.setStyleSheet(f"background-color: {self.background_color}")
         
         # CONTENT LAYOUT
         self.content_layout = QVBoxLayout(self.content)
@@ -117,14 +117,13 @@ class UI_MainWindow(object):
        
         # Application pages
         self.pages = QStackedWidget()
-        self.pages.setStyleSheet("font-size: 12pt; color: #22280b")
         self.ui_pages = UI_StackedPages()
         self.ui_pages.setup_ui(self.pages)
         self.pages.setCurrentWidget(self.ui_pages.page_1)
 
         # Add to content layout
         self.content_layout.addWidget(self.pages)
-        self.content_layout.addWidget(self.bottom_bar)
+        # self.content_layout.addWidget(self.bottom_bar)
 
         # ADD WIDGETS TO APP
         self.main_layout.addWidget(self.left_menu)
