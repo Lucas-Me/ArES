@@ -65,6 +65,7 @@ class UI_MainWindow(object):
             'width' : 135
         }
         self.btn_1 = PyPushButton("Início", icon_path='icon_home.svg', **btn_properties)
+        self.btn_1.set_active(True)
         self.btn_2 = PyPushButton("Dados", icon_path='icon_datamanager.svg', **btn_properties)
         self.btn_3 = PyPushButton("Ajustes", icon_path = 'icon_settings.svg', **btn_properties)
 
@@ -119,7 +120,7 @@ class UI_MainWindow(object):
         self.pages = QStackedWidget()
         self.ui_pages = UI_StackedPages()
         self.ui_pages.setup_ui(self.pages)
-        self.pages.setCurrentWidget(self.ui_pages.page_1)
+        self.pages.setCurrentIndex(0)
 
         # Add to content layout
         self.content_layout.addWidget(self.pages)

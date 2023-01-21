@@ -11,7 +11,6 @@ class UI_LoginScreen(object):
         
         parent.setObjectName(u'login_page')
 		
-
         # CENTRAL LAYOUT
         self.central_layout = QVBoxLayout(parent)
 
@@ -27,8 +26,10 @@ class UI_LoginScreen(object):
 
         # UPDATES FRAME
         # //////////////////////////////////////////////////////////////////
-        self.update_frame = QFrame()
-        self.update_frame.setFixedSize(w // 2, h)
+        self.left_frame = QFrame()
+        self.left_frame.setFixedSize(w // 2, h)
+
+        self.right_frame = QStackedWidget()
 
         # LOGIN FRAME
         # //////////////////////////////////////////////////////////////////
@@ -63,6 +64,20 @@ class UI_LoginScreen(object):
 
         # spacer
         self.login_spacer = QSpacerItem(w // 2, 140, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.field_spacer = QSpacerItem(w // 2, 30, QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+        # LOGIN BUTTON
+        self.login_btn = QPushButton("Conectar")
+        self.login_btn.setFixedSize(QSize(250, 40))
+
+        # SERVER AND STATUS LABELS
+        self.host_label = QLabel()
+        self.host_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.host_label.setFixedSize(QSize(250, 20))
+
+        self.status_label = QLabel()
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.status_label.setFixedSize(QSize(250, 20))
 
         # add widgets to login layout
         self.login_frame_layout.addWidget(parent.logo)
@@ -70,7 +85,11 @@ class UI_LoginScreen(object):
         self.login_frame_layout.addWidget(self.username)
         self.login_frame_layout.addWidget(self.password)
         self.login_frame_layout.addWidget(self.remember_me)
+        self.login_frame_layout.addItem(self.field_spacer)
+        self.login_frame_layout.addWidget(self.login_btn)
         self.login_frame_layout.addItem(self.login_spacer)
+        self.login_frame_layout.addWidget(self.host_label)
+        self.login_frame_layout.addWidget(self.status_label)
         
         # alignment
         self.login_frame_layout.setAlignment(parent.logo, Qt.AlignmentFlag.AlignCenter)
@@ -78,11 +97,58 @@ class UI_LoginScreen(object):
         self.login_frame_layout.setAlignment(self.username, Qt.AlignmentFlag.AlignCenter)
         self.login_frame_layout.setAlignment(self.password, Qt.AlignmentFlag.AlignCenter)
         self.login_frame_layout.setAlignment(self.remember_me, Qt.AlignmentFlag.AlignCenter)
+        self.login_frame_layout.setAlignment(self.login_btn, Qt.AlignmentFlag.AlignCenter)
+        self.login_frame_layout.setAlignment(self.host_label, Qt.AlignmentFlag.AlignCenter)
+        self.login_frame_layout.setAlignment(self.status_label, Qt.AlignmentFlag.AlignCenter)
+
+        # WELCOME FRAME
+        # ///////////////////////////////////////////////////////////////////////
+        self.welcome_frame = QFrame()
+        self.welcome_frame.setFixedSize(w // 2, h)
+
+        self.welcome_frame_layout = QVBoxLayout(self.welcome_frame)
+        self.welcome_frame_layout.setSpacing(10)
+        self.welcome_frame_layout.setContentsMargins(0, 10, 0, 0)
+
+        # WELCOME LABEL
+        self.greetings_label = QLabel()
+        self.greetings_label.setFixedSize(QSize(250, 40))
+        self.greetings_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        # LOGGED LABEL
+        self.logged_label = QLabel()
+        self.logged_label.setFixedSize(QSize(350, 80))
+        self.logged_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        # DISCONNECT BUTTON
+        self.disconnect_btn = QPushButton("Desconectar")
+        self.disconnect_btn.setFixedSize(QSize(150, 40))
+
+        # spacers
+        self.spacer_logged = QSpacerItem(w // 2, 30, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.spacer_disconnect = QSpacerItem(w // 2, 70, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        # add to layout
+        self.welcome_frame_layout.addWidget(parent.profile_image)
+        self.welcome_frame_layout.addWidget(self.greetings_label)
+        self.welcome_frame_layout.addItem(self.spacer_logged)
+        self.welcome_frame_layout.addWidget(self.logged_label)
+        self.welcome_frame_layout.addItem(self.spacer_disconnect)
+        self.welcome_frame_layout.addWidget(self.disconnect_btn)
+      
+        # adjustin alignment
+        self.welcome_frame_layout.setAlignment(parent.profile_image, Qt.AlignmentFlag.AlignCenter)
+        self.welcome_frame_layout.setAlignment(self.greetings_label, Qt.AlignmentFlag.AlignCenter)
+        self.welcome_frame_layout.setAlignment(self.logged_label, Qt.AlignmentFlag.AlignCenter)
+        self.welcome_frame_layout.setAlignment(self.disconnect_btn, Qt.AlignmentFlag.AlignRight)
 
         # ADD FRAMES TO CONTENT LAYOUT
         # //////////////////////////////////////////////////////////////////
-        self.content_layout.addWidget(self.update_frame)
-        self.content_layout.addWidget(self.login_frame)
+        self.right_frame.addWidget(self.login_frame)
+        self.right_frame.addWidget(self.welcome_frame)
+        self.right_frame.setCurrentIndex(0)
+        self.content_layout.addWidget(self.left_frame)
+        self.content_layout.addWidget(self.right_frame)
 
         # SPACERS
         spacer = QSpacerItem(parent.width(), (parent.height() - h) // 2, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -111,42 +177,106 @@ class UI_LoginScreen(object):
         # other properties
         border_radius = 10
         
-        # style sheets
-        line_edit = f'''
-            background-color: {line_edit_bg_color};
-            color: {line_edit_color};
-            border: none;
-            border-radius: {border_radius}px;
-            font: Bold 13pt "Open Sans";
-            padding-left: 10px;
-        '''
+        # objects name
+        self.login_frame.setObjectName('login_frame')
+        self.welcome_label.setObjectName('welcome_label')
+        self.username.setObjectName('username')
+        self.password.setObjectName('password')
+        self.remember_me.setObjectName('remember_me')
+        self.login_btn.setObjectName('login_button')
+        self.host_label.setObjectName('host_label')
+        self.status_label.setObjectName('status_label')
+        #
+        self.welcome_frame.setObjectName('welcome_frame')
+        self.greetings_label.setObjectName('greetings_label')
+        self.logged_label.setObjectName("logged_label")
+        self.disconnect_btn.setObjectName("disconnect_button")
 
         # SETTING UP STYLESHEET OF OBJETS IN UI
-        self.update_frame.setStyleSheet(f'''
+        self.content_frame.setStyleSheet(f'''
+            background-color: transparent;
+        ''')
+        
+        # update frame
+        self.left_frame.setStyleSheet(f'''
             background-color: {update_color};
             border-top-left-radius: {border_radius}px;
             border-bottom-left-radius:  {border_radius}px;
         '''
         )
-        self.content_frame.setStyleSheet(f'''
-            background-color: transparent;
-        ''')
+        
+        # login frame
         self.login_frame.setStyleSheet(f'''
-            background-color: {login_color};
-            border-top-right-radius: {border_radius}px;
-            border-bottom-right-radius: {border_radius}px;
+            #login_frame {{
+                background-color: {login_color};
+                border-top-right-radius: {border_radius}px;
+                border-bottom-right-radius: {border_radius}px;
+                padding-bottom: 20px;
+            }}
+            #username, #password{{
+                background-color: {line_edit_bg_color};
+                color: {line_edit_color};
+                border: none;
+                border-radius: {border_radius}px;
+                font: Bold 13pt "Open Sans";
+                padding-left: 10px;
+            }}
+            #welcome_label {{
+                font: bold 25pt "Microsoft New Tai Lue";
+                color: {line_edit_color};
+            }}
+            #remember_me {{
+                font: bold 13pt "Microsoft New Tai Lue";
+                color: {line_edit_color};
+            }}
+            #login_button {{
+                font: bold 13pt "Microsoft New Tai Lue";
+                background-color: #1e374d;
+                color: #ffffff;
+                border-radius: {border_radius};
+            }}
+            #login_button:hover {{
+                background-color: #1c4d6e;
+            }}
+            #login_button:pressed {{
+                background-color: #52a9c7;
+            }}
+            #login_button:disabled{{
+                background-color: #8396a2;
+            }}
+            #host_label, #status_label {{
+                font: bold 13pt "Microsoft New Tai Lue";
+                background-color: transparent;
+                color: #409cc1;
+            }}
         ''')
-        self.username.setStyleSheet(line_edit)
-        self.password.setStyleSheet(line_edit)
-        self.welcome_label.setStyleSheet(f'''
-            font: bold 25pt "Microsoft New Tai Lue";
-            color: {line_edit_color};
+
+        self.welcome_frame.setStyleSheet(f'''
+            #welcome_frame {{
+                background-color: {login_color};
+                border-top-right-radius: {border_radius}px;
+                border-bottom-right-radius: {border_radius}px;
+                padding-bottom: 10px;
+            }}
+            #greetings_label {{
+                font: bold 22pt "Open Sans";
+                color: #5a043a;
+            }}
+            #logged_label {{
+                font: bold 22pt "Open Sans";
+                color: #4f67d8;
+            }}
+            #disconnect_button {{
+                background-color: none;
+                border: none;
+                font: bold 13pt "Open Sans";
+                color: #da0239;
+            }}
+            #disconnect_button:hover {{
+                color: #5a043a;
+            }}
+            #disconnect_button:pressed {{
+                color: #ff000e;
+            }}
         '''
         )
-        self.remember_me.setStyleSheet(f'''
-            font: bold 13pt "Microsoft New Tai Lue";
-            color: {line_edit_color};
-        '''
-        )
-
-

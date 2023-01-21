@@ -11,11 +11,11 @@ class UI_StackedPages(object):
             parent.setObjectName(u'app_pages')
 
         # CREATE PAGE 1
-        self.page_1 = LoginScreen()
+        self.login_page = LoginScreen(parent)
 
         # CREATE PAGE 2
-        self.page_2 = DataManager()
+        self.data_page = DataManager()
 
         # insert pages into StackedWdiget (parent)
-        parent.addWidget(self.page_1)
-        parent.addWidget(self.page_2)
+        parent.addWidget(self.login_page)
+        parent.addWidget(self.data_page)

@@ -35,8 +35,7 @@ class MainWindow(QMainWindow):
 
     def change_page(self, page : int, button : QPushButton):
         self.reset_menu_selection()
-        page_object = self.ui.pages.widget(page)
-        self.ui.pages.setCurrentWidget(page_object)
+        self.ui.pages.setCurrentIndex(page)
         button.set_active(True)
 
 if __name__ == "__main__":
