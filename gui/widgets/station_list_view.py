@@ -12,13 +12,14 @@ from gui.ui_widgets.ui_py_station_list_view import UI_PyStationListView
 
 class PyStationListView(QListWidget):
 
-    def __init__(self, parent, scrollbar) -> None:
+    def __init__(self, parent, scroll_width = 15, item_height = 50) -> None:
         super().__init__()
 
         # Properties
         self.parent = parent
-        self.itemWidth = self.width()
-        self.itemHeight = self.height() // 8
+        self.item_width = self.width() - scroll_width
+        self.item_height = item_height
+        self.scroll_width = scroll_width
         self.existing_items = 0
         self.deleted_items = []
         self.active_row = QSpinBox()
@@ -26,24 +27,18 @@ class PyStationListView(QListWidget):
         # configuring widgets
         self.active_row.setRange(-1, 1000)
         self.active_row.setValue(-1)
-        self.setVerticalScrollBar(scrollbar)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.verticalScrollBar().setSingleStep(1)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setSelectionRectVisible(False)
-
-        # animation properties
-        self.delete_parallel_animation = QParallelAnimationGroup()
-        self.reposition_parallel_animation = QParallelAnimationGroup()
 
         # Configuring UI
         self.ui = UI_PyStationListView()
         self.ui.setup_ui(self)
 
         # Signals and Slots
-        self.delete_parallel_animation.finished.connect(self.reposition_animation)
-        self.reposition_parallel_animation.finished.connect(self.delete_list_widget)
+        # self.delete_parallel_animation.finished.connect(self.reposition_animation)
+        # self.reposition_parallel_animation.finished.connect(self.delete_list_widget)
         self.verticalScrollBar().valueChanged.connect(self.scroll_bar_adjust)
         self.itemClicked.connect(self.toggle_animation)
 

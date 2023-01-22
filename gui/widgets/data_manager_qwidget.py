@@ -20,6 +20,7 @@ class DataManager(QWidget):
         # SETUP MAIN UI 
         self.ui = UI_DataManager()
         self.ui.setup_ui(self)
+        self.ui.setup_stylesheets()
         
         # PROPERTIES
         self.archives = {} # Opened station archives
@@ -27,10 +28,10 @@ class DataManager(QWidget):
         self.browse_folder = os.path.expanduser("~") # user home directory
 
         # SIGNALS AND SLOTS
-        self.ui.import_xls_btn.clicked.connect(self.browse_xls_files)
+        self.ui.xls_btn.clicked.connect(self.browse_xls_files)
         self.ui.search_bar.editingFinished.connect(self.search_station)
-        self.ui.monitoring_station_list.active_row.valueChanged.connect(self.update_parameter_viewer)
-        self.ui.parameter_list.stateChanged.connect(self.save_parameter_selection)
+        # self.ui.monitoring_station_list.active_row.valueChanged.connect(self.update_parameter_viewer)
+        # self.ui.parameter_list.stateChanged.connect(self.save_parameter_selection)
 
     def search_station(self):
         # getting text and setting properties

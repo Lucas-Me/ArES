@@ -166,7 +166,6 @@ class ClassicButton(QPushButton):
         text = "",
         height = 40, 
         width = 70,
-        text_padding = 60,
         icon_path = "",
         icon_width = 70,
         icon_allign = "left",
@@ -176,14 +175,10 @@ class ClassicButton(QPushButton):
 
         # Set default parameters
         self.setText(text)
-        self.setMinimumHeight(height)
-        self.setMaximumHeight(height)
-        self.setMinimumWidth(width)
-        self.setMaximumWidth(width)
+        self.setFixedSize(QSize(width, height))
         self.setCursor(Qt.PointingHandCursor)
 
         # Custom Paramters
-        self.text_padding = text_padding
         self.icon_path = icon_path
         self.icon_width = icon_width
         self.icon_allign = icon_allign
@@ -199,7 +194,7 @@ class ClassicButton(QPushButton):
         qp.setRenderHint(QPainter.Antialiasing)
         qp.setPen(Qt.NoPen)
 
-        rect = QRect(0, 0, self.icon_width, self.height())
+        rect = QRect(0, 0, self.width(), self.height())
         
         self.draw_icon(qp, self.icon_path, rect, self.icon_color)
         
@@ -212,14 +207,20 @@ class ClassicButton(QPushButton):
         path = os.path.join(app_path, folder)
         icon_path = os.path.normpath(os.path.join(path, image))
 
-        # Draw icon
+        # icon dimensions
         icon = QPixmap(icon_path)
+        icon_dx, icon_dy = icon.width(), icon.height()
+        dx = self.icon_width
+        dy = dx * icon_dy // icon_dx
+        x = 10 # margin
+        y = (rect.height() - dy) // 2 # margins
+
+        # scale icon ot dimensions
+        icon = icon.scaled(dx, dy, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                
+        # draw icon
         painter = QPainter(icon)
         painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
         painter.fillRect(icon.rect(), color)
-        qp.drawPixmap(
-            (rect.width() - icon.width()) / 2,
-            (rect.height() - icon.height()) / 2,
-            icon
-        )
+        qp.drawPixmap(x, y, dx, dy, icon)
         painter.end()

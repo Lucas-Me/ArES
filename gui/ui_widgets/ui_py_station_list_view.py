@@ -4,18 +4,13 @@ from qt_core import *
 class UI_PyStationListView(object):
     def setup_ui(self, parent):
         if not parent.objectName():
-            parent.setObjectName("StationListViewer")
-
-        # setting properties
-        self.scroll_bar_color = '#2874bf'
-        self.background_color = '#4969b2'
-        self.secondary_color = "#ffffff"
+            parent.setObjectName("station_manager")
 
         # SETTING STYLESHEET
         parent.setStyleSheet(f'''
             QListWidget {{
                 border: none;
-                background-color: {self.background_color};
+                background-color: transparent;
             }}
             QListWidget::item {{
                 border: none;
