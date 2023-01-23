@@ -17,6 +17,7 @@ class StationListItem(QFrame):
         # PROPERTIES
         self.marked = CountMark(width=30, height=30)
         self._signature = station_object.metadata['signature']
+        self._enterprise = station_object.metadata['enterprise']
         self._name = station_object.metadata['name']
         self._type = station_object.metadata['type']
         self._xls = self._signature[:3] == 'xls'

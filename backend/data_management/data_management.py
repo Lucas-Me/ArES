@@ -46,7 +46,6 @@ class StationData(object):
 
    def setup_availability(self):
       self.availability = [self.dates.min(), self.dates.max()]
-      print(self.availability)
 
 
 class XlsStationData(StationData):
@@ -95,10 +94,11 @@ class SQlStationData(StationData):
       themes = {}
       for var in self.parameters:
          unit = find_unit(var)
-         theme =  'Meteorologia'
+         print(unit)
+         theme = 'Meteorologia'
          if unit in qar_units:
             theme = 'Qualidade do Ar'
 
          themes[var] = theme
 
-      self.parameter_theme = theme
+      self.parameter_theme = themes

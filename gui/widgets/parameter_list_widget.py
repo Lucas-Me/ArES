@@ -14,12 +14,16 @@ from gui.widgets.parameter_list_item import ParameterListItem
 class ParameterSelectionWidget(QListWidget):
     stateChanged = Signal(list)
 
-    def __init__(self):
+    def __init__(self, width, item_height):
         super().__init__()
 
+        # configuration
+        self.setMinimumWidth(width)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         # parameters
-        self.item_width = 600
-        self.item_height = 60
+        self.item_width = self.width()
+        self.item_height = item_height
         self.nrows = 0  
         self.signature = ""
 
@@ -38,8 +42,6 @@ class ParameterSelectionWidget(QListWidget):
         ListItem = QListWidgetItem()
         parameter_frame = ParameterListItem(name, theme, unit, self.item_width, self.item_height, selected)
         n = copy(self.count())
-        if n % 2 == 1:
-            parameter_frame.set_color('#e3eeea')
         
         parameter_frame.stateChanged.connect(
             lambda x: self.emit_signal(x, n)

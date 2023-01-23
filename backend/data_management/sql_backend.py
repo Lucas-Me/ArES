@@ -1,10 +1,6 @@
-# IMPORT BUILT-IN MODULES
-import copy
-import warnings
-
 # IMPORT MODULES
 import numpy as np
-from mysql.connector import connect, errorcode, Error, MySQLConnection
+from mysql.connector import Error, MySQLConnection
 
 
 class SqlConnection(object):

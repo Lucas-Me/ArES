@@ -34,8 +34,8 @@ class DataManager(QWidget):
         # SIGNALS AND SLOTS
         self.ui.xls_btn.clicked.connect(self.browse_xls_files)
         self.ui.search_bar.editingFinished.connect(self.search_station)
-        self.ui.station_manager_list.active_row.valueChanged.connect(self.update_parameter_viewer)
-        # self.ui.parameter_list.stateChanged.connect(self.save_parameter_selection)
+        self.ui.station_manager_list.itemPressed.connect(self.update_parameter_viewer)
+        self.ui.parameter_viewer.stateChanged.connect(self.save_parameter_selection)
 
     def search_station(self):
         # getting text and setting properties
@@ -68,27 +68,28 @@ class DataManager(QWidget):
 
     def save_parameter_selection(self, args):
         state, row = args
-        signature = self.ui.parameter_list.get_signature()
+        signature = self.ui.parameter_viewer.get_signature()
         if signature in self.selected_parameters:
             self.selected_parameters[signature][row] = state
 
-        ms = self.ui.monitoring_station_list
-        active_row = ms.active_row.value()
+        ms = self.ui.station_manager_list
+        active_widget = ms.activeWidget
         active_parameters = sum(self.selected_parameters[signature])
-        ms.itemWidget(ms.item(active_row)).marked.updateCount(active_parameters)
+        ms.itemWidget(active_widget).marked.updateCount(active_parameters)
 
     def update_parameter_viewer(self):
         # Save selection of parameters before deleting
-        self.ui.parameter_list.reset_settings()
+        self.ui.parameter_viewer.reset_settings()
 
         # geting new selected row
-        monitoring_list  = self.ui.monitoring_station_list
-        active_row = monitoring_list.active_row.value()
+        monitoring_list  = self.ui.station_manager_list
+        active_widget = self.ui.station_manager_list.activeWidget
 
         # tests
-        if active_row >= 0:
+        if not active_widget is None:
             # get station object
-            station = monitoring_list.itemWidget(monitoring_list.item(active_row)).station_object
+            sig = monitoring_list.itemWidget(active_widget)._signature
+            station = self.archives[sig]
             if station.metadata['source'] == 'xls':
                 var_list = station.parameters.keys()
             else:
@@ -98,8 +99,8 @@ class DataManager(QWidget):
             i = 0
             for k in var_list:
                 unit = find_unit(k)
-                name = k[:k.find(unit)]
-                self.ui.parameter_list.add_item(
+                name = k[:k.find(unit) - 1]
+                self.ui.parameter_viewer.add_item(
                     name = name,
                     theme = station.parameter_theme[k],
                     unit = unit,
@@ -107,7 +108,15 @@ class DataManager(QWidget):
                 )
                 i += 1
 
-            self.ui.parameter_list.set_signature(station.metadata['signature'])
+            # texts on top of list
+            fmt =  '%d %b %Y'
+            start = station.availability[0].item().strftime(fmt)
+            end = station.availability[1].item().strftime(fmt)
+            self.ui.information_station.setText(station.metadata['name'])
+            self.ui.information_dates.setText(f'{start} - {end}')
+
+            # finishing
+            self.ui.parameter_viewer.set_signature(station.metadata['signature'])
 
     def browse_xls_files(self):
         file_paths, x = QFileDialog.getOpenFileNames(

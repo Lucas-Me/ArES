@@ -30,15 +30,28 @@ class ParameterListItem(QFrame):
         self.ui = UI_ParameterListItem()
         self.ui.setup_ui(self)
         self.ui.check_box.setChecked(active)
+        self.set_color()
 
         #
         self.ui.check_box.clicked.connect(self.emit_signal)
 
-    def set_color(self, color):
-        old_style = self.styleSheet()
-        self.setStyleSheet(old_style + f'''
-            background-color : {color};
-        ''')
+    def set_color(self):
+        style = self.styleSheet()
+        if self.ui.check_box.isChecked():
+            self.setStyleSheet(style + f'''
+            #parameter_item {{
+                background-color : #d0e6ea;
+                border-bottom: 1px solid;
+                border-color: #000000;
+            }}''')
+        else:
+            self.setStyleSheet(style + f'''
+            #parameter_item {{
+                background-color : #ffffff;
+                border-bottom: 1px solid;
+                border-color: #000000;
+            }}''')
 
     def emit_signal(self):
+        self.set_color()
         self.stateChanged.emit(self.ui.check_box.isChecked())

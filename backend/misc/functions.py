@@ -21,4 +21,4 @@ def find_unit(parameter_name):
 	rchar = reverse[last_char]
 	start = parameter_name.rfind(rchar)
 
-	return parameter_name[start:-1]
+	return parameter_name[start + 1:-1]

@@ -9,6 +9,8 @@ from gui.widgets.py_date_select import PyDoubleDateEdit
 
 # IMPORT CUSTOM MODULES
 from backend.misc.functions import get_imagepath
+from gui.widgets.py_radio_button import PyRadioButton
+
 
 # Data Manager Page UI Class
 class UI_DataManager(object):
@@ -128,6 +130,82 @@ class UI_DataManager(object):
         # add to station layout
         self.station_view_layout.addWidget(self.search_bar)
         self.station_view_layout.addWidget(self.station_manager_list)
+        
+        # PARAMETER VIEW LIST AND RELATED
+        # ///////////////////////////////////////////////////////////////////
+        # main frme
+        self.parameter_view_frame = QFrame()
+        self.parameter_view_frame.setObjectName("parameter_view_frame")
+        self.parameter_view_frame.setMinimumWidth(w)
+        self.parameter_view_frame.setMinimumHeight(h)
+        #
+        self.parameter_view_layout = QVBoxLayout(self.parameter_view_frame)
+        self.parameter_view_layout.setSpacing(30)
+        self.parameter_view_layout.setContentsMargins(0, 0, 0, 0)
+
+        # SELECTED STATION INFORMATION WIDGET
+        self.information_view_frame = QFrame()
+        self.information_view_frame.setObjectName("information_view")
+        self.information_view_frame.setMinimumWidth(w)
+        self.information_view_frame.setFixedHeight(50)
+        #
+        self.information_view_layout = QHBoxLayout(self.information_view_frame)
+        self.information_view_layout.setSpacing(0)
+        self.information_view_layout.setContentsMargins(15, 0, 15, 0)
+        #
+        self.information_station = QLabel()
+        self.information_station.setObjectName('station_label')
+        self.information_station.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.information_station.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        #
+        self.information_dates = QLabel()
+        self.information_dates.setObjectName('dates_label')
+        self.information_dates.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.information_dates.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        #
+        self.information_view_layout.addWidget(self.information_station)
+        self.information_view_layout.addWidget(self.information_dates)
+
+        # PARAMETER VIEWER
+        self.parameter_viewer_layout = QVBoxLayout()
+        self.parameter_viewer_layout.setContentsMargins(0,0, 0,0)
+        self.parameter_viewer_layout.setSpacing(0)
+
+        # HEADER
+        self.viewer_header = QFrame()
+        self.viewer_header.setObjectName('header')
+        self.viewer_header.setMinimumWidth(w)
+        self.viewer_header.setFixedHeight(50)
+        #
+        self.header_layout = QHBoxLayout(self.viewer_header)
+        self.header_layout.setContentsMargins(10, 0, 10, 0)
+        self.header_layout.setSpacing(10)
+        #
+        self.check_box = PyRadioButton(40, 40)
+        self.name_label = QLabel("Parâmetro")
+        self.theme_label = QLabel("Temática")
+        self.unit_label = QLabel("Unidade")
+        self.name_label.setObjectName("name")
+        self.theme_label.setObjectName("theme")
+        self.unit_label.setObjectName("unit")
+        self.theme_label.setFixedWidth(150)
+        self.unit_label.setFixedWidth(100)
+        #
+        self.header_layout.addWidget(self.check_box)
+        self.header_layout.addWidget(self.name_label)
+        self.header_layout.addWidget(self.theme_label)
+        self.header_layout.addWidget(self.unit_label)
+
+        self.parameter_viewer = ParameterSelectionWidget(width=w, item_height=50)
+        self.parameter_viewer.setMinimumHeight(h - 200)
+        self.parameter_viewer.setObjectName('parameter_viewer')
+
+        self.parameter_viewer_layout.addWidget(self.viewer_header)
+        self.parameter_viewer_layout.addWidget(self.parameter_viewer)
+
+        # add to paramater view layout
+        self.parameter_view_layout.addWidget(self.information_view_frame)
+        self.parameter_view_layout.addLayout(self.parameter_viewer_layout)
 
         # MAIN LAYOUT CONFIGURATION
         # ////////////////////////////////////////////////////////////////////
@@ -136,69 +214,9 @@ class UI_DataManager(object):
         spacer = QSpacerItem(1050, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.main_layout.addWidget(self.tool_bar_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
         self.main_layout.addWidget(self.station_view_frame, 1, 0, 1, 1)
+        self.main_layout.addWidget(self.parameter_view_frame, 1, 1, 1, 1)
         self.main_layout.addItem(spacer, 2, 0, 1, 2)
-
-        # # MONITORING STATION LIST 
        
-
-        # # PARAMETER LIST
-        # self.parameter_list = ParameterSelectionWidget()
-        # self.parameter_list.setMinimumHeight(self.frame_height - 10)
-        # self.parameter_list.setMinimumWidth(600)
-
-        # # ADD LISTS TO MAIN TABLE LAYOUT
-        # self.monitoring_station_layout.addWidget(self.search_bar, 0, 0, 1, 2)
-        # self.monitoring_station_layout.addWidget(self.clear_items_button, 1, 0, 1, 1)
-        # self.monitoring_station_layout.addWidget(self.clear_selection_button, 2, 0, 1, 1)
-        # self.monitoring_station_layout.addWidget(self.scroll_bar_stations, 3, 0, 1, 1)
-        # self.monitoring_station_layout.addWidget(self.monitoring_station_list, 1, 1, 3, 1)
-        # self.table_item_layout.addLayout(self.monitoring_station_layout)
-        # self.table_item_layout.addWidget(self.parameter_list)
-               
-        # # BOTTOM WIDGETS
-        # # //////////////////////////////////////////////////////////////////////
-        # self.bottom_spacer = QSpacerItem(20, 30, QSizePolicy.Minimum, QSizePolicy.Minimum)
-
-        # # BUTTON LAYOUT
-        # self.bottom_btn_layout = QHBoxLayout()
-
-        # # CREATING IMPORT XLS BUTTON
-        # self.import_xls_btn = ClassicButton(
-        #     text = "Importar\nXLS",
-        #     icon_path = "icon_xls_file.svg",
-        #     height = 90,
-        #     width = 175,
-        #     icon_width = 80,
-        #     icon_allign = 'left',
-        #     icon_color="#398e3d"
-        # )
-        
-        # # CREATING IMPORT DATABASE BUTTON
-        # self.import_sql_btn = ClassicButton(
-        #     text = "Importar\nSQL",
-        #     icon_path = "icon_sql.svg",
-        #     height = 90,
-        #     width = 175,
-        #     icon_width = 80,
-        #     icon_color = '#232234'
-        # )
-        
-        # # CREATNG SPACER
-        # self.spacer_import = QSpacerItem(830, 60, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        # # ADDING BUTTONS TO LAYOUT
-        # self.bottom_btn_layout.addWidget(self.import_xls_btn)
-        # self.bottom_btn_layout.addWidget(self.import_sql_btn)
-        # self.bottom_btn_layout.addItem(self.spacer_import)
-
-        # # ADD TO MAIN LAYOUT
-        # self.main_layout.addLayout(self.top_layout)
-        # self.main_layout.addLayout(self.title_label_layout)
-        # self.main_layout.addWidget(self.table_item_frame)
-        # self.main_layout.addItem(self.bottom_spacer) 
-        # self.main_layout.addLayout(self.bottom_btn_layout)
-
-        # self.setup_stylesheets()
 
     def setup_stylesheets(self):
         # Properties
@@ -256,6 +274,32 @@ class UI_DataManager(object):
             }}
         '''
         )
+
+        # SETTING UP PARAMETER LIST view STYLESHEET
+        self.parameter_view_frame.setStyleSheet(f'''
+            #parameter_view_frame {{
+                background-color: transparent;
+                border: none;
+            }}
+            #information_view{{
+                background-color: #ffffff;
+                border: none;
+                border-radius: {border_radius};
+            }}
+            #station_label, #dates_label{{
+                font: 500 14pt {font};
+                color: #32495e; 
+            }}
+            #header {{
+                background-color: #dcdcdc;
+                border: 1px solid;
+                border-color: #000000;
+            }}
+            #name, #theme, #unit {{
+                font: 500 13pt {font};
+                color: #32495e;
+            }}
+        ''')
 
         # # SCROLL BAR
         # # //////////////////////////////////////////////////////////////////

@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="30.236219"
-   height="30.236219"
-   viewBox="0 0 7.9999997 7.9999997"
+   width="30.999998"
+   height="30.999998"
+   viewBox="0 0 8.2020828 8.2020828"
    version="1.1"
    id="svg17111"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="11.930303"
-     inkscape:cx="-6.2446025"
-     inkscape:cy="7.4599949"
+     inkscape:cx="-10.14224"
+     inkscape:cy="10.393701"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -39,13 +39,13 @@
      inkscape:label="Camada 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-91.342834,-59.718295)">
+     transform="translate(-90.213564,-58.943865)">
     <rect
-       style="fill:none;fill-opacity:1;stroke:#4f5959;stroke-width:0.909685;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       id="rect28565-5-5"
-       width="7.0903149"
-       height="7.0903149"
-       x="91.797676"
-       y="60.173138" />
+       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#6c8194;stroke-width:0.264583;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect541"
+       width="7.9375"
+       height="7.9375"
+       x="90.345856"
+       y="59.076157" />
   </g>
 </svg>
