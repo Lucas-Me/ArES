@@ -260,11 +260,11 @@ class UI_LoginScreen(object):
             }}
             #greetings_label {{
                 font: bold 22pt "Open Sans";
-                color: #5a043a;
+                color: #409cc1;
             }}
             #logged_label {{
                 font: bold 22pt "Open Sans";
-                color: #4f67d8;
+                color: {line_edit_color};
             }}
             #disconnect_button {{
                 background-color: none;

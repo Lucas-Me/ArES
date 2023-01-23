@@ -20,6 +20,8 @@ class SqlConnection(object):
 		self.station_names = [] # nome estacao
 		self.table_names = [] # table_name no sql
 		self.table_vars = {} # key = nome estacao, value = [variaveis presentes, campoN]
+		self.table_vars_columns = {}
+		self.dates = {} # dictionary with dates from every station available
 
 		# CONFIGURATION
 		self.configureHost(host, db)
@@ -57,10 +59,12 @@ class SqlConnection(object):
 		self.cnx.close()
 
 		# reseta tudo
-		self.estacao_empresas = [] # empresa estacao
-		self.estacao_nomes = [] # nome estacao
+		self.station_enterprises = [] # empresa estacao
+		self.station_names = [] # nome estacao
 		self.table_names = [] # table_name no sql
 		self.table_vars = {}
+		self.table_vars_columns = {}
+		self.dates = {} # dictionary with dates from every station available
 		self.connected = False
 		return None
 
@@ -83,6 +87,8 @@ class SqlConnection(object):
 		# assume que:
 		#     linha 1 -> string empresa responsavel
 		#     linha 2 -> string nome da estacao
+		#     Linha 3 -> temática de cada variavel
+		#     linha 5 -> vazia
 		#     linha 4 -> string das variaveis
 		#     linha 6 -> string de unidades ou flags
 		nomes = [''] * N
@@ -139,19 +145,29 @@ class SqlConnection(object):
 					variaveis.append(basename + " " + surname)
 					campos.append(col + j*2 + 1)
 			
-			self.table_vars[nomes[i]] = [variaveis, campos]
+			self.table_vars[nomes[i]] = variaveis
+			self.table_vars_columns[nomes[i]] = campos
 
-			# verifica se ha outra linha a ser lida e fecha o cursor
-			while True:
-				try:
-					cursor.close()
-					break
-				except:
-					cursor.fetchone()
+			# verifica se ha outra linha a ser lida
+			cursor.fetchall()
+
+			# Extract first 24 date
+			query = (f"SELECT Campo1 FROM `{table_names[i]}` LIMIT 10")
+			cursor.execute(query)
+			dates = cursor.fetchall()
+
+			# extract most recent date
+			query = (f"SELECT max(Campo1) FROM `{table_names[i]}`")
+			cursor.execute(query)
+			dates = dates + cursor.fetchall()
+			self.dates[nomes[i]] = np.array(dates, dtype= 'datetime64')
+
+			# fecha o cursor
+			cursor.close()
 
 		self.table_names = table_names
-		self.estacao_empresas = empresas
-		self.estacao_nomes = nomes
+		self.station_enterprises = empresas
+		self.station_names = nomes
 		return None
 
 	# def extrair_estacao(self, nome : str):

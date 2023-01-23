@@ -52,6 +52,7 @@ class LoginScreen(QWidget):
 			# concetion suceeded
 			# change the page on the frame
 			self.changePage(self.sql.cnx.is_connected())
+			self.sql.atualizar_inventario() # update database invenctory
 			pass
 
 		elif code == 1045:

@@ -248,6 +248,7 @@ class UI_DataManager(object):
         self.station_view_frame.setStyleSheet(f'''
             #search_bar {{
                 font: 500 14pt {font};
+                color: {font_color};
                 background-color: #ffffff;
                 border-radius: {border_radius};
                 border: none;

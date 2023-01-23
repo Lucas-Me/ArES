@@ -27,6 +27,9 @@ class MainWindow(QMainWindow):
         # open page 2
         self.ui.btn_2.clicked.connect(lambda: self.change_page(page = 1, button = self.ui.btn_2))
 
+        # SQL request
+        self.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.updateDatabaseSQL)
+
         # EXIBE A APLICAÇÃO
         self.show()
 
@@ -38,6 +41,14 @@ class MainWindow(QMainWindow):
         self.reset_menu_selection()
         self.ui.pages.setCurrentIndex(page)
         button.set_active(True)
+
+    def updateDatabaseSQL(self):
+        server = self.ui.ui_pages.login_page.sql
+        if not server.get_status(): # if not connected
+            return None
+    
+        # browser sql files
+        self.ui.ui_pages.data_page.browse_sql(server)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -1,28 +1,22 @@
 # IMPORT MODULES
 import numpy as np
 
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import find_unit
 
-class StationData():
+class StationData(object):
    '''
    Classe responsável por guardar as informações das estações de monitoramento 
    importadas de um arquivo .xls'''
    def __init__(self, *args, **kwargs)  -> None:
 
       # SETTING UP PROPERTIES
-      self.parameters = {} # dicionario cuja chave é uma tupla (array devalor, array de flag)
-      self.parameter_theme = {}
       self.dates = np.array([], dtype = 'datetime64')
       self.shape = (0, 0) # 2 dimensoes -> (dates, parameters)
       self.metadata = {'enterprise' : kwargs.get('enterprise', '')} # demais informacoes sobre a estacao
+      self.availability = [] # periodo de dados disponivel
 
       self.set_name(kwargs.get('name', ''))
-
-   def add_parameter(self, name : str, parameter : tuple[np.array, np.array], theme : str):
-      if parameter[0].shape[0] == self.dates.shape[0]:
-         self.parameters[name] = parameter
-         self.parameter_theme[name] = theme
-
-      self.shape = (self.dates.shape[0], len(self.parameters)) # atualizando shape
 
    def set_enterprise(self, name : str):
       self.metadata['enterprise'] = name
@@ -50,6 +44,10 @@ class StationData():
       
       self.metadata['name'] = name
 
+   def setup_availability(self):
+      self.availability = [self.dates.min(), self.dates.max()]
+      print(self.availability)
+
 
 class XlsStationData(StationData):
 
@@ -57,9 +55,50 @@ class XlsStationData(StationData):
       super().__init__(*args, **kwargs)
 
       # Properties
+      self.parameters = {} # dicionario cuja chave é uma tupla (array devalor, array de flag)
+      self.parameter_theme = {}
       self.dates = kwargs.get('dates') # array com a data correspondente a cada valor / flag
       self.metadata['source']  = 'xls' # de onde foi importado
       self.metadata['signature'] = 'xls-' + self.metadata['name']
 
       # Setting up 
       self.setup_frequency()
+      self.setup_availability()
+
+   def add_parameter(self, name : str, parameter : tuple[np.array, np.array], theme : str):
+      if parameter[0].shape[0] == self.dates.shape[0]:
+         self.parameters[name] = parameter
+         self.parameter_theme[name] = theme
+
+      self.shape = (self.dates.shape[0], len(self.parameters)) # atualizando shape
+
+
+class SQlStationData(StationData):
+
+   def __init__(self, *args, **kwargs):
+      super().__init__(*args, **kwargs)
+
+      # Properties
+      self.dates = kwargs.get('dates')
+      self.metadata['source'] = 'sql'
+      self.metadata['signature'] = 'sql-' + self.metadata['name']
+      self.parameters_cols = kwargs.get('parameters_cols')
+      self.parameters = kwargs.get('parameters')
+      #
+      self.parameter_theme = self.setup_theme(['ppm', 'ppb', 'µg/m3', 'µg/m³'])
+
+      # setting uo
+      self.setup_frequency()
+      self.setup_availability()
+   
+   def setup_theme(self, qar_units):
+      themes = {}
+      for var in self.parameters:
+         unit = find_unit(var)
+         theme =  'Meteorologia'
+         if unit in qar_units:
+            theme = 'Qualidade do Ar'
+
+         themes[var] = theme
+
+      self.parameter_theme = theme

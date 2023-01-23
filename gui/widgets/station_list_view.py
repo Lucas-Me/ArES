@@ -36,7 +36,7 @@ class PyStationListView(QListWidget):
         self.setSelectionRectVisible(False)
         self.setItemAlignment(Qt.AlignmentFlag.AlignLeft)
         self.setContentsMargins(0, 0, 0, 0)
-
+        
         # Configuring UI
         self.ui = UI_PyStationListView()
         self.ui.setup_ui(self)

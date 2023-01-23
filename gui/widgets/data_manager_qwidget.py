@@ -10,6 +10,10 @@ from gui.pages.ui_data_page import UI_DataManager
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.functions import xls_reader
+from backend.data_management.data_management import SQlStationData
+
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import find_unit
 
 # Data Manager Page Class
 class DataManager(QWidget):
@@ -30,7 +34,7 @@ class DataManager(QWidget):
         # SIGNALS AND SLOTS
         self.ui.xls_btn.clicked.connect(self.browse_xls_files)
         self.ui.search_bar.editingFinished.connect(self.search_station)
-        # self.ui.monitoring_station_list.active_row.valueChanged.connect(self.update_parameter_viewer)
+        self.ui.station_manager_list.active_row.valueChanged.connect(self.update_parameter_viewer)
         # self.ui.parameter_list.stateChanged.connect(self.save_parameter_selection)
 
     def search_station(self):
@@ -83,18 +87,26 @@ class DataManager(QWidget):
 
         # tests
         if active_row >= 0:
+            # get station object
             station = monitoring_list.itemWidget(monitoring_list.item(active_row)).station_object
+            if station.metadata['source'] == 'xls':
+                var_list = station.parameters.keys()
+            else:
+                var_list = station.parameters
+            
+            # adding to paramter view widget
             i = 0
-            for k in station.parameters.keys():
-                splitted = re.split('[][]', k)
+            for k in var_list:
+                unit = find_unit(k)
+                name = k[:k.find(unit)]
                 self.ui.parameter_list.add_item(
-                    name = splitted[0],
+                    name = name,
                     theme = station.parameter_theme[k],
-                    unit = splitted[1],
+                    unit = unit,
                     selected = self.selected_parameters[station.metadata['signature']][i]
                 )
                 i += 1
-            
+
             self.ui.parameter_list.set_signature(station.metadata['signature'])
 
     def browse_xls_files(self):
@@ -127,7 +139,26 @@ class DataManager(QWidget):
 
                     # add station into list frame
                     self.ui.station_manager_list.add_station_item(v)
-        
+    
+    def browse_sql(self, server):
+        for i, name in enumerate(server.station_names):
+            _object = SQlStationData(
+                name = name,
+                enterprise = server.station_enterprises[i],
+                dates = server.dates[name],
+                parameters = server.table_vars[name],
+                parameters_cols = server.table_vars_columns[name]
+            )
+            
+            k = _object.metadata['signature']
+            self.archives[k] = _object
+
+            # add parameters list
+            self.selected_parameters[k] = [0] * len(_object.parameters)
+
+            # add station into lsit frame
+            self.ui.station_manager_list.add_station_item(_object)
+
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent(event)
 
