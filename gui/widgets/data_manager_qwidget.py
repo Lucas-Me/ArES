@@ -126,7 +126,7 @@ class DataManager(QWidget):
                     self.selected_parameters[k] = [0] * len(v.parameters)
 
                     # add station into list frame
-                    self.ui.monitoring_station_list.add_station_item(v)
+                    self.ui.station_manager_list.add_station_item(v)
         
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent(event)

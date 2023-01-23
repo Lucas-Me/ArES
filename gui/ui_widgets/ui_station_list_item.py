@@ -1,134 +1,104 @@
 # IMPORT QT CORE
 from qt_core import *
 
-# Import Custom Widget
-from gui.widgets.station_close_button import StaticButton
-
 class UI_StationListItem(object):
-    def setup_ui(
-        self,
-        parent : QFrame,
-        background_color : str = "#ffffff",
-    ):
+    def setup_ui(self, parent : QFrame):
         if not parent.objectName():
             parent.setObjectName(u'station_item')
         
-        # SET INITIAL PARAMETERS
-        parent.setMinimumHeight(parent.item_height)
-        parent.setMaximumHeight(parent.item_height)
-        parent.setMaximumWidth(parent.item_width)
-        parent.setMinimumWidth(parent.item_width)
-        parent.setStyleSheet(f'''
-            QFrame {{
-                background-color: {background_color};
-                border: none;
-                border-bottom: 2px solid;
-                border-left: 2px solid;
-                border-right: 2px solid;
-                border-color: #b7c4c8;
-            }}
-        ''')
-
         # CREATE MAIN LAYOUT
-        self.item_main_layout = QHBoxLayout(parent)
-        self.item_main_layout.setContentsMargins(0, 0, 0, 0)
-        self.item_main_layout.setSpacing(0)
+        self.main_layout = QHBoxLayout(parent)
+        self.main_layout.setContentsMargins(0, 0, 10, 0)
+        self.main_layout.setSpacing(10)
         
-        # CREATE CONTENT LAYOUT
+        # SIGNATURE FRAME
+        # /////////////////////////////////////////////////
+        self.signature_frame = QFrame()
+        self.signature_frame.setObjectName('signature')
+        self.signature_frame.setFixedWidth(10)
+        
+        # LABELS
+        # //////////////////////////////////////////////////
+        self.station_name = QLabel(parent._name)
+        self.station_name.setObjectName('name_label')
+        self.station_name.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.station_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        #
+        self.station_type = QLabel(parent._type)
+        self.station_type.setObjectName('type_label')
+        self.station_type.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.station_type.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # label layout
+        self.label_layout = QVBoxLayout()
+        self.label_layout.setContentsMargins(0, 5, 0, 5)
+        self.label_layout.setSpacing(5)
+
+        # add to label layout
+        self.label_layout.addWidget(self.station_name)
+        self.label_layout.addWidget(self.station_type)
+
+        # CONFIGURING MAIN LAYOUT
         # ///////////////////////////////////////////////////////////////////
+        self.main_layout.addWidget(self.signature_frame)
+        self.main_layout.addLayout(self.label_layout)
+        self.main_layout.addWidget(parent.marked)
 
-        # CREATE CONTENT LAYOUT
-        self.item_content_layout = QVBoxLayout()
-
-        # ADD TOP SPACER TO CONTENT LAYOUT
-        self.item_content_top_spacer = QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.item_content_layout.addItem(self.item_content_top_spacer)
-
-        # FORMATING LABEL STYLE
-        fontStyleSheet = """
-            font-family : 'Microsoft New Tai Lue';
-            padding-left : 10px;
-            border: none;
-        """
-        for qlabel in [
-            parent.station_name_label,
-            parent.station_type_label,
-            parent.station_enterprise_label
-        ]:
-            qlabel.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-            qlabel.setMinimumHeight(20)
-            qlabel.setMaximumHeight(20)
-            f = qlabel.font()
-            f.setHintingPreference(QFont.HintingPreference.PreferNoHinting);
-            qlabel.setFont(f)
-
-        parent.station_name_label.setStyleSheet(fontStyleSheet + '''
-            font-weight: bold;
-            font-size: 12pt;
-        ''')
-
-        parent.station_type_label.setStyleSheet(fontStyleSheet + '''
-            font-size: 9pt;
-        ''')
-        parent.station_type_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-
-        parent.station_enterprise_label.setStyleSheet(fontStyleSheet + '''
-            font-size: 9pt;
-        ''')
-
-        # CREATING FIRST STATION INFO LINE
-        self.station_label_layout = QHBoxLayout()
-
-        # CREATING SPACER
-        self.station_label_spacer = QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        # ADD LABELS TO STATION LABEL LAYOUT CONTENT LAYOUT
-        self.station_label_layout.addWidget(parent.station_name_label)
-        self.station_label_layout.addItem(self.station_label_spacer)
-        self.station_label_layout.addWidget(parent.station_type_label)
-        
-        # ADD LABELS TO CONTENT LAYOUT
-        self.item_content_layout.addLayout(self.station_label_layout)
-        self.item_content_layout.addWidget(parent.station_enterprise_label)
-
-        # ADD BOTTOM SPACER TO CONTENT LAYOUT
-        self.item_content_bottom_spacer = QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.item_content_layout.addItem(self.item_content_bottom_spacer)
-
-        # ADD CONTENT LAYOUT TO MAIN LAYOUT
-        self.item_main_layout.addLayout(self.item_content_layout)
-
-        # CREATE RIGHT BAR
+        # CREATE RIGHT BAR IF OBJECT CAME FROM AN XLS FILE
         # ///////////////////////////////////////////////////////////////////
+        if parent.is_xls():
+            # CREATING DELETE BUTTON
+            self.delete_btn = QPushButton("X")
+            self.delete_btn.setObjectName('delete_btn')
+            self.delete_btn.setFixedSize(20, 20)
 
-        # RIGHT BAR LAYOUT
-        self.right_bar_layout = QVBoxLayout()
-        # self.right_bar_layout.setContentsMargins(0, 0, 0, 0)
-        self.right_bar_layout.setSpacing(0)
+            self.main_layout.addWidget(self.delete_btn)
+            self.main_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        # CREATING CLOSE BUTTON
-        self.close_button = StaticButton(
-            btn_height=30,
-            btn_width=30,
-            icon_path="icon_close_button.svg",
-            btn_color= 'transparent',
-            btn_hover= 'transparent',
-            btn_pressed= 'transparent',
-            icon_width=30,
-            icon_height=30)
-
-        # RIGHT BAR SPACER
-        self.right_bar_spacer = QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        # ADD TO RIGHT BAR LAYOUT
-        self.right_bar_layout.addWidget(self.close_button)
-        self.right_bar_layout.addItem(self.right_bar_spacer)
-        self.right_bar_layout.addWidget(parent.marked)
-        
-        # INSERT RIGHT BAR TO MAIN LAYOUT
-        self.item_main_layout.addLayout(self.right_bar_layout)
-
-        
+        # SETTING UP STYLESHEET
+        self.station_name.updateGeometry()
+        self.station_type.updateGeometry()
+        self.setup_stylesheet(parent)
+    
+    def setup_stylesheet(self, parent):
+        font = 'sans-serif'
+        font_color_1 = '#32495e'
+        font_color_2 = '#6c8194'
+        frame_color = '#398e3d' if parent.is_xls() else '#008299'
+        parent.setStyleSheet(f'''
+            #station_item {{
+                background-color: #ffffff;
+            }}
+            #signature {{
+                background-color: {frame_color};
+                border: none;
+            }}
+            #name_label {{
+                background-color: transparent;
+                border: none;
+                color: {font_color_1};
+                font: 500 13pt {font};
+            }}
+            #type_label {{
+                background-color: transparent;
+                border: none;
+                color: {font_color_2};
+                font: 500 13pt {font};
+            }}
+            #delete_btn {{
+                background-color: #6c8194;
+                color: #ffffff;
+                font: bold 12pt {font};
+                border: none;
+            }}
+            #delete_btn:hover {{
+                background-color: #f53c00;
+            }}
+            #delete_btn:pressed{{
+                background-color: #c43305;
+            }}
+        '''
+        )
 
 
 

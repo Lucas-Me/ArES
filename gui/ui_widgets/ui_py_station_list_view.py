@@ -8,7 +8,7 @@ class UI_PyStationListView(object):
 
         # SETTING STYLESHEET
         parent.setStyleSheet(f'''
-            QListWidget {{
+            #station_manager {{
                 border: none;
                 background-color: transparent;
             }}

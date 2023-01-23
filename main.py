@@ -13,6 +13,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
 
+        # window title
         self.setWindowTitle("ArES")
 
         # SETUP MAIN WINDOW

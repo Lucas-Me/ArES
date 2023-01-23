@@ -21,7 +21,8 @@ class UI_DataManager(object):
 
         # MAIN LAYOUT
         self.main_layout = QGridLayout(parent)
-        self.main_layout.setSpacing(20)
+        self.main_layout.setVerticalSpacing(20)
+        self.main_layout.setHorizontalSpacing(20)
         self.main_layout.setContentsMargins(30, 30, 30, 0)
 
         # TOOL BAR
@@ -99,11 +100,11 @@ class UI_DataManager(object):
         # STATION VIEW LIST AND RELATED
         # ////////////////////////////////////////////////////////////////////
         # main frame
-        w, h = (330, 700) 
+        w, h = (330, 500) 
         self.station_view_frame = QFrame()
         self.station_view_frame.setObjectName("station_view")
         self.station_view_frame.setFixedWidth(w)
-        # self.station_view_frame.setMinimumHeight(h)
+        self.station_view_frame.setFixedHeight(h)
         #
         self.station_view_layout = QVBoxLayout(self.station_view_frame)
         self.station_view_layout.setSpacing(0)
@@ -111,6 +112,7 @@ class UI_DataManager(object):
 
         # SEARCH BAR
         self.search_bar = QLineEdit()
+        self.search_bar.setObjectName('search_bar')
         self.search_bar.setFixedWidth(w)
         self.search_bar.setFixedHeight(50)
         self.search_bar.setClearButtonEnabled(True)
@@ -120,66 +122,21 @@ class UI_DataManager(object):
         self.search_bar.setPlaceholderText("Buscar...")
 
         # STATION MANAGER lIST
-        self.station_manager_list = PyStationListView(parent = parent)
-        self.station_manager_list.setFixedWidth(w) 
+        self.station_manager_list = PyStationListView(parent = parent, width = w)
         self.station_manager_list.setSpacing(5) # spacing between list items
+
+        # add to station layout
+        self.station_view_layout.addWidget(self.search_bar)
+        self.station_view_layout.addWidget(self.station_manager_list)
 
         # MAIN LAYOUT CONFIGURATION
         # ////////////////////////////////////////////////////////////////////
-        self.main_layout.addWidget(self.tool_bar_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
-
-        # # Insert objects into top layout
-        # self.top_layout.addItem(self.top_spacer)
-        # self.top_layout.addWidget(self.date_edit)
-        # self.top_layout.addItem(self.top_spacer)
-
-        # # LABELS ON TOP OF TABLES
-        # # station label
-        # self.table_station_label = QLabel("Estações de monitoramento")
-        # self.table_station_label.setFixedWidth(400)
-        # self.table_station_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         
-        # # parmeter label
-        # self.parameter_list_label = QLabel("Parâmetros monitorados")
-        # self.parameter_list_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
-        # # Labels Layout
-        # self.title_label_layout = QHBoxLayout()
-        # self.title_label_layout.addWidget(self.table_station_label)
-        # self.title_label_layout.addWidget(self.parameter_list_label)
-
-        # # MAIN TABLE LIST DESIGN
-        # # /////////////////////////////////////////////////////////////////////
-        # self.table_item_frame = QFrame()
-        # self.table_item_frame.setMinimumHeight(self.frame_height)
-
-        # # MAIN TABLE LAYOUT
-        # self.table_item_layout = QHBoxLayout(self.table_item_frame)
-        # self.table_item_layout.setContentsMargins(0, 0, 0, 0)
-        # self.table_item_layout.setSpacing(0)
-
-        # # STATION LAYOUT
-        # self.monitoring_station_layout = QGridLayout()
-        # self.monitoring_station_layout.setContentsMargins(0, 0, 0, 0)
-        # self.monitoring_station_layout.setSpacing(0)
-        # dimh, dimw = (self.frame_height, 400)
-
-        # # SEARCH BAR
-       
-
-        # # LefT BAR MONITORING STATION
-        # left_width = 30
-        # btn_height = 30
-        # self.clear_items_button = QPushButton()
-        # self.clear_selection_button = QPushButton()
-        # self.clear_items_button.setFixedSize(left_width, btn_height)
-        # self.clear_selection_button.setFixedSize(left_width, btn_height)
-        # #
-        # self.scroll_bar_stations = QScrollBar(Qt.Orientation.Vertical)
-        # self.scroll_bar_stations.setFixedWidth(left_width)
-        # self.scroll_bar_stations.setMinimumHeight(
-        #     dimh - self.search_bar.height() - self.clear_items_button.height() * 2
-        # )
+        # bottom spacer
+        spacer = QSpacerItem(1050, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.main_layout.addWidget(self.tool_bar_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
+        self.main_layout.addWidget(self.station_view_frame, 1, 0, 1, 1)
+        self.main_layout.addItem(spacer, 2, 0, 1, 2)
 
         # # MONITORING STATION LIST 
        
@@ -264,7 +221,7 @@ class UI_DataManager(object):
                 background-color: transparent;
                 border-radius: 0px;
                 border: none;
-                font: 12pt {font};
+                font: 500 13pt {font};
                 color: {font_color};
                 padding-left: 25px;
             }}
@@ -274,7 +231,7 @@ class UI_DataManager(object):
                 border: none;
                 border-left: 1px solid;
                 border-color: {border_color};
-                font: 12pt {font};
+                font: 500 13pt {font};
                 color: {font_color};
                 padding-left: 25px;
             }}
@@ -287,83 +244,17 @@ class UI_DataManager(object):
         '''
         )
 
-        # self.button_style = f'''
-        #         QPushButton {{
-        #             color : {self.menu_color};
-        #             background-color: {self.inner_frame_color};
-        #             font: 700 12pt {self.font};
-        #             text-align: middle;
-        #             vertical-align: middle;
-        #             border: solid;
-        #             border-width: 2px;
-        #             padding-left: 65px;
-        #             border-radius: 0px;
-        #             border-color: {self.border_color};
-        #             }}
-        #         QPushButton:hover {{
-        #             border-color: #3f40f0;
-        #             }}
-        #         '''
-        
-        # # XLS and SQL buttons
-        # self.import_xls_btn.setStyleSheet(
-        #     self.import_xls_btn.styleSheet() + self.button_style
-        # )
-        # self.import_sql_btn.setStyleSheet(
-        #     self.import_sql_btn.styleSheet() + self.button_style
-        # )
-
-        # # LEFT BUTTONS ON STATION LIST
-        # pixmap_clear_btn = QPixmap(get_imagepath('clear_button.svg', 'gui/images/icons'))
-        # icon_clear_btn = QIcon(pixmap_clear_btn)
-        # self.clear_items_button.setIcon(icon_clear_btn)
-        # self.clear_items_button.setIconSize(pixmap_clear_btn.rect().size())
-
-        # pixmap_unsel_btn = QPixmap(get_imagepath('unselect_button.svg', 'gui/images/icons'))
-        # icon_unsel_btn = QIcon(pixmap_unsel_btn)
-        # self.clear_selection_button.setIcon(icon_unsel_btn)
-        # self.clear_selection_button.setIconSize(self.clear_selection_button.rect().size())
-
-        # left_btn_style = f'''
-        #     QPushButton {{
-        #         border: none;
-        #     }}
-        #     QPushButton:hover{{
-        #         background-color: {self.border_color};
-        #     }}
-        # '''
-        # self.clear_items_button.setStyleSheet(left_btn_style)
-        # self.clear_selection_button.setStyleSheet(left_btn_style)
-
-        # # SEARCH BAR STYLE
-        # # /////////////////////////////////////////////////////////////////
-        # self.search_bar.setStyleSheet(f'''
-        #     border: none;
-        #     border-right: 2px solid;
-        #     border-bottom: 2px solid;
-        #     border-color: #b7c4c8;
-        #     color: #506369;
-        #     font: 700 12pt {self.font};
-        # ''')
-
-        # # Frame styling
-        # # /////////////////////////////////////////////////////////////////
-        # self.table_item_frame.setStyleSheet(f'''
-        #     background-color: {self.inner_frame_color};
-        #     border-style: solid;
-        #     border-width: 2px;
-        #     border-color: {self.border_color};
-        #     ''')
-
-        # # STATION AND PARAMETERS LIST LABELS
-        # # /////////////////////////////////////////////////////////////////
-        # self.parameter_list_label.setStyleSheet(f'''
-        #     font : bold 15pt "{self.font}";
-        # ''')
-        # self.table_station_label.setStyleSheet(f'''
-        #     font : bold 15pt "{self.font}";
-        #     padding-left : 10px;
-        # ''')
+        # SETTING UP MANAGER STATION LIST STYLESHEET
+        self.station_view_frame.setStyleSheet(f'''
+            #search_bar {{
+                font: 500 14pt {font};
+                background-color: #ffffff;
+                border-radius: {border_radius};
+                border: none;
+                padding-left: 10px;
+            }}
+        '''
+        )
 
         # # SCROLL BAR
         # # //////////////////////////////////////////////////////////////////
