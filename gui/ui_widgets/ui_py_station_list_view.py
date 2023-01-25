@@ -6,9 +6,6 @@ class UI_PyStationListView(object):
         if not parent.objectName():
             parent.setObjectName("station_manager")
         # colors
-        track = '#6c8194'
-        thumb = '#ffffff'
-        slide = '#dcdcdc'
 
         # SETTING STYLESHEET
         parent.setStyleSheet(f'''

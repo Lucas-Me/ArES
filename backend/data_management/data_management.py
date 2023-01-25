@@ -84,21 +84,21 @@ class SQlStationData(StationData):
       self.parameters_cols = kwargs.get('parameters_cols')
       self.parameters = kwargs.get('parameters')
       #
-      self.parameter_theme = self.setup_theme(['ppm', 'ppb', 'µg/m3', 'µg/m³'])
+      self.parameter_theme = {}
 
       # setting uo
       self.setup_frequency()
       self.setup_availability()
-   
+      self.setup_theme(['ppm', 'ppb', 'µg/m3', 'µg/m³'])
+
    def setup_theme(self, qar_units):
       themes = {}
       for var in self.parameters:
          unit = find_unit(var)
-         print(unit)
          theme = 'Meteorologia'
          if unit in qar_units:
             theme = 'Qualidade do Ar'
 
          themes[var] = theme
 
-      self.parameter_theme = themes
+      self.parameter_theme = themes.copy()

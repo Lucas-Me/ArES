@@ -23,6 +23,8 @@ class UI_DataManager(object):
 
         # MAIN LAYOUT
         self.main_layout = QGridLayout(parent)
+        self.main_layout.setColumnStretch(0, 2)
+        self.main_layout.setColumnStretch(1, 5)
         self.main_layout.setVerticalSpacing(20)
         self.main_layout.setHorizontalSpacing(20)
         self.main_layout.setContentsMargins(30, 30, 30, 0)
@@ -103,10 +105,10 @@ class UI_DataManager(object):
         # ////////////////////////////////////////////////////////////////////
         # main frame
         w, h = (330, 500) 
-        self.station_view_frame = QFrame()
+        self.station_view_frame = StationViewFrame()
         self.station_view_frame.setObjectName("station_view")
-        self.station_view_frame.setFixedWidth(w)
-        self.station_view_frame.setFixedHeight(h)
+        self.station_view_frame.setMinimumWidth(w)
+        self.station_view_frame.setMinimumHeight(h)
         #
         self.station_view_layout = QVBoxLayout(self.station_view_frame)
         self.station_view_layout.setSpacing(0)
@@ -115,7 +117,7 @@ class UI_DataManager(object):
         # SEARCH BAR
         self.search_bar = QLineEdit()
         self.search_bar.setObjectName('search_bar')
-        self.search_bar.setFixedWidth(w)
+        self.search_bar.setMinimumWidth(w)
         self.search_bar.setFixedHeight(50)
         self.search_bar.setClearButtonEnabled(True)
         image = QPixmap(get_imagepath('search.svg', 'gui/images/icons'))
@@ -126,6 +128,7 @@ class UI_DataManager(object):
         # STATION MANAGER lIST
         self.station_manager_list = PyStationListView(parent = parent, width = w)
         self.station_manager_list.setSpacing(5) # spacing between list items
+        self.station_view_frame.setup(self.station_manager_list)
 
         # add to station layout
         self.station_view_layout.addWidget(self.search_bar)
@@ -136,7 +139,7 @@ class UI_DataManager(object):
         # main frme
         self.parameter_view_frame = QFrame()
         self.parameter_view_frame.setObjectName("parameter_view_frame")
-        self.parameter_view_frame.setMinimumWidth(w)
+        self.parameter_view_frame.setMinimumWidth(640)
         self.parameter_view_frame.setMinimumHeight(h)
         #
         self.parameter_view_layout = QVBoxLayout(self.parameter_view_frame)
@@ -211,7 +214,7 @@ class UI_DataManager(object):
         # ////////////////////////////////////////////////////////////////////
         
         # bottom spacer
-        spacer = QSpacerItem(1050, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        spacer = QSpacerItem(1050, 20, QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.main_layout.addWidget(self.tool_bar_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
         self.main_layout.addWidget(self.station_view_frame, 1, 0, 1, 1)
         self.main_layout.addWidget(self.parameter_view_frame, 1, 1, 1, 1)
@@ -302,38 +305,27 @@ class UI_DataManager(object):
             }}
         ''')
 
-        # # SCROLL BAR
-        # # //////////////////////////////////////////////////////////////////
-        # track = "#b7c4c8"
-        # thumb = '#ffffff'
-        # slide = self.menu_color
-        # self.scroll_bar_stations.setStyleSheet(f'''
-        #      QScrollBar:vertical {{              
-        #         border: none;
-        #         border-top: 1px solid;
-        #         border-color: {track};
-        #         background: {thumb};
-        #         width: 10px;
-        #         margin: 10px 5px 10px 5px;
-        #     }}
-        #     QScrollBar::handle:vertical {{
-        #         background: {slide};
-        #         min-height: 0px;
-        #         width: 5px;
-        #         margin: 0px 0px 0px 0px;
-        #     }}
-        #     QScrollBar::add-line:vertical, QScrollBar::add-page:vertical {{
-        #         background: {track};
-        #         height: 0px;
-        #         subcontrol-position: bottom;
-        #         subcontrol-origin: margin;
-        #     }}
-        #     QScrollBar::sub-line:vertical, QScrollBar::sub-page:vertical {{
-        #         background: {track};
-        #         height: 0 px;
-        #         subcontrol-position: top;
-        #         subcontrol-origin: margin;
-        #     }}
-        # '''
-        # )
-    
+class StationViewFrame(QFrame):
+    '''
+    SOLUÇÃO PROVISÓRIA PARA O REDIMENSIONAMENTO DOS ITENS NO QLISTWIDGET "STATION VIEW LIST"
+    '''
+
+    def __init__(self):
+        super().__init__()
+
+        self.widget = None
+
+    def setup(self, widget):
+        self.widget = widget
+
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        if not self.widget is None:
+            item_width = self.width() - self.widget.scroll_width
+            for i in range(self.widget.count()):
+                item = self.widget.item(i)
+                item_widget = self.widget.itemWidget(item)
+                #
+                item_widget.setFixedWidth(item_width)
+                item.setSizeHint(QSize(item_width, self.widget.item_height))
+
+        super().resizeEvent(e)

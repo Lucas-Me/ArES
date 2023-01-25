@@ -1,5 +1,6 @@
 # IMPORTS
-import os, gc, time
+import gc
+
 
 # IMPORT QT CORE
 from qt_core import *
@@ -17,11 +18,10 @@ class PyStationListView(QListWidget):
         super().__init__()
 
         # configuration
-        self.setFixedWidth(width)
+        self.setMinimumWidth(width)
 
         # Properties
         self.parent = parent
-        self.item_width = self.width() - scroll_width
         self.item_height = item_height
         self.scroll_width = scroll_width
         self.enterprise_category = {} # key =  enterprise name, value = corresponding widget
@@ -90,14 +90,15 @@ class PyStationListView(QListWidget):
         header = EnterpriseHeaderItem(
             label = name,
             total = 0, 
-            width = self.item_width,
+            width = self.width() - self.scroll_width,
             height= height
         )
 
         # CREATING LISTWIDGETITEM AND ITS PROPERTIES
         list_widget_header = QListWidgetItem()
-        SizeHint = QSize(self.item_width, height)
-        list_widget_header.setSizeHint(SizeHint)
+        list_widget_header.setSizeHint(
+            QSize(self.width() - self.scroll_width, height)
+        )
 
         # SIGNALS AND SLOTS
         header.emptyHeader.connect(
@@ -124,16 +125,17 @@ class PyStationListView(QListWidget):
         # creating StationListItem 
         station_item = StationListItem(
             station_object = station_object,
-            item_width = self.item_width,
-            item_height = self.item_height
+            item_width = self.width() - self.scroll_width,
+            item_height = self.item_height,
             )
 
          # Creating QListWidgetItem
         list_widget_item = QListWidgetItem()
 
         # Setting Size Hint to ListWidgetItem
-        SizeHint = QSize(self.item_width, self.item_height)
-        list_widget_item.setSizeHint(SizeHint)
+        list_widget_item.setSizeHint(
+            QSize(self.width() - self.scroll_width, self.item_height)
+        )
 
         # ADDING ITEM TO LISTWIDGET
         self.insertItem(row_to_insert, list_widget_item)

@@ -78,34 +78,59 @@ class DataManager(QWidget):
         self.selected_parameters.clear()
 
     def search_station(self):
-        ''' REFAZER '''
+        '''
+        to do: melhorar esse algoritmo de busca
+        '''
         # getting text and setting properties
         text = self.ui.search_bar.text()
         text = text.rstrip().strip()
         chars = len(text)
 
         # tests
-        station_list = self.ui.monitoring_station_list
+        station_list = self.ui.station_manager_list
         rows = station_list.count()
 
-        # reset filter
-        for row in range(rows):
-            station_list.item(row).setHidden(False)
-        
         if chars > 0:
-            keywords = re.split("\s+", text.lower())
-            for row in range(rows):
-                widget = station_list.item(row)
-                item = station_list.itemWidget(widget)
-                name = re.split('\s+', item.station_name_label.text().lower())
-                enterprise = re.split('\s+', item.station_enterprise_label.text().lower())
-                condition = False
-                for kw in keywords:
-                    condition1 = condition or any(map(lambda element: kw in element, name))
-                    condition2 = any(map(lambda element: kw in element, enterprise))
-                    condition = condition1 or condition2
+            prop = text[0] == '@'
+            keywords = re.split('\s+', text[prop:].lower())
 
-                widget.setHidden(not condition)
+            for row in range(rows):
+                item = station_list.item(row)
+                item_widget = station_list.itemWidget(item)
+                item.setHidden(True) # assume que todos estejam escondidos
+                if item_widget.objectName() == 'item_header' and prop:
+                    # search by enterprise
+                    sample = re.split('\s+', item_widget.label.lower())
+                    
+                    tests = []
+                    for kw in keywords:
+                        tests.append(any(map(lambda element: kw in element, sample)))
+
+                    condition = any(tests)
+                    item.setHidden(not condition)
+
+                elif prop:
+                    item.setHidden(not condition)
+
+                elif item_widget.objectName() == 'item_header':
+                    continue
+
+                else: # search by name
+                    sample = re.split('\s+', item_widget._name.lower())
+                    tests = []
+                    for kw in keywords:
+                        tests.append(any(map(lambda element: kw in element, sample)))
+
+                    condition = any(tests)
+
+                    if condition:
+                        self.ui.station_manager_list.enterprise_category[item_widget._enterprise].setHidden(False)
+                    item.setHidden(not condition)
+
+        else:
+            # reset filter
+            for row in range(rows):
+                station_list.item(row).setHidden(False)
 
     def update_tristate_button(self, active, total):
         if active == 0:

@@ -23,7 +23,7 @@ class StationListItem(QFrame):
         self._xls = self._signature[:3] == 'xls'
 
         # CONFIGURATION
-        self.setFixedSize(QSize(item_width, item_height))
+        self.setFixedSize(item_width, item_height)
 
         # SETUP UI
         self.ui = UI_StationListItem()
