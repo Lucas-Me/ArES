@@ -36,8 +36,49 @@ class DataManager(QWidget):
         self.ui.search_bar.editingFinished.connect(self.search_station)
         self.ui.station_manager_list.itemPressed.connect(self.update_parameter_viewer)
         self.ui.parameter_viewer.stateChanged.connect(self.save_parameter_selection)
+        self.ui.clear_btn.clicked.connect(self.clear_station_manager)
+        self.ui.clear_sel_btn.clicked.connect(self.clear_selections)
+        self.ui.check_box.checked.connect(self.check_parameters)
+        self.ui.check_box.unchecked.connect(self.uncheck_parameters)
+
+    def check_parameters(self):
+        parameter_viewer = self.ui.parameter_viewer
+
+        # loop thourgh each list item:
+        for i in range(parameter_viewer.count()):
+            item_widget = parameter_viewer.itemWidget(parameter_viewer.item(i))
+            if item_widget.ui.check_box.isChecked():
+                continue
+
+            item_widget.ui.check_box.setChecked(True)
+
+    def uncheck_parameters(self):
+        parameter_viewer = self.ui.parameter_viewer
+
+        # loop thourgh each list item:
+        for i in range(parameter_viewer.count()):
+            item_widget = parameter_viewer.itemWidget(parameter_viewer.item(i))
+            if not item_widget.ui.check_box.isChecked():
+                continue
+            
+            item_widget.ui.check_box.setChecked(False)
+
+    def clear_selections(self):
+        for k, v in self.selected_parameters.items():
+            if sum(v) > 0:
+                self.selected_parameters[k] = [0] * len(v)
+
+        self.ui.station_manager_list.clear_selections()
+        self.uncheck_parameters()
+
+    def clear_station_manager(self):
+        self.ui.station_manager_list.clean_objects()
+        #
+        self.archives.clear()
+        self.selected_parameters.clear()
 
     def search_station(self):
+        ''' REFAZER '''
         # getting text and setting properties
         text = self.ui.search_bar.text()
         text = text.rstrip().strip()
@@ -66,6 +107,14 @@ class DataManager(QWidget):
 
                 widget.setHidden(not condition)
 
+    def update_tristate_button(self, active, total):
+        if active == 0:
+            self.ui.check_box.setCheckState(Qt.CheckState.Unchecked)
+        elif active == total:
+            self.ui.check_box.setCheckState(Qt.CheckState.Checked)
+        else:
+            self.ui.check_box.setCheckState(Qt.CheckState.PartiallyChecked)
+
     def save_parameter_selection(self, args):
         state, row = args
         signature = self.ui.parameter_viewer.get_signature()
@@ -76,6 +125,9 @@ class DataManager(QWidget):
         active_widget = ms.activeWidget
         active_parameters = sum(self.selected_parameters[signature])
         ms.itemWidget(active_widget).marked.updateCount(active_parameters)
+        
+        # update tristate box
+        self.update_tristate_button(active_parameters, len(self.selected_parameters[signature]))
 
     def update_parameter_viewer(self):
         # Save selection of parameters before deleting
@@ -95,6 +147,9 @@ class DataManager(QWidget):
             else:
                 var_list = station.parameters
             
+            # get parameters options
+            options = self.selected_parameters[station.metadata['signature']]
+
             # adding to paramter view widget
             i = 0
             for k in var_list:
@@ -104,7 +159,7 @@ class DataManager(QWidget):
                     name = name,
                     theme = station.parameter_theme[k],
                     unit = unit,
-                    selected = self.selected_parameters[station.metadata['signature']][i]
+                    selected = options[i]
                 )
                 i += 1
 
@@ -117,6 +172,10 @@ class DataManager(QWidget):
 
             # finishing
             self.ui.parameter_viewer.set_signature(station.metadata['signature'])
+            self.ui.check_box.setCheckable(True)
+
+            # toggle tristate button on header
+            self.update_tristate_button(sum(options), len(options))
 
     def browse_xls_files(self):
         file_paths, x = QFileDialog.getOpenFileNames(

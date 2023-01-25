@@ -21,7 +21,7 @@ class LoginScreen(QWidget):
 		self.profile_image = Logo(100, 100, image = 'profile.svg')
 
 		# SETUP CONNECTION
-		self.sql = SqlConnection("PC-INV109399", 'banco_gear')
+		self.sql = SqlConnection("PC-INV109399", 'banco_gear') # CONFIGURACOES 
 
 		# SETUP UI
 		self.ui = UI_LoginScreen()
@@ -60,6 +60,9 @@ class LoginScreen(QWidget):
 			self.borderCredentials(borders = True)
 			pass
 		
+		elif code == 2003:
+			pass
+			
 		else:
 			print("Nunca vi esse erro na minha vida ")
 			print(f'Erro {code}')

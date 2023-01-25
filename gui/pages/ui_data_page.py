@@ -9,7 +9,7 @@ from gui.widgets.py_date_select import PyDoubleDateEdit
 
 # IMPORT CUSTOM MODULES
 from backend.misc.functions import get_imagepath
-from gui.widgets.py_radio_button import PyRadioButton
+from gui.widgets.py_radio_button import PyCheckButton
 
 
 # Data Manager Page UI Class
@@ -181,7 +181,7 @@ class UI_DataManager(object):
         self.header_layout.setContentsMargins(10, 0, 10, 0)
         self.header_layout.setSpacing(10)
         #
-        self.check_box = PyRadioButton(40, 40)
+        self.check_box = PyCheckButton(40, 40)
         self.name_label = QLabel("Parâmetro")
         self.theme_label = QLabel("Temática")
         self.unit_label = QLabel("Unidade")
@@ -292,8 +292,9 @@ class UI_DataManager(object):
             }}
             #header {{
                 background-color: #dcdcdc;
-                border: 1px solid;
-                border-color: #000000;
+                border: 0.5px solid;
+                border-color: #333333;
+                border-bottom: none;
             }}
             #name, #theme, #unit {{
                 font: 500 13pt {font};

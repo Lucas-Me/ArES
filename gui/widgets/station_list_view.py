@@ -5,7 +5,7 @@ import os, gc, time
 from qt_core import *
 
 # IMPORT CUSTOM MODULES
-from gui.widgets.station_list_item import StationListItem
+from gui.widgets.station_list_item import StationListItem, EnterpriseHeaderItem
 
 # IMPORT UI MODULES
 from gui.ui_widgets.ui_py_station_list_view import UI_PyStationListView
@@ -24,8 +24,7 @@ class PyStationListView(QListWidget):
         self.item_width = self.width() - scroll_width
         self.item_height = item_height
         self.scroll_width = scroll_width
-        self.existing_items = 0
-        self.deleted_items = []
+        self.enterprise_category = {} # key =  enterprise name, value = corresponding widget
         self.activeWidget = None
         
         # configuring widgets
@@ -35,6 +34,7 @@ class PyStationListView(QListWidget):
         self.setItemAlignment(Qt.AlignmentFlag.AlignLeft)
         self.setContentsMargins(0, 0, 0, 0)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setSortingEnabled(False)
         
         # Configuring UI
         self.ui = UI_PyStationListView()
@@ -43,28 +43,83 @@ class PyStationListView(QListWidget):
         # Signals and Slots
         self.itemClicked.connect(self.toggle_highlight)
 
+    def organize_items(self):
+        '''
+        Essa funcao deve ser chamada toda vez que um objeto for adicionado ou removido
+        da lista.
+        '''
+        pass
+
     def toggle_highlight(self, WidgetItem : QListWidgetItem):
-        station_item = self.itemWidget(WidgetItem)
+        # getting item QFrame from ListWidgetItem
+        item = self.itemWidget(WidgetItem)
+
+        # Checking if it is a header
+        if self.itemWidget(WidgetItem).objectName() == 'item_header':
+            return None
 
         # Check if already selected
         if self.activeWidget != WidgetItem:
             if not self.activeWidget is None:
                 self.itemWidget(self.activeWidget).change_color('#ffffff')
         
-            station_item.change_color('#d0e6ea', highlight = True)
+            item.change_color('#d0e6ea', highlight = True)
             self.update_active_widget(WidgetItem)
 
     def update_active_widget(self, widget):
         self.activeWidget = widget
+        if self.activeWidget is None:
+            self.parent.ui.check_box.setCheckable(False)
+            self.parent.ui.check_box.setCheckState(Qt.CheckState.Unchecked)
+
         self.itemPressed.emit()
 
-    def add_station_item(self, station_object):
-        # Creating QListWidgetItem and adding it to List
-        list_widget_item = QListWidgetItem(self)
-        self.addItem(list_widget_item)
+    def clear_selections(self):
+        # clear selection count on every widget
+        for i in range(self.count()):
+            item = self.item(i)
+            item_widget = self.itemWidget(item)
+            if item_widget.objectName() == 'item_header':
+                continue
 
-        # test
-        is_xls = station_object.metadata['signature'][:3] == 'xls'
+            item_widget.marked.updateCount(0)
+
+    def add_header(self, name):
+        # CREATING HEADER OBJECT
+        height = 30
+        header = EnterpriseHeaderItem(
+            label = name,
+            total = 0, 
+            width = self.item_width,
+            height= height
+        )
+
+        # CREATING LISTWIDGETITEM AND ITS PROPERTIES
+        list_widget_header = QListWidgetItem()
+        SizeHint = QSize(self.item_width, height)
+        list_widget_header.setSizeHint(SizeHint)
+
+        # SIGNALS AND SLOTS
+        header.emptyHeader.connect(
+            lambda: self.remove_header(list_widget_header)
+            )
+
+        # adding into list
+        self.addItem(list_widget_header)
+        self.setItemWidget(list_widget_header, header)
+        self.enterprise_category[name] = list_widget_header
+
+    def add_station_item(self, station_object):
+        # checking if theres already an existing header
+        enterprise = station_object.metadata['enterprise']
+        if enterprise not in self.enterprise_category:
+            self.add_header(enterprise)
+
+        # getting the row number to insert
+        header = self.enterprise_category[enterprise]
+        header_item = self.itemWidget(header)
+        n = header_item.count()
+        row_to_insert = self.row(header) + n + 1
 
         # creating StationListItem 
         station_item = StationListItem(
@@ -73,29 +128,30 @@ class PyStationListView(QListWidget):
             item_height = self.item_height
             )
 
+         # Creating QListWidgetItem
+        list_widget_item = QListWidgetItem()
+
         # Setting Size Hint to ListWidgetItem
         SizeHint = QSize(self.item_width, self.item_height)
         list_widget_item.setSizeHint(SizeHint)
 
-        # Setting StationListItem to QListWidgetItem
+        # ADDING ITEM TO LISTWIDGET
+        self.insertItem(row_to_insert, list_widget_item)
         self.setItemWidget(list_widget_item, station_item)
 
         # SIGNALS AND SLOTS
+        is_xls = station_item._signature[:3] == 'xls'
         if is_xls:
             station_item.ui.delete_btn.clicked.connect(
                 lambda x: self.remove_item(list_widget_item)
                 )
         
-        # update private variable
-        self.updateExistingItems(1)
+        # updating header count
+        header_item.setCount(n + 1)
 
-    def updateExistingItems(self, value):
-        self.existing_items = self.existing_items + value
-        
     def remove_item(self, ListWidgetItem : QListWidgetItem):
         # getting Item Widget from ListWidgetItem
         station_item = self.itemWidget(ListWidgetItem)
-        row = self.row(ListWidgetItem)
 
         # reseting active row if needed
         if ListWidgetItem == self.activeWidget:
@@ -105,20 +161,43 @@ class PyStationListView(QListWidget):
         del self.parent.selected_parameters[station_item._signature]
         del self.parent.archives[station_item._signature]
 
-        self.deleted_items.append(row)
-        self.updateExistingItems(-1)
-        self.delete_list_widget()
+        #  header properties
+        header = self.enterprise_category[station_item._enterprise]
+        header_item = self.itemWidget(header)
+        header_item.setCount(header_item.count() - 1)
 
-    def delete_list_widget(self):
-        # Removing ListWidgetItem from listWidget
-        for row in self.deleted_items:
-            ListWidgetItem = self.takeItem(row)
-            self.removeItemWidget(ListWidgetItem)
+        # removing from list
+        self.removeItemWidget(ListWidgetItem)
+        self.takeItem(self.row(ListWidgetItem))
 
-            # Deleting ListWidgetItem
-            del ListWidgetItem
-        
-        # cleaning
-        self.deleted_items = []
+        # Deleting ListWidgetItem
+        del ListWidgetItem
+
         gc.collect() # Junk collector
+
+
+    def remove_header(self, header : QListWidgetItem):
+        item = self.itemWidget(header)
+
+        # changing properties
+        del self.enterprise_category[item.label]
+
+        # removing from list
+        self.removeItemWidget(header)
+        self.takeItem(self.row(header))
         
+        # deleting QLIstWidgetItem
+        del header
+
+    def clean_objects(self):
+        '''
+        This function cleans all the objects/items in the Station List View (QListWidget)
+        '''
+        self.clear()
+        
+        # resetting properties
+        self.activeWidget = None
+        self.enterprise_category.clear()
+
+        # junk collector
+        gc.collect()

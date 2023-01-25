@@ -33,7 +33,7 @@ class ParameterListItem(QFrame):
         self.set_color()
 
         #
-        self.ui.check_box.clicked.connect(self.emit_signal)
+        self.ui.check_box.toggled.connect(self.emit_signal)
 
     def set_color(self):
         style = self.styleSheet()
@@ -41,15 +41,15 @@ class ParameterListItem(QFrame):
             self.setStyleSheet(style + f'''
             #parameter_item {{
                 background-color : #d0e6ea;
-                border-bottom: 1px solid;
-                border-color: #000000;
+                border-bottom: 0.5px solid;
+                border-color: #333333;
             }}''')
         else:
             self.setStyleSheet(style + f'''
             #parameter_item {{
                 background-color : #ffffff;
-                border-bottom: 1px solid;
-                border-color: #000000;
+                border-bottom: 0.5px solid;
+                border-color: #333333;
             }}''')
 
     def emit_signal(self):

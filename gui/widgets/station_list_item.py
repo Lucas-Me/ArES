@@ -102,3 +102,42 @@ class CountMark(QWidget):
             # Finishing Painter
             painter.endNativePainting()
             painter.restore()
+
+
+class EnterpriseHeaderItem(QFrame):
+    emptyHeader = Signal()
+
+    def __init__(self, label : str, total : int, width, height):
+        super().__init__()
+
+        # OBJECTS
+        self.total_items = total
+        self.label = label
+
+        # LAYOUT AND SIZE
+        self.setFixedHeight(height)
+        self.setMinimumWidth(width)
+        #
+        self.central_layout = QHBoxLayout(self)
+        self.central_layout.addWidget(QLabel(self.label))
+        self.central_layout.setSpacing(0)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+
+        # STYLE SHEET
+        self.setStyleSheet('''
+            background-color: transparent;
+            font: 600 11pt 'sans-serif';
+            color: #32495e; 
+        '''
+        )
+        self.setObjectName('item_header')
+
+    def count(self):
+        return self.total_items
+
+    def setCount(self, total):
+        self.total_items = total
+
+        # emit signal if empty
+        if self.total_items == 0:
+            self.emptyHeader.emit()

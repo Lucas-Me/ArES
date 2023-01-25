@@ -11,12 +11,12 @@ class UI_ParameterSelection(object):
         self.scroll_bar_color = '#2874bf'
         parent.setStyleSheet(f'''
             QListWidget {{
-                border: 1px solid;
-                border-color: #000000;
+                border: 0.5px solid;
+                border-color: #333333;
             }}
             QListWidget::item {{
-                border-bottom: 1px solid;
-                border-color: #000000;
+                border-bottom: 0.5px solid;
+                border-color: #333333;
             }}
             ''')
 
