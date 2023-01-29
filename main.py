@@ -8,6 +8,9 @@ from qt_core import *
 # IMPORT MAIN WINDOW
 from gui.windows.main_window.ui_main_window import *
 
+# IMPORT DIALGO
+from gui.windows.dialog.import_dialog import ImportDialogSQL
+
 # MAIN WINDOW
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -44,8 +47,11 @@ class MainWindow(QMainWindow):
 
     def updateDatabaseSQL(self):
         server = self.ui.ui_pages.login_page.sql
-        if not server.get_status(): # if not connected
+        if not server.get_status(): # if not connected, display window
+            dialog = ImportDialogSQL(self)
+            dialog.show()
             return None
+
     
         # browser sql files
         self.ui.ui_pages.data_page.browse_sql(server)

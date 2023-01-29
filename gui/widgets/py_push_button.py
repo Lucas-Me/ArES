@@ -169,7 +169,8 @@ class ClassicButton(QPushButton):
         icon_path = "",
         icon_width = 70,
         icon_allign = "left",
-        icon_color = "#000000"
+        icon_color = "#000000",
+        paint_icon = True,
         ) -> None:
         super().__init__()
 
@@ -183,6 +184,8 @@ class ClassicButton(QPushButton):
         self.icon_width = icon_width
         self.icon_allign = icon_allign
         self.icon_color = icon_color
+        self.allign_left = icon_allign == 'left'
+        self.paint_icon = paint_icon
 
     def paintEvent(self, event) -> None:
         # Return default style
@@ -208,11 +211,12 @@ class ClassicButton(QPushButton):
         icon_path = os.path.normpath(os.path.join(path, image))
 
         # icon dimensions
+        margin = 10
         icon = QPixmap(icon_path)
         icon_dx, icon_dy = icon.width(), icon.height()
         dx = self.icon_width
         dy = dx * icon_dy // icon_dx
-        x = 10 # margin
+        x =  margin if self.allign_left else rect.width() - dx - margin
         y = (rect.height() - dy) // 2 # margins
 
         # scale icon ot dimensions
@@ -221,6 +225,7 @@ class ClassicButton(QPushButton):
         # draw icon
         painter = QPainter(icon)
         painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
-        painter.fillRect(icon.rect(), color)
+        if self.paint_icon:
+            painter.fillRect(icon.rect(), color)
         qp.drawPixmap(x, y, dx, dy, icon)
         painter.end()

@@ -206,9 +206,25 @@ class UI_DataManager(object):
         self.parameter_viewer_layout.addWidget(self.viewer_header)
         self.parameter_viewer_layout.addWidget(self.parameter_viewer)
 
+        # NEXT BUTTON
+        self.next_btn = ClassicButton(
+            text = 'Próximo',
+            icon_allign='right',
+            width = 150,
+            height = 40,
+            icon_width= 40,
+            icon_path= 'icon_next_btn.svg',
+            paint_icon=False
+        )
+        self.next_btn.setObjectName('next_btn')
+
         # add to paramater view layout
         self.parameter_view_layout.addWidget(self.information_view_frame)
         self.parameter_view_layout.addLayout(self.parameter_viewer_layout)
+        self.parameter_view_layout.addWidget(self.next_btn)
+
+        # configuring
+        self.parameter_view_layout.setAlignment(self.next_btn, Qt.AlignmentFlag.AlignRight)
 
         # MAIN LAYOUT CONFIGURATION
         # ////////////////////////////////////////////////////////////////////
@@ -302,6 +318,21 @@ class UI_DataManager(object):
             #name, #theme, #unit {{
                 font: 500 13pt {font};
                 color: #32495e;
+            }}
+            #next_btn {{
+                background-color: #ffffff;
+                border: none;
+                border-radius: {border_radius};
+                font: 500 14pt {font};
+                color: {font_color};
+                padding-left: 20px;
+                text-align: left;
+            }}
+            #next_btn:hover {{
+                background-color: {header_color};
+            }}
+            #next_btn:pressed {{
+                background-color: {border_color};
             }}
         ''')
 

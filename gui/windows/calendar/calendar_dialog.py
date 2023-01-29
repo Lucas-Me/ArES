@@ -131,7 +131,6 @@ class CalendarWidget(QStackedWidget):
 		options = [self.start_calendar, self.end_calendar]
 		self.setCurrentWidget(options[selection])
 
-
 	def leaveEvent(self, event: QEvent) -> None:
 		self.setVisible(False)
 		return super().leaveEvent(event)
