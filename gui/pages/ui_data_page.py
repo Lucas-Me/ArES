@@ -239,14 +239,14 @@ class UI_DataManager(object):
 
     def setup_stylesheets(self):
         # Properties
-        font = 'sans-serif'
+        font = 'Microsoft New Tai Lue'
         font_color = '#32495e'
         border_color = '#919191'
         background_color = '#f0f0f0'
         header_color = '#dcdcdc'
         inner_frame_color = "#ffffff"
         border_radius = 10
-        
+
         # SETTING UP TOOL BAR STYLE SHEET
         self.tool_bar_frame.setStyleSheet(f'''
             #tool_bar {{
@@ -334,6 +334,10 @@ class UI_DataManager(object):
             #next_btn:pressed {{
                 background-color: {border_color};
             }}
+            #next_btn:disabled{{
+                background-color: transparent;
+                color: transparent;
+            }}
         ''')
 
 class StationViewFrame(QFrame):
@@ -357,6 +361,6 @@ class StationViewFrame(QFrame):
                 item_widget = self.widget.itemWidget(item)
                 #
                 item_widget.setFixedWidth(item_width)
-                item.setSizeHint(QSize(item_width, self.widget.item_height))
+                item.setSizeHint(QSize(item_width, item_widget.height()))
 
         super().resizeEvent(e)

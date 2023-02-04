@@ -11,7 +11,7 @@ class UI_ParameterListItem(object):
 
         # UI PROPERTIES
         background_color = '#ffffff'
-        font = 'sans-serif'
+        font = 'Microsoft New Tai Lue'
         text_color = '#32495e'
 
         # SETTING UP PROPERTIES

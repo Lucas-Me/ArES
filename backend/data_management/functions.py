@@ -161,28 +161,32 @@ def reindex(old_dates, values, flags, new_dates):
 	'''
 	Funcao que aceita como argumento arrays de valor, datas e flags, e reorganiza
 	os dados de acordo com o NOVO array de datas especificado.
-
-	TO DO: PENSAR EM UM NOVO ALGORITMO MAIS RAPIDO
 	'''
+
+	# Se nao for um objeto numpy, converte para tal
 	if isinstance(old_dates, tuple):
 		old_dates = np.array(old_dates)
 		values = np.array(values)
 		flags = np.array(flags)
 
-	# criando novas variaveis
+	# SE OS NOVOS INDICES FOREM IDENTICOS AO ANTIGO, APENAS RETORNA OS ARRAY ORIGINAIS
+	if np.array_equal(old_dates, new_dates):
+		return (values, flags)
+
+	# CRIA NOVAS VARIAVEIS
 	new_values = np.full(new_dates.shape, np.nan)
 	new_flags = np.full(new_dates.shape, '')
 	
-	# testes
+	# EXTRAI OS VALORES DOS ARRAYS ANTIGOS QUE ESTAO DENTRO DOS NOVOS INDICES (DATAS)
 	isin = np.isin(old_dates, new_dates)
-	old_inside = np.extract(isin, values)
+	old_inside_values = np.extract(isin, values)
 	old_inside_flags = np.extract(isin, flags)
+	
+	# CHECA QUAIS INDICES NOS NOVOS ARRAYS DEVEM SER PREENCHIDOS COM OS VALORES DO ARRAY ANTIGO
+	fill_spots = np.isin(new_dates, old_dates)
 
-	# organizando de acordo com os noves indices / datas
-	if old_inside.shape[0] > 0:
-		indices = np.argwhere(isin)
-		for i in range(indices.shape[0]):
-			new_values[indices[i]] = old_inside[i]
-			new_flags[indices[i]] = old_inside_flags[i]
+	# PREECHENDO OS INDICES COM OS VALORES ANTIGOS
+	new_values[fill_spots] = old_inside_values
+	new_flags[fill_spots] = old_inside_flags 
 
 	return (new_values, new_flags)

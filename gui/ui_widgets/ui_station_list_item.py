@@ -61,7 +61,7 @@ class UI_StationListItem(object):
         self.setup_stylesheet(parent)
     
     def setup_stylesheet(self, parent):
-        font = 'sans-serif'
+        font = 'Microsoft New Tai Lue'
         font_color_1 = '#32495e'
         font_color_2 = '#6c8194'
         frame_color = '#398e3d' if parent.is_xls() else '#008299'

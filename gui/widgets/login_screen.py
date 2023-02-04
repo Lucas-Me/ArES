@@ -6,6 +6,7 @@ from gui.pages.ui_loginscreen import UI_LoginScreen
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.sql_backend import SqlConnection
+from gui.windows.dialog.import_dialog import ImportDialogSQL
 
 # IMPORT CUSTOM FUCTIONS
 from backend.misc.functions import get_imagepath
@@ -18,7 +19,10 @@ class LoginScreen(QWidget):
 
 		# LOGO
 		self.logo = Logo(100, 100, image = 'ArES_logo.svg')
-		self.profile_image = Logo(100, 100, image = 'profile.svg')
+		self.profile_image = Logo(120, 120, image = 'profile.svg')
+
+		# SETTINGS
+		self.last_refresh = 'Nunca'
 
 		# SETUP CONNECTION
 		self.sql = SqlConnection("PC-INV109399", 'banco_gear') # CONFIGURACOES 
@@ -35,6 +39,7 @@ class LoginScreen(QWidget):
 		# SIGNALS AND SLOTS
 		self.ui.login_btn.pressed.connect(self.connectSQL)
 		self.ui.disconnect_btn.pressed.connect(self.disconnectSQL)
+		self.ui.refresh_btn.pressed.connect(self.refreshDatabase)
 
 	def borderCredentials(self, borders : bool):
 		style = '1px solid red' if borders else 'none'
@@ -52,7 +57,6 @@ class LoginScreen(QWidget):
 			# concetion suceeded
 			# change the page on the frame
 			self.changePage(self.sql.cnx.is_connected())
-			self.sql.atualizar_inventario() # update database invenctory
 			pass
 
 		elif code == 1045:
@@ -63,7 +67,7 @@ class LoginScreen(QWidget):
 		elif code == 2003:
 			pass
 			
-		else:
+		else: # JUST FOR DEBUGGING
 			print("Nunca vi esse erro na minha vida ")
 			print(f'Erro {code}')
 
@@ -74,11 +78,33 @@ class LoginScreen(QWidget):
 		self.ui.right_frame.setCurrentIndex(index)
 		self.ui.greetings_label.setText(f"Olá, {self.ui.username.text()}")
 		self.ui.logged_label.setText(
-			f'Você está conectado ao\n{self.sql.cnx._database}'
+			f'Você está conectado ao {self.sql.cnx._database}'
+		)
+		self.ui.verification_label.setText(
+			f'Última verificação: {self.last_refresh}'
 		)
 
+	def refreshDatabase(self):
+		'''
+		Efetua uma verificação no banco de dados, visando atualizar as informacoes
+		sobre as estacoes existentes e suas propriedades (parametros, empresa, etc..)
+		'''
+		try:
+			self.sql.atualizar_inventario() # update database invenctory
+			locale = QLocale('pt_BR')
+			self.last_refresh = locale.toString(QDateTime.currentDateTime(), 'dd MMM yyyy hh:mm')
+			self.ui.verification_label.setText(
+				f'Última verificação: {self.last_refresh}'
+			)
+
+		except Exception as err: # se der erro, provavelmente a conexao foi perdida
+			self.disconnectSQL()
+			dialog = ImportDialogSQL(self)
+			dialog.show()
+			print(err)
+
 	def disconnectSQL(self):
-		self.sql.cnx.disconnect()
+		self.sql.disconnect()
 		self.ui.right_frame.setCurrentIndex(0)
 
 	def testConnection(self):
@@ -137,14 +163,15 @@ class Logo(QWidget):
 		qp.setRenderHint(QPainter.Antialiasing)
 		qp.setPen(Qt.NoPen)
 
-		rect = QRect(0, 0, self.width(), self.height())
-
 		# format Path
-		icon_path =  get_imagepath(self.image_name, 'gui/images/icons')
-
-		# Draw icon
+		icon_path = get_imagepath(self.image_name, 'gui/images/icons')
 		icon = QPixmap(icon_path)
-		qp.drawPixmap(self.rect(), icon)
+		dx, dy = self.width(), self.height()
+
+		# scale icon ot dimensions
+		icon = icon.scaled(dx, dy, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
+		qp.drawPixmap(icon.rect(), icon)
 
 		qp.end()
 

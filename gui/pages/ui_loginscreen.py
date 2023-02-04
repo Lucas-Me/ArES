@@ -1,8 +1,8 @@
 # IMPORT QT_CORE
 from qt_core import *
 
-# IMPORT CUSTOM FUCTIONS
-from backend.misc.functions import get_imagepath
+# IMPORT CUSTOM MODULE
+from gui.widgets.py_push_button import ClassicButton
 
 # Data Manager Page UI Class
 class UI_LoginScreen(object):
@@ -18,6 +18,11 @@ class UI_LoginScreen(object):
         w, h = (700, 500)
         self.content_frame = QFrame()
         self.content_frame.setFixedSize(w, h)
+        self.shadow = QGraphicsDropShadowEffect()
+        self.shadow.setBlurRadius(15)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(0)
+        self.content_frame.setGraphicsEffect(self.shadow)
 
         # CONTENT LAYOUT
         self.content_layout = QHBoxLayout(self.content_frame)
@@ -107,33 +112,50 @@ class UI_LoginScreen(object):
         self.welcome_frame.setFixedSize(w // 2, h)
 
         self.welcome_frame_layout = QVBoxLayout(self.welcome_frame)
-        self.welcome_frame_layout.setSpacing(10)
-        self.welcome_frame_layout.setContentsMargins(0, 10, 0, 0)
+        self.welcome_frame_layout.setSpacing(20)
+        self.welcome_frame_layout.setContentsMargins(0, 30, 0, 0)
 
         # WELCOME LABEL
         self.greetings_label = QLabel()
-        self.greetings_label.setFixedSize(QSize(250, 40))
-        self.greetings_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.greetings_label.setFixedSize(QSize(250, 50))
+        self.greetings_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
 
         # LOGGED LABEL
         self.logged_label = QLabel()
-        self.logged_label.setFixedSize(QSize(350, 80))
+        self.logged_label.setFixedSize(QSize(350, 40))
         self.logged_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        # LAST VERIFICATION LABEL
+        self.verification_label = QLabel()
+        self.verification_label.setObjectName("verification_label")
+        self.verification_label.setFixedSize(QSize(350, 20))
+        self.verification_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        # REFRESH BUTTON
+        self.refresh_btn = ClassicButton(
+            text = 'Verificar',
+            height = 70,
+            width = 200,
+            icon_width=50,
+            icon_path='refresh_button.svg',
+            icon_color = '#ffffff'
+        )
+        self.refresh_btn.setObjectName("refresh_button")
 
         # DISCONNECT BUTTON
         self.disconnect_btn = QPushButton("Desconectar")
         self.disconnect_btn.setFixedSize(QSize(150, 40))
 
         # spacers
-        self.spacer_logged = QSpacerItem(w // 2, 30, QSizePolicy.Minimum, QSizePolicy.Minimum)
-        self.spacer_disconnect = QSpacerItem(w // 2, 70, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.spacer_logged = QSpacerItem(w // 2, 10, QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         # add to layout
         self.welcome_frame_layout.addWidget(parent.profile_image)
         self.welcome_frame_layout.addWidget(self.greetings_label)
         self.welcome_frame_layout.addItem(self.spacer_logged)
         self.welcome_frame_layout.addWidget(self.logged_label)
-        self.welcome_frame_layout.addItem(self.spacer_disconnect)
+        self.welcome_frame_layout.addWidget(self.verification_label)
+        self.welcome_frame_layout.addWidget(self.refresh_btn)
         self.welcome_frame_layout.addWidget(self.disconnect_btn)
       
         # adjustin alignment
@@ -141,6 +163,8 @@ class UI_LoginScreen(object):
         self.welcome_frame_layout.setAlignment(self.greetings_label, Qt.AlignmentFlag.AlignCenter)
         self.welcome_frame_layout.setAlignment(self.logged_label, Qt.AlignmentFlag.AlignCenter)
         self.welcome_frame_layout.setAlignment(self.disconnect_btn, Qt.AlignmentFlag.AlignRight)
+        self.welcome_frame_layout.setAlignment(self.verification_label, Qt.AlignmentFlag.AlignCenter)
+        self.welcome_frame_layout.setAlignment(self.refresh_btn, Qt.AlignmentFlag.AlignCenter)
 
         # ADD FRAMES TO CONTENT LAYOUT
         # //////////////////////////////////////////////////////////////////
@@ -259,12 +283,16 @@ class UI_LoginScreen(object):
                 padding-bottom: 10px;
             }}
             #greetings_label {{
-                font: bold 22pt "Open Sans";
+                font: bold 20pt "Open Sans";
                 color: #409cc1;
             }}
             #logged_label {{
-                font: bold 18pt "Open Sans";
+                font: bold 14pt "Microsoft New Tai Lue";
                 color: {line_edit_color};
+            }}
+            #verification_label{{
+                font: bold 14pt "Microsoft New Tai Lue";
+                color: #409cc1;
             }}
             #disconnect_button {{
                 background-color: none;
@@ -277,6 +305,19 @@ class UI_LoginScreen(object):
             }}
             #disconnect_button:pressed {{
                 color: #ff000e;
+            }}
+            #refresh_button{{
+                background-color: #409cc1;
+                color : #ffffff;
+                padding-left: 20px;
+                font: bold 14pt "Microsoft New Tai Lue";
+                border-radius: {border_radius}px;
+            }}
+            #refresh_button:hover{{
+                background-color: #1e5375;
+            }}
+            #refresh_button:pressed{{
+                background-color: #57aecf;
             }}
         '''
         )

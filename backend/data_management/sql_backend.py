@@ -23,7 +23,7 @@ class SqlConnection(object):
 		self.configureHost(host, db)
 
 	def configureHost(self, host, db):
-		self.cnx.config(host = host, database = 'banco_gear')
+		self.cnx.config(host = host, database = db)
 
 	def get_status(self):
 		return self.cnx.is_connected()
@@ -55,12 +55,6 @@ class SqlConnection(object):
 		self.cnx.close()
 
 		# reseta tudo
-		self.station_enterprises = [] # empresa estacao
-		self.station_names = [] # nome estacao
-		self.table_names = [] # table_name no sql
-		self.table_vars = {}
-		self.table_vars_columns = {}
-		self.dates = {} # dictionary with dates from every station available
 		self.connected = False
 		return None
 
@@ -175,7 +169,7 @@ class SqlConnection(object):
 		idx = self.station_names.index(name)
 
 		# CONSULTA
-		# SELECT DATA, VALUE AND FLAGS
+		# QUERY DATA
 		query = (f"SELECT Campo1, Campo{coluna}, Campo{coluna + 1} FROM `{self.table_names[idx]}` "
 				f"WHERE Campo1 BETWEEN %s AND %s")
 		cursor.execute(query, (start_date, end_date))

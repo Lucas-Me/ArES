@@ -32,6 +32,7 @@ class DataManager(QWidget):
         self.selected_parameters = {} # selected parameters for each station
         self.browse_folder = os.path.expanduser("~") # user home directory
         self.total_selected = 0 # total number of parameters selected
+        self.updateSelectionCount(0)
 
         # SIGNALS AND SLOTS
         self.ui.xls_btn.clicked.connect(self.browse_xls_files)
@@ -74,7 +75,7 @@ class DataManager(QWidget):
         self.uncheck_parameters()
 
         # update internal count
-        self.total_selected = 0
+        self.updateSelectionCount(0)
 
     def clear_station_manager(self):
         self.ui.station_manager_list.clean_objects()
@@ -83,7 +84,7 @@ class DataManager(QWidget):
         self.selected_parameters.clear()
 
         # update internal count
-        self.total_selected = 0
+        self.updateSelectionCount(0)
 
     def search_station(self):
         '''
@@ -140,6 +141,13 @@ class DataManager(QWidget):
             for row in range(rows):
                 station_list.item(row).setHidden(False)
 
+    def updateSelectionCount(self, count):
+        self.total_selected = count
+        if not count:
+            self.ui.next_btn.setDisabled(True)
+        else:
+            self.ui.next_btn.setDisabled(False)
+
     def update_tristate_button(self, active, total):
         if active == 0:
             self.ui.check_box.setCheckState(Qt.CheckState.Unchecked)
@@ -163,7 +171,7 @@ class DataManager(QWidget):
         self.update_tristate_button(active_parameters, len(self.selected_parameters[signature]))
 
         # # update internal count
-        self.total_selected += (-1) ** (not state)
+        self.updateSelectionCount(self.total_selected + (-1) ** (not state))
 
     def update_parameter_viewer(self):
         # Save selection of parameters before deleting
@@ -299,7 +307,7 @@ class DataManager(QWidget):
                     metadata['parameter'] = k
 
                     # reindexing the values from arrays
-                    values, flags = reindex(dates, _object.parameters[k][0], _object.parameters[k][1], new_dates)
+                    values, flags = reindex(_object.dates, _object.parameters[k][0], _object.parameters[k][1], new_dates)
 
                     # creating object
                     this = RawData(
@@ -333,6 +341,7 @@ class DataManager(QWidget):
                     )
                     
                     t1 = time()
+
                     # reindexing the values from arrays
                     values, flags = reindex(dates, values, flags, new_dates)
                     t2 = time()
@@ -345,7 +354,6 @@ class DataManager(QWidget):
                         dates = new_dates
                     )
                     
-                
                     # adding to list
                     raw_data[idx] = this
                     idx += 1

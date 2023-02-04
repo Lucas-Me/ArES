@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
 
         # EXIBE A APLICAÇÃO
         self.show()
-
+    
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
             btn.set_active(False)

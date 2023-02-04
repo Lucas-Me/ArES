@@ -119,14 +119,16 @@ class EnterpriseHeaderItem(QFrame):
         self.setMinimumWidth(width)
         #
         self.central_layout = QHBoxLayout(self)
-        self.central_layout.addWidget(QLabel(self.label))
+        label = QLabel(self.label)
+        self.central_layout.addWidget(label)
+        self.central_layout.setAlignment(label, Qt.AlignmentFlag.AlignVCenter)
         self.central_layout.setSpacing(0)
         self.central_layout.setContentsMargins(0, 0, 0, 0)
 
         # STYLE SHEET
         self.setStyleSheet('''
             background-color: transparent;
-            font: 600 11pt 'sans-serif';
+            font: 500 11pt 'Microsoft New Tai Lue';
             color: #32495e; 
         '''
         )

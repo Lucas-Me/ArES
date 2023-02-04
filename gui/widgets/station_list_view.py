@@ -25,6 +25,7 @@ class PyStationListView(QListWidget):
         self.scroll_width = scroll_width
         self.enterprise_category = {} # key =  enterprise name, value = corresponding widget
         self.activeWidget = None
+        self.header_height = 30
         
         # configuring widgets
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -85,18 +86,17 @@ class PyStationListView(QListWidget):
 
     def add_header(self, name):
         # CREATING HEADER OBJECT
-        height = 30
         header = EnterpriseHeaderItem(
             label = name,
             total = 0, 
             width = self.width() - self.scroll_width,
-            height= height
+            height= self.header_height
         )
 
         # CREATING LISTWIDGETITEM AND ITS PROPERTIES
         list_widget_header = QListWidgetItem()
         list_widget_header.setSizeHint(
-            QSize(self.width() - self.scroll_width, height)
+            QSize(self.width() - self.scroll_width, self.header_height)
         )
 
         # SIGNALS AND SLOTS
@@ -128,7 +128,7 @@ class PyStationListView(QListWidget):
             item_height = self.item_height,
             )
 
-         # Creating QListWidgetItem
+        # Creating QListWidgetItem
         list_widget_item = QListWidgetItem()
 
         # Setting Size Hint to ListWidgetItem
@@ -203,3 +203,4 @@ class PyStationListView(QListWidget):
 
         # junk collector
         gc.collect()
+
