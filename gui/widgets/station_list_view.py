@@ -1,7 +1,6 @@
 # IMPORTS
 import gc
 
-
 # IMPORT QT CORE
 from qt_core import *
 
@@ -160,6 +159,7 @@ class PyStationListView(QListWidget):
             self.update_active_widget(None)
         
         # Changing properties
+        self.parent.total_selected -= station_item.marked.count_marked
         del self.parent.selected_parameters[station_item._signature]
         del self.parent.archives[station_item._signature]
 

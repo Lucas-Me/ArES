@@ -1,6 +1,7 @@
 # IMPORTS
 import os
 import re
+from copy import deepcopy
 
 # IMPORT QT CORE
 from qt_core import *
@@ -10,7 +11,7 @@ from gui.pages.ui_data_page import UI_DataManager
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.functions import xls_reader
-from backend.data_management.data_management import SQlStationData
+from backend.data_management.data_management import SQlStationData, RawData
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import find_unit
@@ -30,6 +31,7 @@ class DataManager(QWidget):
         self.archives = {} # Opened station archives
         self.selected_parameters = {} # selected parameters for each station
         self.browse_folder = os.path.expanduser("~") # user home directory
+        self.total_selected = 0 # total number of parameters selected
 
         # SIGNALS AND SLOTS
         self.ui.xls_btn.clicked.connect(self.browse_xls_files)
@@ -71,11 +73,17 @@ class DataManager(QWidget):
         self.ui.station_manager_list.clear_selections()
         self.uncheck_parameters()
 
+        # update internal count
+        self.total_selected = 0
+
     def clear_station_manager(self):
         self.ui.station_manager_list.clean_objects()
         #
         self.archives.clear()
         self.selected_parameters.clear()
+
+        # update internal count
+        self.total_selected = 0
 
     def search_station(self):
         '''
@@ -153,6 +161,9 @@ class DataManager(QWidget):
         
         # update tristate box
         self.update_tristate_button(active_parameters, len(self.selected_parameters[signature]))
+
+        # # update internal count
+        self.total_selected += (-1) ** (not state)
 
     def update_parameter_viewer(self):
         # Save selection of parameters before deleting
@@ -251,6 +262,83 @@ class DataManager(QWidget):
 
             # add station into lsit frame
             self.ui.station_manager_list.add_station_item(_object)
+
+    def request_data(self, server):
+        # setting up
+        print(self.total_selected)
+        raw_data = [None] * self.total_selected
+        start_date, end_date = self.ui.date_edit.getDates()
+
+        # loop through archives
+        idx = 0
+        for sig, v in self.selected_parameters.items():
+            # check if there is a paramter selected
+            if not any(v):
+                continue
+            
+            # getting object
+            _object = self.archives[sig]
+
+            # check if it is either from the XLS or from the SQL
+            if sig[:3] == 'xls':
+                # getting new date array
+
+
+                # loop through selected parameters
+                for i, k in enumerate(_object.parameters.keys()):
+                    if not self.selected_parameters[sig][i]:
+                        continue
+                    
+                    # recovering arguments
+                    metadata = _object.metadata.copy()
+                    metadata['parameter'] = k
+
+                    # creating object
+                    this = RawData(
+                        values = _object.parameters[k][0],
+                        metadata = metadata,
+                        flags = _object.parameters[k][1],
+                        dates = deepcopy(_object.dates)
+                    )
+
+                    # adding to list
+                    raw_data[idx] = this
+                    idx += 1
+
+            else:
+                # getting new date array
+
+                
+                for i, checked in enumerate(self.selected_parameters[sig]):
+                    if not checked:
+                        continue
+                    
+                     # recovering arguments
+                    metadata = _object.metadata.copy()
+                    metadata['parameter'] = _object.parameters[i]
+
+                    # query variables from the SQL Database
+                    values, flags, dates = server.query_var(
+                        var_index = i,
+                        station_object = _object,
+                        start_date = start_date,
+                        end_date = end_date 
+                    )
+
+                    # creating object
+                    this = RawData(
+                        values = values,
+                        metadata = metadata,
+                        flags = flags,
+                        dates = dates
+                    )
+
+                    # adding to list
+                    raw_data[idx] = this
+                    idx += 1
+
+        return raw_data
+
 
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent(event)

@@ -165,45 +165,23 @@ class SqlConnection(object):
 		self.station_enterprises = empresas
 		self.station_names = nomes
 		return None
-
-	# def extrair_estacao(self, nome : str):
-	# 	cursor = self.cnx.cursor()
-	# 	idx = self.estacao_nomes.index(nome)
-
-	# 	# data inicial
-	# 	query = (f"SELECT Campo1 FROM `{self.table_names[idx]}` "
-	# 			"ORDER BY Campo1 DESC LIMIT 1")
-	# 	cursor.execute(query)
-	# 	fim = cursor.fetchone()[0]
-
-	# 	# data final
-	# 	order_n = 100
-	# 	query = (f"SELECT Campo1 FROM `{self.table_names[idx]}` "
-	# 			f"ORDER BY Campo1 LIMIT {order_n}")
-	# 	cursor.execute(query)
-
-	# 	# array de data
-	# 	dates = [cursor.fetchone()[0] for i in range(order_n)] + [fim]
-	# 	dates = np.array(dates, dtype = np.datetime64)
-
-	# 	# estimando o tipo de estacao baseado na frequencia de amostragem
-	# 	dt_horas = utilitarios.dt_guess(dates).astype('timedelta64[h]')
-	# 	tipo_estacao = "AUTO"
-	# 	if dt_horas != 1:
-	# 		tipo_estacao = "SEMI"
-
-	# 	# criando o objeto estacao
-	# 	objeto = EntitySQL(
-	# 		vars = self.table_vars[nome][0],
-	# 		index = dates,
-	# 		dt = dt_horas, 
-	# 		tipo = tipo_estacao,
-	# 		nome = nome,
-	# 		empresa = self.estacao_empresas[idx],
-	# 		filename = self.table_names[idx],
-	# 		parent = self
-	# 		)
 		
-	# 	# Fim
-	# 	cursor.close()
-	# 	return objeto
+	def query_var(self, var_index, station_object, start_date, end_date): # consulta um parametro de uma determinada estacao
+		cursor = self.cnx.cursor()
+
+		# properties of station object
+		name = station_object.metadata['name']
+		coluna = station_object.parameters_cols[var_index]
+		idx = self.station_names.index(name)
+
+		# CONSULTA
+		# SELECT DATA, VALUE AND FLAGS
+		query = (f"SELECT Campo1, Campo{coluna}, Campo{coluna + 1} FROM `{self.table_names[idx]}` "
+				f"WHERE Campo1 BETWEEN %s AND %s")
+		cursor.execute(query, (start_date, end_date))
+		consulta = cursor.fetchall()
+
+		# Fim
+		cursor.close()
+
+		return tuple(zip(*consulta))

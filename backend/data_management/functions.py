@@ -4,6 +4,7 @@
 import numpy as np
 import os
 import xlrd
+from copy import copy, deepcopy
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.data_management import XlsStationData
@@ -102,6 +103,10 @@ def xls_reader(file_path : str):
 
 
 def find_previous_nearest(array, value):
+	'''
+	funcao criada especificamanete para auxiliar a leitura dos dados na planilha XLS.
+	Utilizada na funcao acima (xls_reader).
+	'''
 	array = array - value
 	previous = array[array <= 0]
 	idx = previous.argmax()
@@ -109,7 +114,31 @@ def find_previous_nearest(array, value):
 	return idx
 
 def get_icon(icon_name, folder):
-		app_path = os.path.abspath(os.getcwd())
-		icons_folder = os.path.join(app_path, folder)
+	'''
+	funcao para encontrar o caminho completo ate um icone.
+	'''
+	app_path = os.path.abspath(os.getcwd())
+	icons_folder = os.path.join(app_path, folder)
 
-		return os.path.join(icons_folder, icon_name).replace('\\', '/')
+	return os.path.join(icons_folder, icon_name).replace('\\', '/')
+
+def reindex(old_dates, value, flags, new_dates, **kwargs):
+	'''
+	Funcao que aceita como argumento arrays de valor, datas e flags, e reorganiza
+	os dados de acordo com o NOVO array de datas especificado.
+	'''
+	# Preparando valores
+	values_arr = deepcopy(value)
+	flags_arr = deepcopy(flags)
+
+	# organizando de acordo com os noves indices / datas
+	new_arr = np.empty(new_dates.shape)
+	new_arr[:] = np.nan
+
+	old_inside = np.extract(np.isin(old_dates, new_dates), values_arr)
+	if old_inside.shape[0] > 0:
+		indices = np.argwhere(np.isin(new_dates, old_dates))
+		for i in range(indices.shape[0]):
+			new_arr[indices[i]] = old_inside[i]
+
+	return new_arr

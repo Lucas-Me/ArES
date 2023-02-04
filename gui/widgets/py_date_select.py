@@ -117,6 +117,11 @@ class PyDoubleDateEdit(QFrame):
 
 		return os.path.join(icons_folder, icon_name).replace('\\', '/')
 
+	def getDates(self):
+		start = self.start_date.date().toPython()
+		end = self.end_date.date().toPython()
+
+		return (start, end)
 
 class PyDateEdit(QDateEdit):
 	clicked = Signal(bool)

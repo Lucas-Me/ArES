@@ -102,3 +102,34 @@ class SQlStationData(StationData):
          themes[var] = theme
 
       self.parameter_theme = themes.copy()
+
+
+class AbstractData(object):
+
+   def __init__(self, *args, **kwargs):
+      # INFO PROPERTIES
+      self.metadata = kwargs.get('metadata', {}) # holds info about parameter name, station, enterprise etc.
+
+      # VALUES 
+      self.values = kwargs.get('value', [])
+      self.dates = kwargs.get('dates', [])
+   
+
+class RawData(AbstractData):
+
+   def __init__(self, *args, **kwargs):
+      super().__init__(*args, **kwargs)
+
+      # FLAGS FOR EACH DATE
+      self.flags = kwargs.get('flags', [])
+   
+
+class ModifiedData(AbstractData):
+
+   def __init__(self, *args, **kwargs):
+      super().__init__(*args, **kwargs)
+
+      # Array de representatividada para cada data, em %
+      self.representatividade = kwargs.get('representatividade', [])
+
+      

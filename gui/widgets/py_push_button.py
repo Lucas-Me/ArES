@@ -148,6 +148,10 @@ class PyPushButton(QPushButton):
 
         # Draw icon
         icon = QPixmap(icon_path)
+
+        # scale icon ot dimensions
+        icon = icon.scaled(icon.width(), icon.height(), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
         painter = QPainter(icon)
         painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
         painter.fillRect(icon.rect(), color)

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="23"
+   height="23"
+   viewBox="0 0 6.0854166 6.0854166"
+   version="1.1"
+   id="svg17111"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="checkbox_unchecked_circle.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview17113"
+     pagecolor="#5e5e5e"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="11.930303"
+     inkscape:cx="-16.051562"
+     inkscape:cy="3.6880874"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs17108">
+    <linearGradient
+       id="linearGradient31469"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#6098bb;stop-opacity:1;"
+         offset="0"
+         id="stop31467" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-92.875405,-60.349198)">
+    <circle
+       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#757d8e;stroke-width:0.79375;stroke-linejoin:bevel;stroke-opacity:1;paint-order:stroke fill markers"
+       id="path7936"
+       cx="95.918114"
+       cy="63.391907"
+       r="2.6458333" />
+  </g>
+</svg>

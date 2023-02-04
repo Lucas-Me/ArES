@@ -30,8 +30,14 @@ class MainWindow(QMainWindow):
         # open page 2
         self.ui.btn_2.clicked.connect(lambda: self.change_page(page = 1, button = self.ui.btn_2))
 
+        # open page 3
+        self.ui.btn_3.clicked.connect(lambda: self.change_page(page = 2, button = self.ui.btn_3))
+
         # SQL request
         self.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.updateDatabaseSQL)
+
+        # NEXT button on DATA MANAGER SCREEEn
+        self.ui.ui_pages.data_page.ui.next_btn.clicked.connect(self.requestData)
 
         # EXIBE A APLICAÇÃO
         self.show()
@@ -52,9 +58,17 @@ class MainWindow(QMainWindow):
             dialog.show()
             return None
 
-    
         # browser sql files
         self.ui.ui_pages.data_page.browse_sql(server)
+
+    def requestData(self):
+        # getting server
+        server = self.ui.ui_pages.login_page.sql
+
+        # requesting data
+        data_manager = self.ui.ui_pages.data_page
+        data = data_manager.request_data(server)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
