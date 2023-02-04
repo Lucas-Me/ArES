@@ -1,7 +1,7 @@
 # IMPORTS
 import os
 import re
-from copy import deepcopy
+from time import time
 
 # IMPORT QT CORE
 from qt_core import *
@@ -10,7 +10,7 @@ from qt_core import *
 from gui.pages.ui_data_page import UI_DataManager
 
 # IMPORT CUSTOM MODULES
-from backend.data_management.functions import xls_reader
+from backend.data_management.functions import xls_reader, get_dateindex, reindex
 from backend.data_management.data_management import SQlStationData, RawData
 
 # IMPORT CUSTOM FUNCTIONS
@@ -265,7 +265,6 @@ class DataManager(QWidget):
 
     def request_data(self, server):
         # setting up
-        print(self.total_selected)
         raw_data = [None] * self.total_selected
         start_date, end_date = self.ui.date_edit.getDates()
 
@@ -279,11 +278,17 @@ class DataManager(QWidget):
             # getting object
             _object = self.archives[sig]
 
+            # getting new date array
+            new_dates = get_dateindex(
+                tipo = _object.metadata['type'],
+                freq = _object.metadata['frequency'],
+                start_date=start_date,
+                end_date=end_date,
+                minutos = _object.dates[0].item().minute
+            )
+
             # check if it is either from the XLS or from the SQL
             if sig[:3] == 'xls':
-                # getting new date array
-
-
                 # loop through selected parameters
                 for i, k in enumerate(_object.parameters.keys()):
                     if not self.selected_parameters[sig][i]:
@@ -293,12 +298,15 @@ class DataManager(QWidget):
                     metadata = _object.metadata.copy()
                     metadata['parameter'] = k
 
+                    # reindexing the values from arrays
+                    values, flags = reindex(dates, _object.parameters[k][0], _object.parameters[k][1], new_dates)
+
                     # creating object
                     this = RawData(
-                        values = _object.parameters[k][0],
+                        values = values,
                         metadata = metadata,
-                        flags = _object.parameters[k][1],
-                        dates = deepcopy(_object.dates)
+                        flags = flags,
+                        dates = new_dates
                     )
 
                     # adding to list
@@ -306,9 +314,7 @@ class DataManager(QWidget):
                     idx += 1
 
             else:
-                # getting new date array
-
-                
+                # loop through selected parameters
                 for i, checked in enumerate(self.selected_parameters[sig]):
                     if not checked:
                         continue
@@ -318,21 +324,28 @@ class DataManager(QWidget):
                     metadata['parameter'] = _object.parameters[i]
 
                     # query variables from the SQL Database
-                    values, flags, dates = server.query_var(
+                    t0 = time()
+                    dates, values, flags = server.query_var(
                         var_index = i,
                         station_object = _object,
                         start_date = start_date,
                         end_date = end_date 
                     )
+                    
+                    t1 = time()
+                    # reindexing the values from arrays
+                    values, flags = reindex(dates, values, flags, new_dates)
+                    t2 = time()
 
                     # creating object
                     this = RawData(
                         values = values,
                         metadata = metadata,
                         flags = flags,
-                        dates = dates
+                        dates = new_dates
                     )
-
+                    
+                
                     # adding to list
                     raw_data[idx] = this
                     idx += 1

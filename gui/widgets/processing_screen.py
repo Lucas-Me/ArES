@@ -12,11 +12,17 @@ class ProcessingScreen(QWidget):
 
 	def __init__(self, parent : QStackedWidget):
 		super().__init__(parent = parent)
- 
+
+		# PRIVATE VARIABLES
+		self.raw_data = []
+
 		# SETUP UI
 		self.ui = UI_ProcessScreen()
 		self.ui.setup_ui(self)
 		self.ui.setup_stylesheet(parent)
+
+	def updateRawData(self, data):
+		self.raw_data = data
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''

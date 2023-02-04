@@ -122,23 +122,67 @@ def get_icon(icon_name, folder):
 
 	return os.path.join(icons_folder, icon_name).replace('\\', '/')
 
-def reindex(old_dates, value, flags, new_dates, **kwargs):
+def get_dateindex(tipo, freq:int, start_date, end_date, minutos = 0, reference = '2017-01-06') -> np.array:
+	''' Retorna um array de objetos datetime com o dias/horarios esperados para os registros
+	de dados de uma estacao de monitoramento, dado o seu tipo e periodo especificado.
+	Frequencia de operacao:
+		Automatica (auto) = dados horarios
+		Semi-automatica (semi) = dados diarios (6 em 6 dias)
+
+	args:
+		- tipo: tipo de estacao, para conhecimento da frequencia;
+		- start_date: data inicial a ser considerada
+		- end_date: data final a ser considerado;
+		- freq: frequencia dos dados (em horas).'''
+	
+	# preparando dados
+	if not isinstance(start_date, np.datetime64):
+		start_date = np.datetime64(start_date)
+		end_date = np.datetime64(end_date)
+
+	freq = np.timedelta64(freq, 'h')
+
+	if tipo == "Automática":
+		minutes = np.timedelta64(minutos, "m") # extrai o valor "minutos" no dataset original
+		start = start_date + minutes
+		end = end_date + minutes
+		index = np.arange(start, end, freq, dtype = "datetime64")
+
+	else:
+		ref = np.datetime64(reference) # data que se tem certeza de que tem uma amostragem semi-automatica. Modificar dps.
+		index = np.arange(start_date, end_date, np.timedelta64(1, "D"), dtype = "datetime64")
+		diff = (index - ref) % freq
+		index = index[np.equal(diff.astype('float'), 0)]
+
+	return index
+
+
+def reindex(old_dates, values, flags, new_dates):
 	'''
 	Funcao que aceita como argumento arrays de valor, datas e flags, e reorganiza
 	os dados de acordo com o NOVO array de datas especificado.
+
+	TO DO: PENSAR EM UM NOVO ALGORITMO MAIS RAPIDO
 	'''
-	# Preparando valores
-	values_arr = deepcopy(value)
-	flags_arr = deepcopy(flags)
+	if isinstance(old_dates, tuple):
+		old_dates = np.array(old_dates)
+		values = np.array(values)
+		flags = np.array(flags)
+
+	# criando novas variaveis
+	new_values = np.full(new_dates.shape, np.nan)
+	new_flags = np.full(new_dates.shape, '')
+	
+	# testes
+	isin = np.isin(old_dates, new_dates)
+	old_inside = np.extract(isin, values)
+	old_inside_flags = np.extract(isin, flags)
 
 	# organizando de acordo com os noves indices / datas
-	new_arr = np.empty(new_dates.shape)
-	new_arr[:] = np.nan
-
-	old_inside = np.extract(np.isin(old_dates, new_dates), values_arr)
 	if old_inside.shape[0] > 0:
-		indices = np.argwhere(np.isin(new_dates, old_dates))
+		indices = np.argwhere(isin)
 		for i in range(indices.shape[0]):
-			new_arr[indices[i]] = old_inside[i]
+			new_values[indices[i]] = old_inside[i]
+			new_flags[indices[i]] = old_inside_flags[i]
 
-	return new_arr
+	return (new_values, new_flags)

@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
     def updateDatabaseSQL(self):
         server = self.ui.ui_pages.login_page.sql
         if not server.get_status(): # if not connected, display window
+            self.ui.ui_pages.login_page.disconnectSQL()
             dialog = ImportDialogSQL(self)
             dialog.show()
             return None
@@ -67,7 +68,19 @@ class MainWindow(QMainWindow):
 
         # requesting data
         data_manager = self.ui.ui_pages.data_page
-        data = data_manager.request_data(server)
+
+        try:
+            data = data_manager.request_data(server)
+
+        except Exception as err: # se der erro, provavelmente a conexao foi perdida
+            print(err)
+            self.ui.ui_pages.login_page.disconnectSQL()
+            dialog = ImportDialogSQL(self)
+            dialog.show()
+            return None
+
+        # updating data on processing screen
+        self.ui.ui_pages.process_page.updateRawData(data)
 
 
 if __name__ == "__main__":
