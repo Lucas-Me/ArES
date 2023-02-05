@@ -1,6 +1,9 @@
 # IMPORT QT CORE
 from qt_core import *
 
+# IMPORT MODULES
+import mysql.connector
+
 # IMPORT CUSTOM UI
 from gui.pages.ui_loginscreen import UI_LoginScreen
 
@@ -10,6 +13,7 @@ from gui.windows.dialog.import_dialog import ImportDialogSQL
 
 # IMPORT CUSTOM FUCTIONS
 from backend.misc.functions import get_imagepath
+
 
 # Data Manager Page Class
 class LoginScreen(QWidget):
@@ -97,11 +101,11 @@ class LoginScreen(QWidget):
 				f'Última verificação: {self.last_refresh}'
 			)
 
-		except Exception as err: # se der erro, provavelmente a conexao foi perdida
+		except mysql.connector.Error as err: # se der erro, provavelmente a conexao foi perdida
+			print(err)
 			self.disconnectSQL()
 			dialog = ImportDialogSQL(self)
-			dialog.show()
-			print(err)
+			dialog.exec()
 
 	def disconnectSQL(self):
 		self.sql.disconnect()

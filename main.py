@@ -1,6 +1,7 @@
 # IMPORT MODULES
 import sys
 import os
+import mysql.connector
 
 # IMPORT QT CORE
 from qt_core import *
@@ -56,7 +57,7 @@ class MainWindow(QMainWindow):
         if not server.get_status(): # if not connected, display window
             self.ui.ui_pages.login_page.disconnectSQL()
             dialog = ImportDialogSQL(self)
-            dialog.show()
+            dialog.exec()
             return None
 
         # browser sql files
@@ -72,11 +73,11 @@ class MainWindow(QMainWindow):
         try:
             data = data_manager.request_data(server)
 
-        except Exception as err: # se der erro, provavelmente a conexao foi perdida
+        except mysql.connector.Error as err: # se der erro, provavelmente a conexao foi perdida
             print(err)
             self.ui.ui_pages.login_page.disconnectSQL()
             dialog = ImportDialogSQL(self)
-            dialog.show()
+            dialog.exec()
             return None
 
         # updating data on processing screen
