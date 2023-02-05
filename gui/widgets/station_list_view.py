@@ -26,6 +26,7 @@ class PyStationListView(QListWidget):
         self.enterprise_category = {} # key =  enterprise name, value = corresponding widget
         self.activeWidget = None
         self.header_height = 30
+        self.animation = QVariantAnimation()
         
         # configuring widgets
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -42,13 +43,7 @@ class PyStationListView(QListWidget):
 
         # Signals and Slots
         self.itemClicked.connect(self.toggle_highlight)
-
-    def organize_items(self):
-        '''
-        Essa funcao deve ser chamada toda vez que um objeto for adicionado ou removido
-        da lista.
-        '''
-        pass
+        self.animation.valueChanged.connect(self.moveScroll)
 
     def toggle_highlight(self, WidgetItem : QListWidgetItem):
         # getting item QFrame from ListWidgetItem
@@ -73,6 +68,16 @@ class PyStationListView(QListWidget):
             self.parent.ui.check_box.setCheckState(Qt.CheckState.Unchecked)
 
         self.itemPressed.emit()
+
+    def getListWidgetItem(self, signature):
+        for i in range(self.count()):
+            item = self.item(i)
+            item_widget = self.itemWidget(item)
+            if item_widget.objectName() == 'item_header':
+                continue
+            
+            if item_widget._signature == signature:
+                return item
 
     def clear_selections(self):
         # clear selection count on every widget
@@ -177,7 +182,6 @@ class PyStationListView(QListWidget):
 
         gc.collect() # Junk collector
 
-
     def remove_header(self, header : QListWidgetItem):
         item = self.itemWidget(header)
 
@@ -204,3 +208,16 @@ class PyStationListView(QListWidget):
         # junk collector
         gc.collect()
 
+    def wheelEvent(self, e: QWheelEvent) -> None:
+        self.animation.stop()
+        scrollbar = self.verticalScrollBar()
+        delta = e.angleDelta().y() // 2
+        y = scrollbar.value()
+        
+        self.animation.setStartValue(y)
+        self.animation.setEndValue(y - delta)
+        self.animation.setDuration(50)
+        self.animation.start()
+
+    def moveScroll(self, i):
+        self.verticalScrollBar().setValue(i)

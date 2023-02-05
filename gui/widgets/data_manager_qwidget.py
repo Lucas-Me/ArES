@@ -8,6 +8,7 @@ from qt_core import *
 
 # IMPORT CUSTOM UI
 from gui.pages.ui_data_page import UI_DataManager
+from gui.windows.dialog.file_dialog import FileDialog
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.functions import xls_reader, get_dateindex, reindex
@@ -33,6 +34,10 @@ class DataManager(QWidget):
         self.browse_folder = os.path.expanduser("~") # user home directory
         self.total_selected = 0 # total number of parameters selected
         self.updateSelectionCount(0)
+
+        # QDialog related properties
+        self.file_dialog_code = 0
+        self.replicate_command = False
 
         # SIGNALS AND SLOTS
         self.ui.xls_btn.clicked.connect(self.browse_xls_files)
@@ -232,27 +237,19 @@ class DataManager(QWidget):
         # file_path is a list with a path to each file.
         if len(file_paths) > 0:
             self.browse_folder = os.path.dirname(file_paths[0])
-            files = {}
+            xls_files = {}
             for path in file_paths:
                 try:
                     # read files and extract information
-                    files.update(xls_reader(path))
+                    xls_files.update(xls_reader(path))
 
                 except:
                     continue
 
-            for k, v in files.items():
-                if k not in self.archives:
-                    # add station into archives
-                    self.archives[k] = v
-
-                    # add parameters list
-                    self.selected_parameters[k] = [0] * len(v.parameters)
-
-                    # add station into list frame
-                    self.ui.station_manager_list.add_station_item(v)
-    
+            self.add_files(xls_files)
+                   
     def browse_sql(self, server):
+        sql_files = {}
         for i, name in enumerate(server.station_names):
             _object = SQlStationData(
                 name = name,
@@ -263,13 +260,40 @@ class DataManager(QWidget):
             )
             
             k = _object.metadata['signature']
-            self.archives[k] = _object
+            sql_files[k] = _object
+
+        self.add_files(sql_files)
+
+    def add_files(self, files):
+        target = self.ui.station_manager_list
+        for k, v in files.items():
+            if k in self.archives: # se o objeto ja estiver aberto
+                if not self.replicate_command:  # pergunta ao usuario o que ele deseja fazer com a duplicata 
+                    file_dialog = FileDialog(_object = v, parent= self)
+                    file_dialog.exec()
+                    
+                if self.file_dialog_code == 1: # O usuario escolheu IGNORAR
+                    continue
+                
+                elif self.file_dialog_code == 2: # O usuario escolheu Substituir
+                    item = target.getListWidgetItem(k)
+                    target.remove_item(item)
+                    pass
+
+                else: # O usuario escolheu cancelar a operacao
+                    break
+            
+            # add station into archives
+            self.archives[k] = v
 
             # add parameters list
-            self.selected_parameters[k] = [0] * len(_object.parameters)
+            self.selected_parameters[k] = [0] * len(v.parameters)
 
-            # add station into lsit frame
-            self.ui.station_manager_list.add_station_item(_object)
+            # add station into list frame
+            target.add_station_item(v)
+
+        # reseta a variavel
+        self.replicate_command = False
 
     def request_data(self, server):
         # setting up

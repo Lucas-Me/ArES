@@ -59,9 +59,6 @@ class SqlConnection(object):
 		return None
 
 	def atualizar_inventario(self):
-		if not self.cnx.is_connected():
-			return None
-
 		cursor = self.cnx.cursor()
 
 		# procurar apenas pelas tabelas 'headers' de cada estacao

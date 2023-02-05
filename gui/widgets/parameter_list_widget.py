@@ -21,6 +21,9 @@ class ParameterSelectionWidget(QListWidget):
         self.setMinimumWidth(width)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
+        # animation
+        self.animation = QVariantAnimation(self.verticalScrollBar())
+
         # parameters
         self.item_width = self.width()
         self.item_height = item_height
@@ -30,6 +33,9 @@ class ParameterSelectionWidget(QListWidget):
         # setup UI
         self.ui = UI_ParameterSelection()
         self.ui.setup_ui(self)
+
+        # signals and slots
+        self.animation.valueChanged.connect(self.moveScroll)
 
     def set_signature(self, string):
         self.signature = string[:]
@@ -64,3 +70,17 @@ class ParameterSelectionWidget(QListWidget):
 
     def emit_signal(self, state, row):
         self.stateChanged.emit([state, row])
+
+    def wheelEvent(self, e: QWheelEvent) -> None:
+        self.animation.stop()
+        scrollbar = self.verticalScrollBar()
+        delta = e.angleDelta().y() // 3
+        y = scrollbar.value()
+        
+        self.animation.setStartValue(y)
+        self.animation.setEndValue(y - delta)
+        self.animation.setDuration(50)
+        self.animation.start()
+
+    def moveScroll(self, i):
+        self.verticalScrollBar().setValue(i)
