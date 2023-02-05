@@ -1,6 +1,5 @@
 # IMPORT MODULES
 import sys
-import os
 import mysql.connector
 
 # IMPORT QT CORE

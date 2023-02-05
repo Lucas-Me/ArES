@@ -248,7 +248,7 @@ class UI_DataManager(object):
         # SETTING UP TOOL BAR STYLE SHEET
         parent.setStyleSheet(f'''
             #data_page{{
-                background-color: #f0f0f0;
+                background-color: #fafafa;
             }}
             #next_btn {{
                 background-color: #ffffff;
@@ -338,7 +338,7 @@ class UI_DataManager(object):
                 border-bottom: none;
             }}
             #name, #theme, #unit {{
-                font: 500 13pt {font};
+                font: 600 13pt {font};
                 color: #32495e;
             }}
         ''')
