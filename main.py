@@ -55,9 +55,7 @@ class MainWindow(QMainWindow):
     def updateDatabaseSQL(self):
         server = self.ui.ui_pages.login_page.sql
         if not server.get_status(): # if not connected, display window
-            self.ui.ui_pages.login_page.disconnectSQL()
-            dialog = ImportDialogSQL(self)
-            dialog.exec()
+            self.connnectionErrorDialog()
             return None
 
         # browser sql files
@@ -75,13 +73,20 @@ class MainWindow(QMainWindow):
 
         except mysql.connector.Error as err: # se der erro, provavelmente a conexao foi perdida
             print(err)
-            self.ui.ui_pages.login_page.disconnectSQL()
-            dialog = ImportDialogSQL(self)
-            dialog.exec()
+            self.connnectionErrorDialog()
             return None
 
         # updating data on processing screen
         self.ui.ui_pages.process_page.updateRawData(data)
+
+    def connnectionErrorDialog(self):
+        '''
+        Janela de Dialogo quando ocorre algum problema na conexão SQL.
+        '''
+        self.ui.ui_pages.login_page.disconnectSQL()
+        dialog = ImportDialogSQL(self)
+        dialog.okClicked.connect(lambda: self.change_page(page = 0, button = self.ui.btn_1))
+        dialog.exec()
 
 
 if __name__ == "__main__":

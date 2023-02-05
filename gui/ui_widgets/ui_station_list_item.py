@@ -48,7 +48,7 @@ class UI_StationListItem(object):
         # ///////////////////////////////////////////////////////////////////
         if parent.is_xls():
             # CREATING DELETE BUTTON
-            self.delete_btn = QPushButton("X")
+            self.delete_btn = QPushButton('x')
             self.delete_btn.setObjectName('delete_btn')
             self.delete_btn.setFixedSize(20, 20)
 
@@ -90,6 +90,7 @@ class UI_StationListItem(object):
                 color: #ffffff;
                 font: bold 12pt {font};
                 border: none;
+                text-align: center;
             }}
             #delete_btn:hover {{
                 background-color: #f53c00;
@@ -99,7 +100,3 @@ class UI_StationListItem(object):
             }}
         '''
         )
-
-
-
-        

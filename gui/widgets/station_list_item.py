@@ -57,7 +57,7 @@ class CountMark(QWidget):
         # OBJECTS
         self.count_marked = marked
         self.icon_color = icon_color
-        self.font = QFont('Open Sans', 10)
+        self.font = QFont('Microsoft New Tai Lue', 10)
         self.pen = QPen()
 
         # SETTING UP PROPERTIES

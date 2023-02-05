@@ -5,6 +5,7 @@ from qt_core import *
 from backend.misc.functions import drawShadow
 
 class ImportDialogSQL(QDialog):
+	okClicked = Signal()
 
 	def __init__(self, parent = None):
 		super().__init__(parent)
@@ -15,13 +16,19 @@ class ImportDialogSQL(QDialog):
 		#
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground, True)
+		self.setAttribute(Qt.WA_DeleteOnClose, True)
 		self.setFixedSize(450, 250)
 		#
 		self.setup_properties()
 		self.setup_stylesheet()
 		
 		# SIGNALS AND SLOTS
-		self.ok_button.clicked.connect(self.close)
+		self.ignore_button.clicked.connect(self.close)
+		self.ok_button.clicked.connect(self.okAction)
+
+	def okAction(self):
+		self.okClicked.emit()
+		self.close()
 
 	def setup_properties(self):
 		

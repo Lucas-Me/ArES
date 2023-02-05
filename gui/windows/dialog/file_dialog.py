@@ -21,6 +21,7 @@ class FileDialog(QDialog):
 		#
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground, True)
+		self.setAttribute(Qt.WA_DeleteOnClose, True)
 		self.setFixedSize(500, 300)
 		#
 		self.setup_properties()

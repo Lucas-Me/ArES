@@ -27,7 +27,7 @@ class UI_DataManager(object):
         self.main_layout.setColumnStretch(1, 5)
         self.main_layout.setVerticalSpacing(20)
         self.main_layout.setHorizontalSpacing(20)
-        self.main_layout.setContentsMargins(30, 30, 30, 0)
+        self.main_layout.setContentsMargins(30, 30, 30, 30)
 
         # TOOL BAR
         # ///////////////////////////////////////////////////////////////////
@@ -206,6 +206,14 @@ class UI_DataManager(object):
         self.parameter_viewer_layout.addWidget(self.viewer_header)
         self.parameter_viewer_layout.addWidget(self.parameter_viewer)
 
+    
+        # add to paramater view layout
+        self.parameter_view_layout.addWidget(self.information_view_frame)
+        self.parameter_view_layout.addLayout(self.parameter_viewer_layout)
+
+        # MAIN LAYOUT CONFIGURATION
+        # ////////////////////////////////////////////////////////////////////
+        
         # NEXT BUTTON
         self.next_btn = ClassicButton(
             text = 'Próximo',
@@ -218,26 +226,16 @@ class UI_DataManager(object):
         )
         self.next_btn.setObjectName('next_btn')
 
-        # add to paramater view layout
-        self.parameter_view_layout.addWidget(self.information_view_frame)
-        self.parameter_view_layout.addLayout(self.parameter_viewer_layout)
-        self.parameter_view_layout.addWidget(self.next_btn)
-
-        # configuring
-        self.parameter_view_layout.setAlignment(self.next_btn, Qt.AlignmentFlag.AlignRight)
-
-        # MAIN LAYOUT CONFIGURATION
-        # ////////////////////////////////////////////////////////////////////
-        
         # bottom spacer
-        spacer = QSpacerItem(1050, 20, QSizePolicy.Minimum, QSizePolicy.Minimum)
+        spacer = QSpacerItem(50, self.next_btn.height(), QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.main_layout.addWidget(self.tool_bar_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
         self.main_layout.addWidget(self.station_view_frame, 1, 0, 1, 1)
         self.main_layout.addWidget(self.parameter_view_frame, 1, 1, 1, 1)
-        self.main_layout.addItem(spacer, 2, 0, 1, 2)
+        self.main_layout.addWidget(self.next_btn, 2, 1, 1, 1, Qt.AlignmentFlag.AlignRight)
+        self.main_layout.addItem(spacer, 2, 0, 1, 1)
        
 
-    def setup_stylesheets(self):
+    def setup_stylesheets(self, parent):
         # Properties
         font = 'Microsoft New Tai Lue'
         font_color = '#32495e'
@@ -248,6 +246,26 @@ class UI_DataManager(object):
         border_radius = 10
 
         # SETTING UP TOOL BAR STYLE SHEET
+        parent.setStyleSheet(f'''
+            #data_page{{
+                background-color: #f0f0f0;
+            }}
+            #next_btn {{
+                background-color: #ffffff;
+                border: none;
+                border-radius: {border_radius};
+                font: 500 14pt {font};
+                color: {font_color};
+                padding-left: 20px;
+                text-align: left;
+            }}
+            #next_btn:hover {{
+                background-color: {header_color};
+            }}
+            #next_btn:pressed {{
+                background-color: {border_color};
+            }}
+        ''')
         self.tool_bar_frame.setStyleSheet(f'''
             #tool_bar {{
                 background-color: {inner_frame_color};
@@ -312,31 +330,12 @@ class UI_DataManager(object):
             #header {{
                 background-color: #dcdcdc;
                 border: 0.5px solid;
-                border-color: #333333;
+                border-color: #6c8194;
                 border-bottom: none;
             }}
             #name, #theme, #unit {{
                 font: 500 13pt {font};
                 color: #32495e;
-            }}
-            #next_btn {{
-                background-color: #ffffff;
-                border: none;
-                border-radius: {border_radius};
-                font: 500 14pt {font};
-                color: {font_color};
-                padding-left: 20px;
-                text-align: left;
-            }}
-            #next_btn:hover {{
-                background-color: {header_color};
-            }}
-            #next_btn:pressed {{
-                background-color: {border_color};
-            }}
-            #next_btn:disabled{{
-                background-color: transparent;
-                color: transparent;
             }}
         ''')
 

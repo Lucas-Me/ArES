@@ -26,7 +26,7 @@ class DataManager(QWidget):
         # SETUP MAIN UI 
         self.ui = UI_DataManager()
         self.ui.setup_ui(self)
-        self.ui.setup_stylesheets()
+        self.ui.setup_stylesheets(self)
         
         # PROPERTIES
         self.archives = {} # Opened station archives
@@ -149,9 +149,9 @@ class DataManager(QWidget):
     def updateSelectionCount(self, count):
         self.total_selected = count
         if not count:
-            self.ui.next_btn.setDisabled(True)
+            self.ui.next_btn.hide()
         else:
-            self.ui.next_btn.setDisabled(False)
+            self.ui.next_btn.show()
 
     def update_tristate_button(self, active, total):
         if active == 0:
