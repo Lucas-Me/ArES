@@ -12,11 +12,11 @@ class UI_ParameterSelection(object):
         parent.setStyleSheet(f'''
             QListWidget {{
                 border: 0.5px solid;
-                border-color: #6c8194;
+                border-color: #dcdcdc;
             }}
             QListWidget::item {{
                 border-bottom: 0.5px solid;
-                border-color: #6c8194;
+                border-color: #dcdcdc;
             }}
             ''')
 

@@ -196,8 +196,8 @@ class UI_DataManager(object):
         #
         self.header_layout.addWidget(self.check_box)
         self.header_layout.addWidget(self.name_label)
-        self.header_layout.addWidget(self.theme_label)
         self.header_layout.addWidget(self.unit_label)
+        self.header_layout.addWidget(self.theme_label)
 
         self.parameter_viewer = ParameterSelectionWidget(width=w, item_height=50)
         self.parameter_viewer.setMinimumHeight(h - 200)
@@ -243,7 +243,7 @@ class UI_DataManager(object):
         background_color = '#f0f0f0'
         header_color = '#dcdcdc'
         inner_frame_color = "#ffffff"
-        border_radius = 10
+        border_radius = 5
 
         # SETTING UP TOOL BAR STYLE SHEET
         parent.setStyleSheet(f'''
@@ -252,7 +252,8 @@ class UI_DataManager(object):
             }}
             #next_btn {{
                 background-color: #ffffff;
-                border: none;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
                 border-radius: {border_radius};
                 font: 500 14pt {font};
                 color: {font_color};
@@ -269,7 +270,8 @@ class UI_DataManager(object):
         self.tool_bar_frame.setStyleSheet(f'''
             #tool_bar {{
                 background-color: {inner_frame_color};
-                border: none;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
                 border-radius: {border_radius};
             }}
             #sql_button {{
@@ -306,7 +308,8 @@ class UI_DataManager(object):
                 color: {font_color};
                 background-color: #ffffff;
                 border-radius: {border_radius};
-                border: none;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
                 padding-left: 10px;
             }}
         '''
@@ -320,7 +323,8 @@ class UI_DataManager(object):
             }}
             #information_view{{
                 background-color: #ffffff;
-                border: none;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
                 border-radius: {border_radius};
             }}
             #station_label, #dates_label{{
@@ -330,7 +334,7 @@ class UI_DataManager(object):
             #header {{
                 background-color: #dcdcdc;
                 border: 0.5px solid;
-                border-color: #6c8194;
+                border-color: #dcdcdc;
                 border-bottom: none;
             }}
             #name, #theme, #unit {{

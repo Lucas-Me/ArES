@@ -49,6 +49,8 @@ class UI_ParameterListItem(object):
         parent.setStyleSheet(f'''
             #parameter_item {{
                 background-color : {background_color};
+                border-bottom: 0.5px solid;
+                border-color: #dcdcdc;
             }}
             #name, #theme, #unit {{
                 font: 500 13pt {font};

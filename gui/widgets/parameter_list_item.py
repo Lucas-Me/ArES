@@ -42,14 +42,14 @@ class ParameterListItem(QFrame):
             #parameter_item {{
                 background-color : #d0e6ea;
                 border-bottom: 0.5px solid;
-                border-color: #333333;
+                border-color: #dcdcdc;
             }}''')
         else:
             self.setStyleSheet(style + f'''
             #parameter_item {{
                 background-color : #ffffff;
                 border-bottom: 0.5px solid;
-                border-color: #333333;
+                border-color: #dcdcdc;
             }}''')
 
     def emit_signal(self):

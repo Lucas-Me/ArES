@@ -21,17 +21,17 @@ class UI_StationListItem(object):
         # //////////////////////////////////////////////////
         self.station_name = QLabel(parent._name)
         self.station_name.setObjectName('name_label')
-        self.station_name.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self.station_name.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.station_name.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
+        self.station_name.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         #
         self.station_type = QLabel(parent._type)
         self.station_type.setObjectName('type_label')
-        self.station_type.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self.station_type.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.station_type.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
+        self.station_type.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
 
         # label layout
         self.label_layout = QVBoxLayout()
-        self.label_layout.setContentsMargins(0, 5, 0, 5)
+        self.label_layout.setContentsMargins(0, 5, 0, 0)
         self.label_layout.setSpacing(5)
 
         # add to label layout
@@ -68,6 +68,8 @@ class UI_StationListItem(object):
         parent.setStyleSheet(f'''
             #station_item {{
                 background-color: #ffffff;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
             }}
             #signature {{
                 background-color: {frame_color};
