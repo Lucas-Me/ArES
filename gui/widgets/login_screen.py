@@ -1,9 +1,6 @@
 # IMPORT QT CORE
 from qt_core import *
 
-# IMPORT MODULES
-import mysql.connector
-
 # IMPORT CUSTOM UI
 from gui.pages.ui_loginscreen import UI_LoginScreen
 
@@ -94,18 +91,23 @@ class LoginScreen(QWidget):
 		Efetua uma verificação no banco de dados, visando atualizar as informacoes
 		sobre as estacoes existentes e suas propriedades (parametros, empresa, etc..)
 		'''
-
 		loading_dialog = LoadingDialog(text='Atualizando as informações locais...', parent = self)
 		loading_dialog.finished.connect(self.updateRefreshText)
 		self.sql.atualizar_inventario(loading_dialog) # update database invenctory
-		loading_dialog.show()	
+		loading_dialog.show()
 	
-	def updateRefreshText(self):
-		locale = QLocale('pt_BR')
-		self.last_refresh = locale.toString(QDateTime.currentDateTime(), 'dd MMM yyyy hh:mm')
-		self.ui.verification_label.setText(
-			f'Última verificação: {self.last_refresh}'
-		)
+	@Slot(bool)
+	def updateRefreshText(self, success):
+		if success:
+			locale = QLocale('pt_BR')
+			self.last_refresh = locale.toString(QDateTime.currentDateTime(), 'dd MMM yyyy hh:mm')
+			self.ui.verification_label.setText(
+				f'Última verificação: {self.last_refresh}'
+			)
+		else:
+			self.disconnectSQL()
+			dialog = ImportDialogSQL(self)
+			dialog.show()
 
 	def disconnectSQL(self):
 		self.sql.disconnect()

@@ -6,7 +6,7 @@ from backend.misc.functions import drawShadow, get_imagepath
 
 class LoadingDialog(QDialog):
 
-	finished = Signal()
+	finished = Signal(bool)
 	def __init__(self, text, parent = None):
 		super().__init__(parent)
 		
@@ -32,8 +32,8 @@ class LoadingDialog(QDialog):
 		self.timer.timeout.connect(lambda: self.loading.updateTime(m))
 		self.timer.start(m)
 	
-	def closeWindow(self):
-		self.finished.emit()
+	def closeWindow(self, success):
+		self.finished.emit(success)
 		self.timer.stop()
 		self.timer.deleteLater()
 		self.close()
