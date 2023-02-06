@@ -76,7 +76,7 @@ class UI_ProcessScreen(object):
         # CONSTANTS
         font = 'sans-serif'
         font_color = '#757d8e'
-        bg_color = '#F0F0F0'
+        bg_color = '#FAFAFA'
         border_radius = 10
 
         checked_path = get_imagepath('checkbox_checked_circle.svg', 'gui/images/icons')

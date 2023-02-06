@@ -1,7 +1,7 @@
 # IMPORTS
 import os
 import re
-from time import time
+import numpy as np
 
 # IMPORT QT CORE
 from qt_core import *
@@ -394,19 +394,21 @@ class DataManager(QWidget):
                     metadata['parameter'] = _object.parameters[i]
 
                     # query variables from the SQL Database
-                    t0 = time()
-                    dates, values, flags = server.query_var(
-                        var_index = i,
-                        station_object = _object,
-                        start_date = start_date,
-                        end_date = end_date 
-                    )
-                    
-                    t1 = time()
+                    try:
+                        dates, values, flags = server.query_var(
+                            var_index = i,
+                            station_object = _object,
+                            start_date = start_date,
+                            end_date = end_date 
+                        )
+                    except ValueError:
+                        # operacao acima retornou objetos vazios.
+                        dates = new_dates
+                        values = np.full(dates.shape, np.nan)
+                        flags = np.full(dates.shape, np.nan)
 
                     # reindexing the values from arrays
                     values, flags = reindex(dates, values, flags, new_dates)
-                    t2 = time()
 
                     # creating object
                     this = RawData(
@@ -421,7 +423,6 @@ class DataManager(QWidget):
                     idx += 1
 
         return raw_data
-
 
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent(event)

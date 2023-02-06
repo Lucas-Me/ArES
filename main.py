@@ -113,13 +113,15 @@ class MainWindow(QMainWindow):
         try:
             data = data_manager.request_data(server)
 
-        except mysql.connector.Error as err: # se der erro, provavelmente a conexao foi perdida
-            print(err)
+        except TimeoutError as err: # se der erro, provavelmente a conexao foi perdida
             self.connnectionErrorDialog()
             return None
 
         # updating data on processing screen
         self.ui.ui_pages.process_page.updateRawData(data)
+
+        # force click on third screen (left menu)
+        self.ui.btn_3.click()
 
     def connnectionErrorDialog(self):
         '''

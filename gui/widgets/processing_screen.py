@@ -24,6 +24,15 @@ class ProcessingScreen(QWidget):
 	def updateRawData(self, data):
 		self.raw_data = data
 
+		for _object in self.raw_data:
+			content = [
+				_object.metadata['parameter'],
+				_object.metadata['name'],
+				_object.metadata['enterprise'],
+				'Nenhum'
+			]
+			self.ui.list_summary.addRow(content)
+
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''
 		Reinicia o painter deste QWidget, para que ele nao herde as propriedades do

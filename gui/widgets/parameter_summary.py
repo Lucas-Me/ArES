@@ -12,8 +12,13 @@ class ParameterSummary(QTableWidget):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
+		# PROPERTIES
+		self.scroll_width = self.verticalScrollBar().height()
+
 		# SETTINGS
 		self.setHorizontalHeader(CustomHeader(Qt.Orientation.Horizontal))
+		self.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+		self.setSortingEnabled(True)
 		self.setup()
 
 		# setup UI
@@ -21,16 +26,15 @@ class ParameterSummary(QTableWidget):
 		self.ui.setup_ui(self)
 		self.ui.setup_stylesheet(self)
 
-		# teste
-		content = ['Partículas Totais em Suspensão', 'DC - São Bento', 'Refinaria Duque de Caxias', 'Nenhum']
-		self.addRow(content)
-
 	def setup(self):
 		# disabling grid
 		self.setShowGrid(False)
 
 		# disabling vertical header
-		self.verticalHeader().hide()
+		verticalHeader = self.verticalHeader()
+		verticalHeader.hide()
+		verticalHeader.setSectionResizeMode(QHeaderView.Fixed)
+		verticalHeader.setDefaultSectionSize(30)
 
 		# settings up columns
 		columns = ['Parâmetro', "Estação", 'Empresa', 'Perfil']
@@ -39,16 +43,14 @@ class ParameterSummary(QTableWidget):
 		for i in range(n):
 			self.setHorizontalHeaderItem(i, QTableWidgetItem(columns[i]))
 		
-		self.setColumnWidth(3, 80)
-
+		self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
 		# setup font
 		self.font = QFont()
 		self.font.setFamily("Microsoft New Tai Lue")
 		self.font.setPointSize(12)
-		self.font.setBold(True)
 		
 		# deleaget
-		self.setItemDelegate(StyledItemDelegate(ncols = 4))
+		self.setItemDelegate(StyledItemDelegate(ncols = self.columnCount()))
 
 	def addRow(self, content : list[str]):
 		row = self.rowCount()
@@ -56,7 +58,7 @@ class ParameterSummary(QTableWidget):
 		self.insertRow(row)
 
 		for i in range(cols):
-			widget_item = self.createItem(content[i], '#fff6e5')
+			widget_item = self.createItem(content[i], '#ffffff')
 			self.setItem(row, i, widget_item)
 
 	def createItem(self, text, color):
@@ -65,9 +67,21 @@ class ParameterSummary(QTableWidget):
 		widget_item.setText(text)
 		widget_item.setBackground(QBrush(QColor(color)))
 		widget_item.setFont(self.font)
-		widget_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
+		widget_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+		
 		return widget_item
+
+	def resizeEvent(self, event: QResizeEvent) -> None:
+		header = self.horizontalHeader()
+		ncols = self.columnCount()
+		w = self.width()
+
+		# SETTING EACH COLUMNS WIDTH
+		for col in range(ncols):
+			width = w * header.getProportions(col) / 100
+			self.setColumnWidth(col, width)
+
+		return super().resizeEvent(event)
 
 
 class CustomHeader(QHeaderView):
@@ -75,26 +89,31 @@ class CustomHeader(QHeaderView):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		
+		# PROPERTIES
+		self.column_proportions = [30, 20, 34, 12] # in percentage
+
 		# SETTINGS
-		# self.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-		self.resizeSections()
-		self.setSectionsMovable(True)
+		self.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 		self.setup_style()
 
-	
+	def getProportions(self, col):
+		return self.column_proportions[col]
+
 	def setup_style(self):
 		# CONSTANTS
-		font = 'Franklin Gothic Demi'
-		font_color = '#757d8e'
+		font = 'Microsoft New Tai Lue'
+		font_color = '#32495e'
 
 		self.setStyleSheet(f'''
 			QHeaderView::section {{
 				background-color: transparent;
+				border: none;
 				font: 500 14pt '{font}';
 				color: {font_color};
 				padding-left: 4px;
-				border-top: 4px solid #adb3bf;
-				border-bottom: 2px solid #adb3bf;
+				text-align: left;
+				border-bottom: 1px solid #dcdcdc;
+				border-top: 1px solid #dcdcdc;
 			}}
 			QHeaderView::section:checked
 			{{
@@ -112,15 +131,16 @@ class StyledItemDelegate(QStyledItemDelegate):
 	def sizeHint(self, option: QStyleOptionViewItem, index):
 		return super().sizeHint(option, index)
 
-	def paint(self, painter: QPainter, option: 'QStyleOptionViewItem', index: QModelIndex) -> None:
+	def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex) -> None:
 		super().paint(painter, option, index)
 		
 		# setting up informations about cell
 		col = index.column()
-		
+
 		# painter and pen
 		painter.save()
-		pen = QPen(QColor("#adb3bf"))
+		pen = QPen(QColor("#dcdcdc"))
+		pen.setWidth(pen.width() / 2)
 		painter.setPen(pen)
 		
 		# underline 

@@ -13,15 +13,18 @@ class UI_ParameterSummary(object):
 	def setup_stylesheet(self, parent):
 		# CONSTANTS
 		font = 'Microsoft New Tai Lue'
-		font_color = '#757d8e'
-		bg_color = '#F0F0F0'
+		font_color = '#32495e'
+		bg_color = '#FAFAFA'
 		border_radius = 10
 
 		parent.setStyleSheet(f'''
 			#parameter_summary{{
 				background-color: transparent;
 				border: none;
-				font: 500 13pt '{font}';
+				font: 500 12pt '{font}';
 				color: {font_color};
+			}}
+			#parameter_summary::item{{
+				padding: 5px;
 			}}
 		''')
