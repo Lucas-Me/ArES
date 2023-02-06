@@ -4,12 +4,17 @@ from qt_core import *
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import drawShadow
 
-class ImportDialogSQL(QDialog):
+class ImportDialog(QDialog):
 	okClicked = Signal()
 
-	def __init__(self, parent = None):
+	def __init__(self, title, message, description, parent = None):
 		super().__init__(parent)
 		
+		# Properties
+		self.title = title
+		self.message = message
+		self.description = description
+
 		# CONFIGURATIONS
 		self.setModal(True)
 		self.setObjectName('error_dialog')
@@ -48,7 +53,7 @@ class ImportDialogSQL(QDialog):
 		self.frame_layout.setSpacing(0)
 
 		# TOP LABEL
-		self.title = QLabel('Erro')
+		self.title = QLabel(self.title)
 		self.title.setObjectName('title')
 		self.title.setFixedSize(w, 40)
 		self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -60,14 +65,14 @@ class ImportDialogSQL(QDialog):
 		self.middle_layout.setContentsMargins(10, 10, 10, 10)
 
 		# MESSAGE
-		self.message = QLabel('Não foi possível comunicar-se com o banco de dados')
+		self.message = QLabel(self.message)
 		self.message.setObjectName("message")
 		self.message.setAlignment(Qt.AlignmentFlag.AlignLeft)
 		self.message.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
 		self.message.setWordWrap(True)
 
 		# description
-		self.description = QLabel('Certifique-se de que a conexão com o servidor tenha sido estabelecida.')
+		self.description = QLabel(self.description)
 		self.description.setObjectName("description")
 		self.description.setAlignment(Qt.AlignmentFlag.AlignLeft)
 		self.description.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)

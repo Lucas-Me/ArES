@@ -9,7 +9,7 @@ from qt_core import *
 from gui.windows.main_window.ui_main_window import *
 
 # IMPORT DIALGO
-from gui.windows.dialog.import_dialog import ImportDialogSQL
+from gui.windows.dialog.import_dialog import ImportDialog
 from gui.windows.loading.splash_screen import SplashScreen
 
 
@@ -126,7 +126,12 @@ class MainWindow(QMainWindow):
         Janela de Dialogo quando ocorre algum problema na conexão SQL.
         '''
         self.ui.ui_pages.login_page.disconnectSQL()
-        dialog = ImportDialogSQL(self)
+        dialog = ImportDialog(
+            title = 'Erro',
+            message = 'Não foi possível se comunicar com o banco de dados',
+            description='Certifique-se de que a conexão esteja estabelecida',
+            parent = self
+        )
         dialog.okClicked.connect(lambda: self.change_page(page = 0, button = self.ui.btn_1))
         dialog.exec()
 

@@ -6,7 +6,7 @@ from gui.pages.ui_loginscreen import UI_LoginScreen
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.sql_backend import SqlConnection
-from gui.windows.dialog.import_dialog import ImportDialogSQL
+from gui.windows.dialog.import_dialog import ImportDialog
 from gui.windows.dialog.loading_dialog import LoadingDialog
 
 # IMPORT CUSTOM FUCTIONS
@@ -106,7 +106,12 @@ class LoginScreen(QWidget):
 			)
 		else:
 			self.disconnectSQL()
-			dialog = ImportDialogSQL(self)
+			dialog = ImportDialog(
+				title = 'Erro',
+				message = 'Não foi possível se comunicar com o banco de dados',
+				description='Certifique-se de que a conexão esteja estabelecida',
+				parent = self
+        	)
 			dialog.show()
 
 	def disconnectSQL(self):

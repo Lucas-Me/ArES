@@ -9,6 +9,8 @@ from qt_core import *
 # IMPORT CUSTOM UI
 from gui.pages.ui_data_page import UI_DataManager
 from gui.windows.dialog.file_dialog import FileDialog
+from gui.windows.dialog.loading_dialog import LoadingDialog
+from gui.windows.dialog.import_dialog import ImportDialog
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.functions import xls_reader, get_dateindex, reindex
@@ -237,16 +239,37 @@ class DataManager(QWidget):
         # file_path is a list with a path to each file.
         if len(file_paths) > 0:
             self.browse_folder = os.path.dirname(file_paths[0])
-            xls_files = {}
-            for path in file_paths:
-                try:
-                    # read files and extract information
-                    xls_files.update(xls_reader(path))
 
-                except:
-                    continue
+            # create loading dialog
+            dialog = LoadingDialog(text = 'Lendo arquivos', parent = self)
+            dialog.show()
 
-            self.add_files(xls_files)
+            # Create a QThread object
+            self.thread = QThread()
+
+            # Create a worker object
+            self.worker = Worker(files = file_paths)
+
+            # Move worker to the thread
+            self.worker.moveToThread(self.thread)
+
+            # Connect signals and slots
+            self.thread.started.connect(self.worker.start_xls)
+            #
+            self.worker.resultReady.connect(self.thread.quit)
+            self.worker.resultReady.connect(self.worker.deleteLater)
+            self.worker.resultReady.connect(self.add_files)
+            self.worker.resultReady.connect(lambda: dialog.closeWindow(True))
+            #
+            self.worker.error.connect(self.thread.quit)
+            self.worker.error.connect(self.worker.deleteLater)
+            self.worker.error.connect(lambda: dialog.closeWindow(False))
+            self.worker.error.connect(self.importErrorXLS)
+            #
+            self.thread.finished.connect(self.thread.deleteLater)
+
+            # Start the thread
+            self.thread.start()
                    
     def browse_sql(self, server):
         sql_files = {}
@@ -264,6 +287,7 @@ class DataManager(QWidget):
 
         self.add_files(sql_files)
 
+    @Slot(dict)
     def add_files(self, files):
         target = self.ui.station_manager_list
         for k, v in files.items():
@@ -294,6 +318,20 @@ class DataManager(QWidget):
 
         # reseta a variavel
         self.replicate_command = False
+
+    def importErrorXLS(self):
+        '''
+        Cria uma janela de dialogo quando ocorre um erro ao efetuar a leitura
+        de um ou mais arquivos XLS.
+        '''
+        dialog = ImportDialog(
+            title = 'Erro de leitura',
+            message = 'Não foi possível ler um ou mais arquivos',
+            description= 'Possivelmente a planilha selecionada não possui a formatação adequada para ser lida no programa.',
+            parent = self
+        )
+        dialog.ok_button.hide()
+        dialog.show()
 
     def request_data(self, server):
         # setting up
@@ -393,3 +431,32 @@ class DataManager(QWidget):
         p = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
 
+
+class Worker(QObject):
+    '''
+    Worker para as tarefas relacionadas a leitura de arquivos XLS e aos processos
+    do botao "Proximo"
+    '''
+
+    resultReady = Signal(dict)
+    error = Signal()
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(kwargs.get('parent', None))
+        self.file_paths = kwargs.get('files', None).copy()
+
+    def start_xls(self):
+        try:
+            xls_files = {}
+            for path in self.file_paths:
+                # read files and extract information
+                files = xls_reader(path)
+                xls_files.update(files)
+            
+            self.resultReady.emit(xls_files)
+
+        except Exception as err:
+            # Provavelmente houve erro de leitura em um dos arquivos XLS
+            self.error.emit()
+
+        
