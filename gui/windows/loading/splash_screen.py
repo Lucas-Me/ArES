@@ -2,15 +2,13 @@
 from qt_core import *
 
 # IMPORT CUSTOM FUNCTIONS
-from backend.misc.functions import get_imagepath
+from backend.misc.functions import get_imagepath, drawShadow
 
 class SplashScreen(QMainWindow):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		# PROPERTIES
-		self.width = 300
-		self.height = 300
 		#
 		self.background_color= '#1e374d'
 		self.logo_color = 'white'
@@ -23,103 +21,106 @@ class SplashScreen(QMainWindow):
 		self.enable_shadow = True
 
 		# SETTINGS
-		self.setFixedSize(self.width, self.height)
+		self.setFixedSize(300, 300)
 		self.setStructure()
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_DeleteOnClose, True)
-
-		# SIGNALS AND SLOTS
-		self.slider.valueChanged.connect(self.updateProgress)
-
-	def updateProgress(self, i):
-		self.progress_bar.updateValue(i)
-		if i == self.max_value: self.close()
+		self.setAttribute(Qt.WA_TranslucentBackground, True)
 
 	def setStructure(self):
-		self.setStyleSheet(f'background-color: {self.background_color}')
 		#
-		self.main_layout = QVBoxLayout(self)
-		self.main_layout.setContentsMargins(0, 40, 0, 40)
+		self.main_frame = QFrame()
+		self.main_frame.setStyleSheet(f'background-color: {self.background_color}; border-radius:10px')
+		margin = 5
+		self.main_frame.setFixedSize(self.width() - margin * 2, self.height() - margin* 2)
+		#
+		self.main_layout = QVBoxLayout(self.main_frame)
+		self.main_layout.setContentsMargins(0, 0, 0, 0)
 		self.main_layout.setSpacing(10)
 		
 		# LOGO
 		self.logo = SoftwareLogo(self.logo_width, 'ArES_logo_2.svg', self.logo_color)
 
-		# PROGRESS BAR
-		self.progress_bar = ProgressBar(self.progress_width, self.progress_height, self.progress_color, self.max_value)
-
-		# SLIDER
-		self.slider = QSlider()
-		self.slider.setRange(0, self.max_value)
-
 		# ADD TO MAIN LAYOUT
 		self.main_layout.addWidget(self.logo)
-		self.main_layout.addWidget(self.progress_bar)
-		self.main_layout.addWidget(self.slider)
-
-		self.main_layout.setAlignment(self.logo, Qt.AlignmentFlag.AlignHCenter)
-		self.main_layout.setAlignment(self.progress_bar, Qt.AlignmentFlag.AlignHCenter)
-		self.main_layout.setAlignment(self.slider, Qt.AlignmentFlag.AlignHCenter)
-
-
-class ProgressBar(QWidget):
-
-	def __init__(self, width, height, color, max_value):
-		super().__init__()
-
-		# PROPERTIES
-		self.value = 0
-		self.max_value = max_value
-		self.margins = 2
-
-		# VARIABLES
-		self.progress_width = width - self.margins * 2
-		self.progress_height = height - self.margins * 2
-		self.pen = QPen()
-		self.brush = QBrush()
-
-		# SETTINGS
-		self.setFixedSize(width, height)
-		self.pen.setColor(QColor(color))
-		self.brush.setColor(QColor(color))
-		self.brush.setStyle(Qt.SolidPattern)
-
-	def updateValue(self, value):
-		self.value = value
-		self.update()
-
-	def getValue(self):
-		return self.value
+		self.main_layout.setAlignment(self.logo, Qt.AlignmentFlag.AlignCenter)
+		self.setCentralWidget(self.main_frame)
+		self.setContentsMargins(margin, margin, margin, margin)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
-		width = self.width()
-		height = self.height()
-		#
-		width2 = self.progress_width
-		height2 = self.progress_height
+		painter = QPainter(self)
+		drawShadow(
+			painter,
+			10,
+			2.0,
+			QColor(120, 120, 120, 32),
+			QColor(255, 255, 255, 0),
+			0.0,
+			1.0,
+			0.6,
+			self.width(),
+			self.height()
+		)
 
-		# PAINTER
-		paint = QPainter()
-		paint.begin(self)
-		paint.setRenderHint(QPainter.Antialiasing)
+		
+# class ProgressBar(QWidget):
 
-		# CREATE RECTANGLE
-		rect = QRect(0, 0, width, height)
-		paint.setBrush(Qt.NoBrush)
-		paint.setPen(self.pen)
-		paint.drawRect(rect)
+# 	def __init__(self, width, height, color, max_value):
+# 		super().__init__()
 
-		# PAINTER FOR PROFRESS
-		# paint.setBrush(self.brush)
-		paint.setPen(Qt.NoPen)
+# 		# PROPERTIES
+# 		self.value = 0
+# 		self.max_value = max_value
+# 		self.margins = 2
 
-		# CREATE PROGRESS RECTANGLE
-		progress = self.value / self.max_value * width2
-		rect2 = QRect(self.margins, self.margins, progress, height2)
-		paint.fillRect(rect2, self.brush)
+# 		# VARIABLES
+# 		self.progress_width = width - self.margins * 2
+# 		self.progress_height = height - self.margins * 2
+# 		self.pen = QPen()
+# 		self.brush = QBrush()
 
-		# END
-		paint.end()
+# 		# SETTINGS
+# 		self.setFixedSize(width, height)
+# 		self.pen.setColor(QColor(color))
+# 		self.brush.setColor(QColor(color))
+# 		self.brush.setStyle(Qt.SolidPattern)
+
+# 	def updateValue(self, value):
+# 		self.value = value
+# 		self.update()
+
+# 	def getValue(self):
+# 		return self.value
+
+# 	def paintEvent(self, event: QPaintEvent) -> None:
+# 		width = self.width()
+# 		height = self.height()
+# 		#
+# 		width2 = self.progress_width
+# 		height2 = self.progress_height
+
+# 		# PAINTER
+# 		paint = QPainter()
+# 		paint.begin(self)
+# 		paint.setRenderHint(QPainter.Antialiasing)
+
+# 		# CREATE RECTANGLE
+# 		rect = QRect(0, 0, width, height)
+# 		paint.setBrush(Qt.NoBrush)
+# 		paint.setPen(self.pen)
+# 		paint.drawRect(rect)
+
+# 		# PAINTER FOR PROFRESS
+# 		# paint.setBrush(self.brush)
+# 		paint.setPen(Qt.NoPen)
+
+# 		# CREATE PROGRESS RECTANGLE
+# 		progress = self.value / self.max_value * width2
+# 		rect2 = QRect(self.margins, self.margins, progress, height2)
+# 		paint.fillRect(rect2, self.brush)
+
+# 		# END
+# 		paint.end()
 
 
 class SoftwareLogo(QWidget):

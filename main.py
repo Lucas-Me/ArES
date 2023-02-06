@@ -10,38 +10,79 @@ from gui.windows.main_window.ui_main_window import *
 
 # IMPORT DIALGO
 from gui.windows.dialog.import_dialog import ImportDialogSQL
+from gui.windows.loading.splash_screen import SplashScreen
+
+
+class LoadUi(QObject):
+
+    def __init__(self, parent) -> None:
+        super().__init__(parent)
+        self.mainWindow = parent
+
+    @Slot()
+    def start(self):
+        # load the main UI
+        self.mainWindow.ui = UI_MainWindow()
+        self.mainWindow.ui.setup_ui(self.mainWindow)
+
+        # open page 1
+        self.mainWindow.ui.btn_1.clicked.connect(lambda: self.mainWindow.change_page(page = 0, button = self.mainWindow.ui.btn_1))
+        
+        # open page 2
+        self.mainWindow.ui.btn_2.clicked.connect(lambda: self.mainWindow.change_page(page = 1, button = self.mainWindow.ui.btn_2))
+
+        # open page 3
+        self.mainWindow.ui.btn_3.clicked.connect(lambda: self.mainWindow.change_page(page = 2, button = self.mainWindow.ui.btn_3))
+
+        # SQL request
+        self.mainWindow.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.mainWindow.updateDatabaseSQL)
+
+        # NEXT button on DATA MANAGER SCREEEn
+        self.mainWindow.ui.ui_pages.data_page.ui.next_btn.clicked.connect(self.mainWindow.requestData)
+
+        # EMIT SIGNAL
+        self.mainWindow.uiLoaded.emit()
 
 # MAIN WINDOW
 class MainWindow(QMainWindow):
+    uiLoaded = Signal()
+
     def __init__(self) -> None:
         super().__init__()
 
         # window title
         self.setWindowTitle("ArES")
 
-        # SETUP MAIN WINDOW
-        self.ui = UI_MainWindow()
-        self.ui.setup_ui(self)
+        # UI LOADING ON DEDICATE THREAD
+        # //////////////////////////////
+        self.uiLoadingThread = QThread()
+
+        # create and show the splash screen
+        self.loadingScreen = SplashScreen()
+        self.loadingScreen.show()
+
+        # creating the QObject
+        self.loadUI = LoadUi(self)
+        # self.loadUI.moveToThread(self.uiLoadingThread)
 
         # SIGNALS AND SLOTS
-        # open page 1
-        self.ui.btn_1.clicked.connect(lambda: self.change_page(page = 0, button = self.ui.btn_1))
+        # connect the ui loaded signal
+        self.uiLoaded.connect(self.closeLoadingScreen)
+
+        # connet the start
+        self.uiLoadingThread.started.connect(self.loadUI.start)
         
-        # open page 2
-        self.ui.btn_2.clicked.connect(lambda: self.change_page(page = 1, button = self.ui.btn_2))
+        # Start the UI Loading
+        self.uiLoadingThread.start()
 
-        # open page 3
-        self.ui.btn_3.clicked.connect(lambda: self.change_page(page = 2, button = self.ui.btn_3))
-
-        # SQL request
-        self.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.updateDatabaseSQL)
-
-        # NEXT button on DATA MANAGER SCREEEn
-        self.ui.ui_pages.data_page.ui.next_btn.clicked.connect(self.requestData)
-
-        # EXIBE A APLICAÇÃO
-        self.show()
     
+    def closeLoadingScreen(self):
+        # Close the loading screen
+        self.loadingScreen.close()
+
+        # show the main UI
+        self.show()
+
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
             btn.set_active(False)
