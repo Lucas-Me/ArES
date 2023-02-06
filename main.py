@@ -75,10 +75,12 @@ class MainWindow(QMainWindow):
         # Start the UI Loading
         self.uiLoadingThread.start()
 
-    
     def closeLoadingScreen(self):
         # Close the loading screen
         self.loadingScreen.close()
+
+        # terminating thread
+        self.uiLoadingThread.quit()
 
         # show the main UI
         self.show()

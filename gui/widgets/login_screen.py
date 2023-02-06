@@ -10,6 +10,7 @@ from gui.pages.ui_loginscreen import UI_LoginScreen
 # IMPORT CUSTOM MODULES
 from backend.data_management.sql_backend import SqlConnection
 from gui.windows.dialog.import_dialog import ImportDialogSQL
+from gui.windows.dialog.loading_dialog import LoadingDialog
 
 # IMPORT CUSTOM FUCTIONS
 from backend.misc.functions import get_imagepath
@@ -93,19 +94,18 @@ class LoginScreen(QWidget):
 		Efetua uma verificação no banco de dados, visando atualizar as informacoes
 		sobre as estacoes existentes e suas propriedades (parametros, empresa, etc..)
 		'''
-		try:
-			self.sql.atualizar_inventario() # update database invenctory
-			locale = QLocale('pt_BR')
-			self.last_refresh = locale.toString(QDateTime.currentDateTime(), 'dd MMM yyyy hh:mm')
-			self.ui.verification_label.setText(
-				f'Última verificação: {self.last_refresh}'
-			)
 
-		except mysql.connector.Error as err: # se der erro, provavelmente a conexao foi perdida
-			print(err)
-			self.disconnectSQL()
-			dialog = ImportDialogSQL(self)
-			dialog.exec()
+		loading_dialog = LoadingDialog(text='Atualizando as informações locais...', parent = self)
+		loading_dialog.finished.connect(self.updateRefreshText)
+		self.sql.atualizar_inventario(loading_dialog) # update database invenctory
+		loading_dialog.show()	
+	
+	def updateRefreshText(self):
+		locale = QLocale('pt_BR')
+		self.last_refresh = locale.toString(QDateTime.currentDateTime(), 'dd MMM yyyy hh:mm')
+		self.ui.verification_label.setText(
+			f'Última verificação: {self.last_refresh}'
+		)
 
 	def disconnectSQL(self):
 		self.sql.disconnect()
