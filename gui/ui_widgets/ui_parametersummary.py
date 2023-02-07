@@ -24,7 +24,4 @@ class UI_ParameterSummary(object):
 				font: 500 12pt '{font}';
 				color: {font_color};
 			}}
-			#parameter_summary::item{{
-				padding: 5px;
-			}}
 		''')
