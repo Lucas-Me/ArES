@@ -25,13 +25,11 @@ class ProcessingScreen(QWidget):
 		self.raw_data = data
 
 		for _object in self.raw_data:
-			content = [
-				_object.metadata['parameter'],
-				_object.metadata['name'],
-				_object.metadata['enterprise'],
-				'Nenhum'
-			]
-			self.ui.list_summary.addRow(content)
+			self.ui.parameter_list.addRow(
+				parameter = _object.metadata['parameter'],
+				station = _object.metadata['name'],
+				enterprise = _object.metadata['enterprise']
+				)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''

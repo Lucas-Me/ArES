@@ -17,65 +17,70 @@ class UI_ProcessScreen(object):
         self.main_layout = QGridLayout(parent)
         self.main_layout.setVerticalSpacing(20)
         self.main_layout.setHorizontalSpacing(20)
-        self.main_layout.setContentsMargins(30, 30, 30, 30)
+        self.main_layout.setContentsMargins(30, 20, 30, 20)
 
-        # UPPER LEFT LAYOUT
+        # TOP LABEL
+        # /////////////////////////////////////////////////////////////
+        self.date_label = QLabel('27 oct 2022 - 05 may 2023')
+        self.date_label.setFixedHeight(35)
+        self.date_label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.date_label.setObjectName('date_label')
+        
+        # SETTINGS FRAME
+        # ///////////////////////////////////////////////////////////////
+        self.settings_frame = QFrame()
+        self.settings_frame.setObjectName('settings_frame')
+        self.settings_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.settings_frame.setFixedSize(250, 200)
+
+        # SUMMARY FRAME
+        # ///////////////////////////////////////////////////////////////
+        self.summary_frame = QFrame()
+        self.summary_frame.setObjectName('summary_frame')
+        self.summary_frame.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        self.summary_frame.setFixedHeight(200)
+
+        # PROFILE FRAME
         # ////////////////////////////////////////////////////////////////
-        w = 450
-        self.upper_left_layout = QVBoxLayout()
-        self.upper_left_layout.setSpacing(10)
-        self.upper_left_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # INFOMARTIVE LABELS
-        self.total_loaded_label = QLabel()
-        self.total_loaded_label.setFixedSize(w, 50)
-        self.total_loaded_label.setObjectName('total_label')
+        self.profile_frame = QFrame()
+        self.profile_frame.setObjectName('profile_frame')
+        self.profile_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.profile_frame.setFixedSize(250, 200)
 
-        # SELECTED TIME PERIOD
-        self.date_selected_label = QLabel()
-        self.date_selected_label.setFixedSize(w, 50)
-        self.date_selected_label.setObjectName('date_label')
+        # PARAMETERS LIST
+        # ////////////////////////////////////////////////////////////////////
+        self.parameter_layout = QVBoxLayout()
+        self.parameter_layout.setContentsMargins(0,0,0,0)
+        self.parameter_layout.setSpacing(0)
 
-        # CHECK BOX FOR KIND OF DATA SELECTION (VALID, INVALID, SUSPECT)
-        self.check_box_label = QLabel("Incluir dados")
-        self.check_box_label.setFixedSize(w, 20)
-        self.check_box_label.setObjectName('checkbox_label')
+        # Parameter Header
 
-        # CHECKBOXES OF OPTIONS
-        texts = ['Válidos', 'Inválidos', 'Suspeitos']
-        ids = ['validos', 'invalidos', 'suspeitos']
-        self.check_boxes = []
+        # Parameter List Widget
+        self.parameter_list = ParameterSummary(item_height = 30)
 
-        # ADD TO UPPER LEFT LAYOUT
-        self.upper_left_layout.addWidget(self.total_loaded_label)
-        self.upper_left_layout.addWidget(self.date_selected_label)
-        self.upper_left_layout.addWidget(self.check_box_label)
+        # Add to Parameter layout
+        self.parameter_layout.addWidget(self.parameter_list)
 
-        for i in range(3):
-            check_box = QCheckBox(texts[i])
-            check_box.setObjectName(ids[i])
-            #
-            check_box.setFixedSize(200, 30)
-            check_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            self.check_boxes.append(check_box)
-            #
-            self.upper_left_layout.addWidget(check_box)
-            self.upper_left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        # LIST LAYOUT
-        # //////////////////////////////////////////////////////////////////
-        self.list_summary = ParameterSummary()
-        
         # MAIN LAYOUT CONFIGURATION
         # ////////////////////////////////////////////////////////////////
-        self.main_layout.addLayout(self.upper_left_layout, 0, 0)
-        self.main_layout.addWidget(self.list_summary, 1, 0, 1, 2)
 
+        # add to main layout
+        self.main_layout.addWidget(self.date_label, 0, 0)
+        self.main_layout.addWidget(self.settings_frame, 1, 0)
+        self.main_layout.addWidget(self.summary_frame, 1, 1)
+        self.main_layout.addWidget(self.profile_frame, 1, 2)
+        self.main_layout.addLayout(self.parameter_layout, 2, 0, 1, 3)
 
+        # alignment
+        self.main_layout.setAlignment(self.date_label, Qt.AlignmentFlag.AlignLeft)
+        self.main_layout.setAlignment(self.settings_frame, Qt.AlignmentFlag.AlignTop)
+        self.main_layout.setAlignment(self.summary_frame, Qt.AlignmentFlag.AlignTop)
+        self.main_layout.setAlignment(self.profile_frame, Qt.AlignmentFlag.AlignTop)
+        
     def setup_stylesheet(self, parent):
         # CONSTANTS
-        font = 'sans-serif'
-        font_color = '#757d8e'
+        font = 'Microsoft New Tai Lue'
+        font_color = '#1c1c1c'
         bg_color = '#FAFAFA'
         border_radius = 10
 
@@ -87,12 +92,16 @@ class UI_ProcessScreen(object):
             #process_page{{
                 background-color: {bg_color};
             }}
+            #profile_frame, #summary_frame, #settings_frame{{
+                background-color: #ffffff;
+                border-radius: {border_radius}px;
+                border: 1px solid #cccccc;
+            }}
             #total_label, #date_label {{
                 background-color: #ffffff;
-                font: 500 16pt '{font}';
+                font: 500 14pt '{font}';
                 color: {font_color};
-                border: 1px solid;
-                border-color: {font_color};
+                border: 1px solid #cccccc;
                 border-radius: {border_radius}px;
                 text-align: left;
                 padding-left: 10px;

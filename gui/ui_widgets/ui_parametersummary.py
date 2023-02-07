@@ -4,11 +4,13 @@ from qt_core import *
 # Data Manager Page UI Class
 class UI_ParameterSummary(object):
     
-	def setup_ui(self, parent : QTreeView):
+	def setup_ui(self, parent : QListWidget):
 
 		if not parent.objectName():
 			parent.setObjectName('parameter_summary')
-
+	
+		# setting stylesheet
+		self.setup_stylesheet(parent)
 
 	def setup_stylesheet(self, parent):
 		# CONSTANTS
@@ -19,9 +21,11 @@ class UI_ParameterSummary(object):
 
 		parent.setStyleSheet(f'''
 			#parameter_summary{{
-				background-color: transparent;
-				border: none;
-				font: 500 12pt '{font}';
-				color: {font_color};
+				background-color: white;
+				border: 1px solid #cccccc;
+				border-radius: {border_radius}px;
 			}}
+			#parameter_summary::item {{
+                border-bottom: 1px solid #cccccc;
+            }}
 		''')

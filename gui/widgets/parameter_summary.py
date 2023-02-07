@@ -7,28 +7,66 @@ from qt_core import *
 # IMPORT UI MODULES
 from gui.ui_widgets.ui_parametersummary import UI_ParameterSummary
 
+# IMPORT CUSTOM MODULES
+from gui.widgets.parameter_summary_item import ParameterSummaryItem
+
 class ParameterSummary(QListWidget):
 
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+	def __init__(self, item_height):
+		super().__init__()
 
-		# PROPERTIES
-		self.scroll_width = self.verticalScrollBar().height()
+		# configuration
+		# self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+		# animation
+		self.animation = QVariantAnimation(self.verticalScrollBar())
+
+		# parameters
+		self.item_width = self.width()
+		self.item_height = item_height
 
 		# setup UI
 		self.ui = UI_ParameterSummary()
 		self.ui.setup_ui(self)
-		self.ui.setup_stylesheet(self)
 
-	def addRow(self, content : list[str]):
-		row = self.rowCount()
-		cols = self.columnCount()
-		self.insertRow(row)
+		# signals and slots
+		self.animation.valueChanged.connect(self.moveScroll)
 
-		for i in range(cols):
-			widget_item = self.createItem(content[i], '#ffffff')
-			self.setItem(row, i, widget_item)
+	def addRow(self, **kwargs):
+		item_width = self.width() - 20
+		item_height = self.item_height
 
-	def createItem(self, text, color):
-		pass
+		# creating ItemWidget
+		item_widget = ParameterSummaryItem(
+			width = item_width,
+			height = item_height,
+			**kwargs)
+		
+		# creating list item and adding to list
+		item = QListWidgetItem()
+		self.addItem(item)
+	
+		# Setting Size Hint to ListWidgetItem
+		SizeHint = QSize(self.width() - 20, self.item_height)
+		item.setSizeHint(SizeHint)
+		
+	    # setting object QFrame to QlistWidgetItem
+		self.setItemWidget(item, item_widget)
 
+	def reset_settings(self):
+		# cleaning variables
+		self.clear()
+
+	def wheelEvent(self, e: QWheelEvent) -> None:
+		self.animation.stop()
+		scrollbar = self.verticalScrollBar()
+		delta = e.angleDelta().y() // 3
+		y = scrollbar.value()
+		
+		self.animation.setStartValue(y)
+		self.animation.setEndValue(y - delta)
+		self.animation.setDuration(50)
+		self.animation.start()
+
+	def moveScroll(self, i):
+		self.verticalScrollBar().setValue(i)
