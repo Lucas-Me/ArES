@@ -9,7 +9,7 @@ class UI_ParameterSummaryItem(object):
 
 		# MAIN LAYOUT
 		self.main_layout = QHBoxLayout(parent)
-		self.main_layout.setContentsMargins(10, 5, 10, 5)
+		self.main_layout.setContentsMargins(10, 2, 10, 2)
 		self.main_layout.setSpacing(10)
 
 		# CREATING LABELS
@@ -22,14 +22,20 @@ class UI_ParameterSummaryItem(object):
 		self.enterprise_label.setObjectName('enterprise')
 
 		# CREATING PROFILE IDENTIFIER
-		self.profile_box = QWidget()
-		self.profile_box.setFixedWidth(80)
+		self.profile_frame = QFrame()
+		self.profile_frame.setObjectName('profile')
+		self.profile_frame.setFixedWidth(80)
+		#
+		self.profile_layout = QHBoxLayout(self.profile_frame)
+		self.profile_layout.setContentsMargins(0, 0, 0, 0)
+		self.profile_layout.addWidget(parent.profile)
+		self.profile_layout.setAlignment(parent.profile, Qt.AlignmentFlag.AlignCenter)
 
 		# INSERTING WIDGETS IN MAIN LAYOUT
 		self.main_layout.addWidget(self.parameter_label)
 		self.main_layout.addWidget(self.station_label)
 		self.main_layout.addWidget(self.enterprise_label)
-		self.main_layout.addWidget(self.profile_box)
+		self.main_layout.addWidget(self.profile_frame)
 
 
 

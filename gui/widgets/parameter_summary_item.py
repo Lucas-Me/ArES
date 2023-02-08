@@ -18,6 +18,10 @@ class ParameterSummaryItem(QFrame):
 	):
 		super().__init__()
 
+		# CONFIGURATION
+		self.setFixedHeight(height)
+		self.setMinimumWidth(width)
+
 		# PROPERTIES
 		self.parameter = parameter
 		self.station = station
@@ -25,10 +29,7 @@ class ParameterSummaryItem(QFrame):
 		self.enter_color = '#e4e4e4'
 		self.leave_color = '#ffffff'
 		self.is_first = first
-
-		# CONFIGURATION
-		self.setFixedHeight(height)
-		self.setMinimumWidth(width)
+		self.profile = ProfileBox(color= '#fafafa', border_color ='#dcdcdc', width = 25, height = 25)
 
 		# SETUP UI
 		self.ui = UI_ParameterSummaryItem()
@@ -79,3 +80,40 @@ class ParameterSummaryItem(QFrame):
 		self.style_sheet(self.leave_color)
 
 		return super().leaveEvent(event)
+
+
+class ProfileBox(QWidget):
+
+	def __init__(self, color, border_color, width, height):
+		super().__init__()
+	
+		# PROPERTIES
+		self.setColor(color)
+		self.pen = QPen()
+
+		# CONFIGURATION
+		self.setFixedSize(width, height)
+		self.pen.setColor(border_color)
+		self.pen.setWidth(2)
+
+	def setColor(self, color):
+		self.color = QColor(color)
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+
+		painter = QPainter()
+		painter.begin(self)
+		rect = self.rect()
+
+		# FILLING RECT
+		painter.setPen(Qt.NoPen)
+		painter.fillRect(rect, QBrush(self.color))
+
+		# DRAW BORDERS
+		painter.setPen(self.pen)
+		painter.setBrush(Qt.NoBrush)
+		painter.drawRect(rect)
+
+		painter.end()
+
+	
