@@ -4,6 +4,7 @@ from qt_core import *
 # IMPORT CUSTOM MODULES
 from backend.misc.functions import get_imagepath
 from gui.widgets.parameter_summary import ParameterSummary, ParameterHeader
+from gui.widgets.profile_picker import ProfilePicker
 
 # Data Manager Page UI Class
 class UI_ProcessScreen(object):
@@ -46,6 +47,13 @@ class UI_ProcessScreen(object):
         self.profile_frame.setObjectName('profile_frame')
         self.profile_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.profile_frame.setFixedSize(250, 200)
+
+        self.profile_layout = QHBoxLayout(self.profile_frame)
+        self.profile_layout.setContentsMargins(0, 0, 0, 0)
+        self.profile_layout.setSpacing(0)
+
+        self.profile_picker = ProfilePicker()
+        self.profile_layout.addWidget(self.profile_picker)
 
         # PARAMETERS LIST
         # ////////////////////////////////////////////////////////////////////
