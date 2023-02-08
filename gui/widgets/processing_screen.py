@@ -4,6 +4,9 @@ from qt_core import *
 # IMPORT CUSTOM UI
 from gui.pages.ui_processingscreen import UI_ProcessScreen
 
+# IMPORT CUSTOM MODULES
+from gui.widgets.profile_picker import Profile
+
 # IMPORT CUSTOM FUCTIONS
 from backend.misc.functions import get_imagepath
 
@@ -15,24 +18,69 @@ class ProcessingScreen(QWidget):
 
 		# PRIVATE VARIABLES
 		self.raw_data = []
+		self.selected_profiles = {}
+		self.standard_profile = Profile(color = QColor('#fafafa'), name = 'simple')
+		self.profileBoxes = []
 
 		# SETUP UI
 		self.ui = UI_ProcessScreen()
 		self.ui.setup_ui(self)
 		self.ui.setup_stylesheet(parent)
 
+		# SIGNALS AND SLOTS
+		self.ui.profile_picker.list.removedProfile.connect(self.resetProfileBox)
+
 	def updateRawData(self, data):
 		# reset list
 		self.ui.parameter_list.reset_settings()
 
 		# adding to list
-		self.raw_data = data
-		for _object in self.raw_data:
-			self.ui.parameter_list.addRow(
-				parameter = _object.metadata['parameter'],
-				station = _object.metadata['name'],
-				enterprise = _object.metadata['enterprise']
+		n = len(data)
+		profile_boxes = [None]*n
+		for i in range(n):
+			item = self.ui.parameter_list.addRow(
+				parameter = data[i].metadata['parameter'],
+				station = data[i].metadata['name'],
+				enterprise = data[i].metadata['enterprise']
 				)
+
+			# STANDARD PROFILE
+			self.selected_profiles[data[i]] = self.standard_profile
+			profile_boxes[i] = item.profile
+
+			# SIGNALS
+			item.profile.pressed.connect(self.profileBoxClicked)
+
+		# SETTING PROPERTIES
+		self.profileBoxes = profile_boxes
+		self.raw_data = data
+
+	@Slot(QWidget)
+	def profileBoxClicked(self, item):
+		# getting properies
+		_object = self.raw_data[self.profileBoxes.index(item)]
+		current_profile = self.selected_profiles[_object]
+		profile = self.ui.profile_picker.nextProfile(current_profile)
+
+		# test if None
+		if profile is None:
+			self.selected_profiles[_object] = self.standard_profile
+		else:
+			self.selected_profiles[_object] = profile
+
+		# setting color in table
+		item.setColor(self.selected_profiles[_object].color)
+
+	@Slot(object)
+	def resetProfileBox(self, profile):
+		for k, v in self.selected_profiles.items():
+			if v == profile:
+				row = self.raw_data.index(k)
+				item = self.ui.parameter_list.item(row)
+				item_widget = self.ui.parameter_list.itemWidget(item)
+				#
+				self.selected_profiles[k] = self.standard_profile
+				item_widget.profile.setColor(self.standard_profile.color)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''

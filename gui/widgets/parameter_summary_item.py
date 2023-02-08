@@ -84,6 +84,7 @@ class ParameterSummaryItem(QFrame):
 
 class ProfileBox(QWidget):
 
+	pressed = Signal(QWidget)
 	def __init__(self, color, border_color, width, height):
 		super().__init__()
 	
@@ -98,6 +99,10 @@ class ProfileBox(QWidget):
 
 	def setColor(self, color):
 		self.color = QColor(color)
+		self.update()
+
+	def getColor(self):
+		return self.color
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 
@@ -116,4 +121,6 @@ class ProfileBox(QWidget):
 
 		painter.end()
 
-	
+	def mousePressEvent(self, event: QMouseEvent) -> None:
+		self.pressed.emit(self)
+		return super().mousePressEvent(event)

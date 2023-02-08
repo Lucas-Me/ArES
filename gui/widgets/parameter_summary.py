@@ -1,5 +1,6 @@
 # IMPORTS
 import gc
+from copy import copy
 
 # IMPORT QT CORE
 from qt_core import *
@@ -39,6 +40,7 @@ class ParameterSummary(QListWidget):
 	def addRow(self, **kwargs):
 		item_width = self.width() - self.scroll_width
 		item_height = self.item_height
+		n = copy(self.count())
 
 		# creating list item and adding to list
 		item = QListWidgetItem()
@@ -52,11 +54,14 @@ class ParameterSummary(QListWidget):
 		item_widget = ParameterSummaryItem(
 			width = item_width,
 			height = item_height,
-			first = self.count() == 1,
+			first = n + 1 == 1,
 			**kwargs)
 		
 	    # setting object QFrame to QlistWidgetItem
 		self.setItemWidget(item, item_widget)
+		
+		# return item widget
+		return item_widget
 
 	def reset_settings(self):
 		# cleaning variables

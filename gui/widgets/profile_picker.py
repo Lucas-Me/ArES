@@ -27,23 +27,29 @@ class ProfilePicker(QWidget):
 		self.ui.add_button.clicked.connect(self.list.addItem)
 		self.ui.remove_button.clicked.connect(self.list.removeItem)
 
+	def nextProfile(self, profile):
+		idx = self.list.getIndex(profile = profile)
+
+		return self.list.getProfile(idx + 1)
+
 
 class ProfileModel(QAbstractListModel):
+
 	def __init__(self):
 		super().__init__()
 
 		self.profiles = []
-		self.colors = []
 	
 	def rowCount(self, parent = QModelIndex()) -> int:
 		return len(self.profiles)
 
 	def data(self, index =  QModelIndex(), role: int = ...):
 		if role == Qt.DisplayRole:
-			return self.profiles[index.row()]
+			return self.profiles[index.row()].name
 
 		elif role == Qt.DecorationRole:
-			return self.colors[index.row()]
+			return self.profiles[index.row()].color
+	
 
 	def insertRow(self, parent = QModelIndex(), **kwargs) -> bool:
 		# count items
@@ -51,23 +57,33 @@ class ProfileModel(QAbstractListModel):
 
 		# begin
 		self.beginInsertRows(parent, row, row)
-		self.profiles.insert(row, kwargs.pop('name', f'Perfil {row + 1}'))
-		self.colors.insert(row, kwargs.pop('color', QColor(randint(0,255), randint(0,255), randint(0,255))))
+
+		# getting properties
+		name = kwargs.pop('name', f'Perfil {row + 1}')
+		color = kwargs.pop('color', QColor(randint(0,255), randint(0,255), randint(0,255)))
+
+		self.profiles.insert(row, Profile(color, name))
 		
 		# end
 		self.endInsertRows()
 		return True
 
 	def removeRows(self, parent : list[QModelIndex], **kwargs) -> bool:
-		for index in parent:
-			row = index.row()
-			self.beginRemoveRows(index, row, row)
-			del self.profiles[row]
-			del self.colors[row]
+		n = len(parent)
+		removed = [None]
+
+		for i in range(n):
+			row = parent[i].row()
+			self.beginRemoveRows(parent[i], row, row)
+			removed[i] = self.profiles.pop(row)
 			self.endRemoveRows()
 
+		return removed
 
 class ListView(QListView):
+
+	removedProfile = Signal(object)
+
 	def __init__(self):
 		super().__init__()
 		self.model = ProfileModel()
@@ -89,5 +105,37 @@ class ListView(QListView):
 
 	def removeItem(self):
 		selected = self.selectedIndexes()
-		self.model.removeRows(selected)
+		removed = self.model.removeRows(selected)
+		for prof in removed:
+			self.removedProfile.emit(prof)
+
 		self.clearSelection()
+
+	def getIndex(self, *args, **kwargs):
+		target = self.model.profiles
+		profile = kwargs.pop('profile', None)
+
+		if profile in target:
+			return target.index(profile)
+		else:
+			return -1
+
+	def getProfile(self, index):
+		n = self.model.rowCount()
+		if index == n:
+			return None
+		else:
+			return self.model.profiles[index]
+
+
+class Profile(object):
+
+	def __init__(
+		self,
+		color,
+		name
+		):
+		
+		# PROPERTIES
+		self.color = QColor(color)
+		self.name = name
