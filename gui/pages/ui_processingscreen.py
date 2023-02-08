@@ -3,7 +3,7 @@ from qt_core import *
 
 # IMPORT CUSTOM MODULES
 from backend.misc.functions import get_imagepath
-from gui.widgets.parameter_summary import ParameterSummary
+from gui.widgets.parameter_summary import ParameterSummary, ParameterHeader
 
 # Data Manager Page UI Class
 class UI_ProcessScreen(object):
@@ -54,11 +54,13 @@ class UI_ProcessScreen(object):
         self.parameter_layout.setSpacing(0)
 
         # Parameter Header
+        self.header = ParameterHeader(height = 50)
 
         # Parameter List Widget
-        self.parameter_list = ParameterSummary(item_height = 30)
+        self.parameter_list = ParameterSummary(item_height = 40)
 
         # Add to Parameter layout
+        self.parameter_layout.addWidget(self.header)
         self.parameter_layout.addWidget(self.parameter_list)
 
         # MAIN LAYOUT CONFIGURATION
@@ -76,7 +78,7 @@ class UI_ProcessScreen(object):
         self.main_layout.setAlignment(self.settings_frame, Qt.AlignmentFlag.AlignTop)
         self.main_layout.setAlignment(self.summary_frame, Qt.AlignmentFlag.AlignTop)
         self.main_layout.setAlignment(self.profile_frame, Qt.AlignmentFlag.AlignTop)
-        
+
     def setup_stylesheet(self, parent):
         # CONSTANTS
         font = 'Microsoft New Tai Lue'
@@ -97,7 +99,7 @@ class UI_ProcessScreen(object):
                 border-radius: {border_radius}px;
                 border: 1px solid #cccccc;
             }}
-            #total_label, #date_label {{
+            #total_label, #date_label{{
                 background-color: #ffffff;
                 font: 500 14pt '{font}';
                 color: {font_color};

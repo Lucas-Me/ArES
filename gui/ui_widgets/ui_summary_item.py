@@ -21,28 +21,15 @@ class UI_ParameterSummaryItem(object):
 		self.station_label.setObjectName('station')
 		self.enterprise_label.setObjectName('enterprise')
 
+		# CREATING PROFILE IDENTIFIER
+		self.profile_box = QWidget()
+		self.profile_box.setFixedWidth(80)
+
 		# INSERTING WIDGETS IN MAIN LAYOUT
 		self.main_layout.addWidget(self.parameter_label)
 		self.main_layout.addWidget(self.station_label)
 		self.main_layout.addWidget(self.enterprise_label)
+		self.main_layout.addWidget(self.profile_box)
 
 
-	def style_sheet(self, parent):
-		# UI PROPERTIES
-		background_color = '#ffffff'
-		font = 'Microsoft New Tai Lue'
-		text_color = '#32495e'
-
-		# stylesheets
-		parent.setStyleSheet(f'''
-			#parameter_item {{
-				background-color : {background_color};
-				border-bottom: 1px solid #cccccc;
-			}}
-			#parameter, #station, #enterprise {{
-				font: 500 13pt {font};
-				color: {text_color}; 
-			}}
-			'''
-		)
 

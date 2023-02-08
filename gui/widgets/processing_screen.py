@@ -22,8 +22,11 @@ class ProcessingScreen(QWidget):
 		self.ui.setup_stylesheet(parent)
 
 	def updateRawData(self, data):
-		self.raw_data = data
+		# reset list
+		self.ui.parameter_list.reset_settings()
 
+		# adding to list
+		self.raw_data = data
 		for _object in self.raw_data:
 			self.ui.parameter_list.addRow(
 				parameter = _object.metadata['parameter'],
