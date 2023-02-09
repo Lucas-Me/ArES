@@ -26,41 +26,34 @@ class UI_ProfileDialog(object):
 		self.header_layout.setContentsMargins(0, 0, 0, 0)
 		self.header_layout.setSpacing(0)
 
-		# edit button
-		self.edit_name = QPushButton()
-		self.edit_name.setFixedSize(25, 25)
-		self.edit_name.setObjectName('edit_name')
-
 		# line edit
 		self.name = QLineEdit()
 		self.name.setFixedSize(170, 25)
 		self.name.setObjectName('name')
 
 		# color
-		self.color_box = QFrame()
-		self.color_box.setFixedSize(25, 25)
-		self.color_box.setObjectName('color_box')
+		self.color_view = QFrame()
+		self.color_view.setFixedSize(25, 25)
+		self.color_view.setObjectName('color_view')
 
 		# save button
 		self.save_button = QPushButton('Salvar')
-		self.save_button.setFixedSize(25, 25)
+		self.save_button.setFixedSize(70, 25)
 		self.save_button.setObjectName('save')
 
 		# cancel button
 		self.cancel_button = QPushButton('Cancelar')
-		self.cancel_button.setFixedSize(25, 25)
+		self.cancel_button.setFixedSize(70, 25)
 		self.cancel_button.setObjectName('cancel')
 
 		# add to header layout
-		self.header_layout.addWidget(self.edit_name)
 		self.header_layout.addWidget(self.name)
-		self.header_layout.addWidget(self.color_box)
+		self.header_layout.addWidget(self.color_view)
 		self.header_layout.addWidget(self.save_button)
 		self.header_layout.addWidget(self.cancel_button)
 		#
-		self.header_layout.setAlignment(self.edit_name, Qt.AlignmentFlag.AlignLeft)
 		self.header_layout.setAlignment(self.name, Qt.AlignmentFlag.AlignLeft)
-		self.header_layout.setAlignment(self.color_box, Qt.AlignmentFlag.AlignRight)
+		self.header_layout.setAlignment(self.color_view, Qt.AlignmentFlag.AlignRight)
 		self.header_layout.setAlignment(self.save_button, Qt.AlignmentFlag.AlignRight)
 		self.header_layout.setAlignment(self.cancel_button, Qt.AlignmentFlag.AlignRight)
 
@@ -90,11 +83,42 @@ class UI_ProfileDialog(object):
 	def setup_style(self, parent : QDialog):
 		text_color = '#1c1c1c'
 		font_family = 'Microsoft New Tai Lue'
+		hover_color = '#e4e4e4'
+		pressed_color ='#c1c1c1'
+		radius = 2
 
 		parent.setStyleSheet(f'''
 			#profile_dialog{{
 				background-color: white;
+				border: 1px solid black;
 			}}
-			#save_button, #cancel_button, #
+			#save, #cancel{{
+				background-color: #fafafa;
+				font: 500 12pt {font_family};
+				color: {text_color};
+				border-radius: {radius}px;
+				border: 1px solid #c7c7c7;
+			}}
+			#save:hover, #cancel:hover{{
+				background-color: {hover_color};
+			}}
+			#save:pressed, #cancel:pressed{{
+				background-color: {pressed_color};
+			}}
+			#color_view{{
+				background-color: red;
+				border: none;
+				border-radius: {radius}px;
+			}}
+			#name{{
+				background-color: transparent;
+				font: bold 13pt {font_family};
+				color: {text_color};
+				border: none;
+			}}
+			#header{{
+				background-color: none;
+				border-bottom: 1px solid #c7c7c7;
+			}}
 		''')
 
