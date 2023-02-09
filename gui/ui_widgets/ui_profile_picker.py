@@ -2,7 +2,7 @@
 from qt_core import *
 
 class UI_ProfilePicker(object):
-
+	
 	def setup_ui(self, parent : QWidget):
 		if not parent.objectName():
 			parent.setObjectName('profile_picker')

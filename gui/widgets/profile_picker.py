@@ -8,6 +8,9 @@ from gui.ui_widgets.ui_profile_picker import UI_ProfilePicker
 # IMPORT CUSTOM WIDGETS
 from gui.windows.profile.profile_dialog import ProfileDialog
 
+# IMPORT CUSTOM MODULES
+from backend.data_management.methods import Profile
+
 # IMPORT QT CORE
 from qt_core import *
 
@@ -61,11 +64,8 @@ class ProfileModel(QAbstractListModel):
 		# begin
 		self.beginInsertRows(parent, row, row)
 
-		# getting properties
-		name = kwargs.pop('name', f'Perfil {row + 1}')
-		color = kwargs.pop('color', QColor(randint(0,255), randint(0,255), randint(0,255)))
-
-		self.profiles.insert(row, Profile(color, name))
+		# adding to private variable
+		self.profiles.insert(row, kwargs.get('profile'))
 		
 		# end
 		self.endInsertRows()
@@ -99,14 +99,26 @@ class ListView(QListView):
 		self.setStyleSheet(f"font: 500 13pt 'Microsoft New Tai Lue'; color: #1c1c1c;background-color: transparent; border: none;")
 
 		# signals and slots
-		self.doubleClicked.connect(self.on_row_changed)
+		self.doubleClicked.connect(self.openDialog)
 
-	def on_row_changed(self, current):
-		dialog = ProfileDialog()
+	def openDialog(self, row : QModelIndex):
+		if isinstance(row, QModelIndex):
+			row = row.row()
+
+		profile = self.getProfile(row)
+		dialog = ProfileDialog(profile = profile)
+		dialog.profileSaved.connect(lambda x: self.updateProfile(row, x))
+		
+		# emit signal to show dialog
 		self.profileDoubleClicked.emit(dialog)
 
 	def addItem(self):
-		self.model.insertRow()
+		dialog = ProfileDialog()
+		new_row = self.model.rowCount()
+		dialog.profileSaved.connect(lambda x: self.updateProfile(new_row, x))
+		
+		# emit signal to show dialog
+		self.profileDoubleClicked.emit(dialog)
 
 	def removeItem(self):
 		selected = self.selectedIndexes()
@@ -132,15 +144,9 @@ class ListView(QListView):
 		else:
 			return self.model.profiles[index]
 
+	def updateProfile(self, index, profile):
+		if index >= self.model.rowCount():
+			self.model.insertRow(profile = profile)
 
-class Profile(object):
-
-	def __init__(
-		self,
-		color,
-		name
-		):
-		
-		# PROPERTIES
-		self.color = QColor(color)
-		self.name = name
+		else:
+			self.model.profiles[index] = profile

@@ -3,7 +3,10 @@ from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.color_triangle import QtColorTriangle
+from gui.widgets.method_table import MethodTable
 
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import get_imagepath
 
 class UI_ProfileDialog(object):
 
@@ -12,14 +15,28 @@ class UI_ProfileDialog(object):
 			parent.setObjectName("profile_dialog")
 
 		# MAIN LAYOUT
-		self.main_layout = QGridLayout(parent)
-		self.main_layout.setContentsMargins(10, 10, 10, 10)
-		self.main_layout.setSpacing(10)
+		self.main_layout = QHBoxLayout(parent)
+		self.main_layout.setSpacing(0)
+		self.main_layout.setContentsMargins(0, 0, 0, 0)
+
+		self.frame = QFrame()
+		self.frame.setFixedSize(parent.width() - parent.margins, parent.height() - parent.margins)
+		self.frame.setObjectName('frame')
+		#
+		self.frame_layout = QGridLayout(self.frame)
+		self.frame_layout.setContentsMargins(10, 10, 10, 10)
+		self.frame_layout.setSpacing(10)
+		self.frame_layout.setColumnStretch(0, 2)
+		self.frame_layout.setColumnStretch(1, 1)
+		
+		# PROPERTIES
+		w, h = self.frame.width(), self.frame.height()
 
 		# HEADER
 		# /////////////////////////
 		self.header_frame = QFrame()
 		self.header_frame.setObjectName('header')
+		self.header_frame.setFixedHeight(40)
 
 		# header layout
 		self.header_layout = QHBoxLayout(self.header_frame)
@@ -28,13 +45,17 @@ class UI_ProfileDialog(object):
 
 		# line edit
 		self.name = QLineEdit()
-		self.name.setFixedSize(170, 25)
+		self.name.setFixedSize(w / 2, 25)
 		self.name.setObjectName('name')
+		self.name.setClearButtonEnabled(True)
+		image = QPixmap(get_imagepath('pencil.svg', 'gui/images/icons'))
+		image.scaled(QSize(25, 25), Qt.AspectRatioMode.KeepAspectRatio)
+		self.name.addAction(image, QLineEdit.LeadingPosition)
 
 		# color
 		self.color_view = QFrame()
 		self.color_view.setFixedSize(25, 25)
-		self.color_view.setObjectName('color_view')
+		# self.color_view.setObjectName('color_view')
 
 		# save button
 		self.save_button = QPushButton('Salvar')
@@ -61,21 +82,23 @@ class UI_ProfileDialog(object):
 		# ///////////////////////////////////////
 
 		# TABLE WIDGET
-		self.table = QTableWidget()
+		self.table = MethodTable()
+		self.table.setObjectName('table')
 
-		# 
-		# self.color_widget = QWidget(parent)
+		# COLOR SELECTOR
 		self.color_selector = QtColorTriangle()
 		self.color_selector.set_color(QColor(255, 255, 255))
-		self.color_selector.setMinimumWidth(parent.width() / 2)
+		self.color_selector.setMinimumWidth(w / 3)
 
 		# SETTING UP MAIN LAYOUT
 		# ///////////////////////////
-		self.main_layout.addWidget(self.header_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
-		self.main_layout.addWidget(self.table, 1, 0, 1, 1)
-		self.main_layout.addWidget(self.color_selector, 1, 1, 1, 1)
+		self.frame_layout.addWidget(self.header_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
+		self.frame_layout.addWidget(self.table, 1, 0, 1, 1)
+		self.frame_layout.addWidget(self.color_selector, 1, 1, 1, 1)
 
-		
+		self.main_layout.addWidget(self.frame)
+		self.main_layout.setAlignment(self.frame, Qt.AlignmentFlag.AlignCenter)
+
 		# set style
 		self.setup_style(parent)
 
@@ -88,16 +111,15 @@ class UI_ProfileDialog(object):
 		radius = 2
 
 		parent.setStyleSheet(f'''
-			#profile_dialog{{
+			#frame{{
 				background-color: white;
-				border: 1px solid black;
 			}}
 			#save, #cancel{{
 				background-color: #fafafa;
 				font: 500 12pt {font_family};
-				color: {text_color};
-				border-radius: {radius}px;
-				border: 1px solid #c7c7c7;
+				color: #4ca0e0;
+				border-radius: 4px;
+				border: 1px solid #4ca0e0;
 			}}
 			#save:hover, #cancel:hover{{
 				background-color: {hover_color};
@@ -105,10 +127,10 @@ class UI_ProfileDialog(object):
 			#save:pressed, #cancel:pressed{{
 				background-color: {pressed_color};
 			}}
-			#color_view{{
-				background-color: red;
-				border: none;
-				border-radius: {radius}px;
+			#save:disabled, #cancel:disabled{{
+				background-color: #dfdfdf;
+				color: #8f8f8f;
+				border-color: #8f8f8f;
 			}}
 			#name{{
 				background-color: transparent;
@@ -117,8 +139,14 @@ class UI_ProfileDialog(object):
 				border: none;
 			}}
 			#header{{
-				background-color: none;
+				background-color: transparent;
 				border-bottom: 1px solid #c7c7c7;
+			}}
+			#table{{
+				background-color: transparent;
+				border: none;
 			}}
 		''')
 
+
+		self.color_view.setStyleSheet(f'background-color: red;border: none;border-radius: {radius}px')

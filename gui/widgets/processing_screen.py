@@ -30,8 +30,8 @@ class ProcessingScreen(QWidget):
 
 	@Slot(QDialog)
 	def showProfileEditor(self, dialog : QDialog):
-		dialog.setParent(self.parent().parent())
-		dialog.show()
+		dialog.setParent(self)
+		dialog.showWindow()
 
 	def updateRawData(self, data):
 		# reset list
