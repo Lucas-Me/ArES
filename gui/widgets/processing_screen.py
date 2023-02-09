@@ -7,9 +7,6 @@ from gui.pages.ui_processingscreen import UI_ProcessScreen
 # IMPORT CUSTOM MODULES
 from gui.widgets.profile_picker import Profile
 
-# IMPORT CUSTOM FUCTIONS
-from backend.misc.functions import get_imagepath
-
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
 
@@ -29,6 +26,12 @@ class ProcessingScreen(QWidget):
 
 		# SIGNALS AND SLOTS
 		self.ui.profile_picker.list.removedProfile.connect(self.resetProfileBox)
+		self.ui.profile_picker.list.profileDoubleClicked.connect(self.showProfileEditor)
+
+	@Slot(QDialog)
+	def showProfileEditor(self, dialog : QDialog):
+		dialog.setParent(self.parent().parent())
+		dialog.show()
 
 	def updateRawData(self, data):
 		# reset list

@@ -5,6 +5,9 @@ from random import randint
 # IMPORT CUSTOM UI
 from gui.ui_widgets.ui_profile_picker import UI_ProfilePicker
 
+# IMPORT CUSTOM WIDGETS
+from gui.windows.profile.profile_dialog import ProfileDialog
+
 # IMPORT QT CORE
 from qt_core import *
 
@@ -83,6 +86,7 @@ class ProfileModel(QAbstractListModel):
 class ListView(QListView):
 
 	removedProfile = Signal(object)
+	profileDoubleClicked = Signal(QDialog)
 
 	def __init__(self):
 		super().__init__()
@@ -98,7 +102,8 @@ class ListView(QListView):
 		self.doubleClicked.connect(self.on_row_changed)
 
 	def on_row_changed(self, current):
-		print('Row %d selected' % current.row())
+		dialog = ProfileDialog()
+		self.profileDoubleClicked.emit(dialog)
 
 	def addItem(self):
 		self.model.insertRow()

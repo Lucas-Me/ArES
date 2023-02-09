@@ -120,7 +120,7 @@ class UI_MainWindow(object):
         self.bottom_bar_layout.addWidget(self.bottom_label_right)
        
         # Application pages
-        self.pages = QStackedWidget()
+        self.pages = QStackedWidget(parent = parent)
         self.ui_pages = UI_StackedPages()
         self.ui_pages.setup_ui(self.pages)
         self.pages.setCurrentIndex(0)
