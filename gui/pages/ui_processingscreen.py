@@ -22,7 +22,7 @@ class UI_ProcessScreen(object):
 
         # TOP LABEL
         # /////////////////////////////////////////////////////////////
-        self.date_label = QLabel('27 oct 2022 - 05 may 2023')
+        self.date_label = QLabel()
         self.date_label.setFixedHeight(35)
         self.date_label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.date_label.setObjectName('date_label')
@@ -32,13 +32,40 @@ class UI_ProcessScreen(object):
         self.settings_frame = QFrame()
         self.settings_frame.setObjectName('settings_frame')
         self.settings_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.settings_frame.setFixedSize(250, 200)
+        self.settings_frame.setFixedSize(200, 200)
 
+        self.settings_layout = QVBoxLayout(self.settings_frame)
+        self.settings_layout.setContentsMargins(10, 10, 10, 10)
+        self.settings_layout.setSpacing(10)
+
+        # TITLE
+        self.settings_label = QLabel("Configurações")
+        self.settings_label.setFixedHeight(25)
+        self.settings_label.setObjectName('settings_label')
+        self.settings_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # ADD TO FRAME
+        self.settings_layout.addWidget(self.settings_label, alignment = Qt.AlignmentFlag.AlignTop)
+        
+        # COMBOBOXES
+        labels = ['Válidos', 'Inválidos', 'Suspeitos']
+        names = ['validos', 'invalidos', 'suspeitos']
+        self.checkbox_flags = []
+        for i in range(len(labels)):
+            box = QCheckBox(labels[i])
+            box.setFixedWidth(self.settings_frame.width() - 20)
+            box.setFixedHeight(30)
+            box.setObjectName(names[i])
+            #
+            self.settings_layout.addWidget(box)
+            self.checkbox_flags.append(box)
+
+        self.checkbox_flags[0].setChecked(True)
         # SUMMARY FRAME
         # ///////////////////////////////////////////////////////////////
         self.summary_frame = QFrame()
         self.summary_frame.setObjectName('summary_frame')
-        self.summary_frame.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        self.summary_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.summary_frame.setFixedHeight(200)
 
         # PROFILE FRAME
@@ -94,8 +121,8 @@ class UI_ProcessScreen(object):
         bg_color = '#FAFAFA'
         border_radius = 10
 
-        checked_path = get_imagepath('checkbox_checked_circle.svg', 'gui/images/icons')
-        unchecked_path = get_imagepath('checkbox_unchecked_circle.svg', 'gui/images/icons')
+        checked_path = get_imagepath('checked_mark.svg', 'gui/images/icons')
+        unchecked_path = get_imagepath('unchecked_mark.svg', 'gui/images/icons')
 
         # UPPER LEFT STYLESHEET
         parent.setStyleSheet(f'''
@@ -116,19 +143,18 @@ class UI_ProcessScreen(object):
                 text-align: left;
                 padding-left: 10px;
             }}
-            #checkbox_label {{
-                font: 600 16pt '{font}';
+            #settings_label {{
+                font: 500 14pt '{font}';
                 color: {font_color};
                 border: none;
                 text-align: left;
-                padding-left: 10px;
             }}
             #validos, #invalidos, #suspeitos {{
-                background-color: transparent;
-                font: 500 14pt '{font}';
+                background-color: #fafafa;
+                font: 500 12pt '{font}';
                 color: {font_color};
                 border: 1px solid;
-                border-color: {font_color};
+                border-radius: {border_radius}px;
                 text-align: middle;
                 padding-left: 10px;
             }}
@@ -136,23 +162,21 @@ class UI_ProcessScreen(object):
                 image: url({checked_path});
             }}
             #validos:checked, #invalidos:checked, #suspeitos:checked {{
-                background-color: #3cd7e8;
-                color: white;
+                border-color: #58aeee;
+                color: #58aeee;
             }}
             #validos:checked:hover, #invalidos:checked:hover, #suspeitos:checked:hover {{
-                background-color: #1ba5b4;
-                color: white;
+                background-color: #e4e4e4;
             }}
             #validos::indicator:unchecked, #invalidos::indicator:unchecked, #suspeitos::indicator:unchecked {{
                 image: url({unchecked_path});
             }}
             #validos:unchecked, #invalidos:unchecked, #suspeitos:unchecked {{
-                background-color: transparent;
-                color: {font_color};
+                border-color: #5c5c5c;
+                color: #5c5c5c;
             }}
             #validos:unchecked:hover, #invalidos:unchecked:hover, #suspeitos:unchecked:hover {{
-                background-color: white;
-                color: {font_color};
+                background-color: #e4e4e4;
             }}
         ''')
 

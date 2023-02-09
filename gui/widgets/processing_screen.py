@@ -33,6 +33,11 @@ class ProcessingScreen(QWidget):
 		dialog.setParent(self)
 		dialog.showWindow()
 
+	def updateDates(self, start_date, end_date):
+		fmt = '%Y %b %d'
+		text = f"{start_date.strftime(fmt)} - {end_date.strftime(fmt)}"
+		self.ui.date_label.setText(text)
+
 	def updateRawData(self, data):
 		# reset list
 		self.ui.parameter_list.reset_settings()

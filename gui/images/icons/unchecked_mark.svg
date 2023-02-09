@@ -2,31 +2,31 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="23"
-   height="23"
-   viewBox="0 0 6.0854166 6.0854166"
+   width="15.999999"
+   height="15.975837"
+   viewBox="0 0 4.233333 4.2269401"
    version="1.1"
    id="svg17111"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="checkbox_checked_circle.svg"
+   sodipodi:docname="unchecked_mark.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
      id="namedview17113"
-     pagecolor="#5e5e5e"
+     pagecolor="#d4d4d4"
      bordercolor="#999999"
      borderopacity="1"
      inkscape:showpageshadow="0"
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
+     inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="11.930303"
-     inkscape:cx="-14.291339"
-     inkscape:cy="3.6880874"
+     inkscape:cx="-2.7660655"
+     inkscape:cy="9.0525781"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -48,12 +48,10 @@
      inkscape:label="Camada 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-92.875405,-60.349198)">
-    <circle
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.79375;stroke-linejoin:bevel;stroke-opacity:1;paint-order:stroke fill markers"
-       id="path7936"
-       cx="95.918114"
-       cy="63.391907"
-       r="2.6458333" />
+     transform="translate(-93.742283,-61.209358)">
+    <path
+       id="rect33312"
+       style="fill:#5c5c5c;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.741122;stroke-linejoin:bevel;paint-order:stroke fill markers"
+       d="m 93.792721,61.798998 1.498611,1.49861 -1.549049,1.549049 0.545595,0.545595 1.549049,-1.549049 1.593094,1.593095 0.545595,-0.545595 -1.593094,-1.593095 1.542655,-1.542655 -0.545595,-0.545595 -1.542655,1.542655 -1.498611,-1.49861 z" />
   </g>
 </svg>

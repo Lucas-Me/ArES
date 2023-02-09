@@ -99,8 +99,7 @@ class LoginScreen(QWidget):
 	@Slot(bool)
 	def updateRefreshText(self, success):
 		if success:
-			locale = QLocale('pt_BR')
-			self.last_refresh = locale.toString(QDateTime.currentDateTime(), 'dd MMM yyyy hh:mm')
+			self.last_refresh = QDateTime.currentDateTime().toString( 'dd MMM yyyy hh:mm')
 			self.ui.verification_label.setText(
 				f'Última verificação: {self.last_refresh}'
 			)

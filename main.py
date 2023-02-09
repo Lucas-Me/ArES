@@ -1,6 +1,6 @@
 # IMPORT MODULES
 import sys
-import mysql.connector
+import locale
 
 # IMPORT QT CORE
 from qt_core import *
@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
         data_manager = self.ui.ui_pages.data_page
 
         try:
-            data = data_manager.request_data(server)
+            data, start_date, end_date = data_manager.request_data(server)
 
         except TimeoutError as err: # se der erro, provavelmente a conexao foi perdida
             self.connnectionErrorDialog()
@@ -119,6 +119,7 @@ class MainWindow(QMainWindow):
 
         # updating data on processing screen
         self.ui.ui_pages.process_page.updateRawData(data)
+        self.ui.ui_pages.process_page.updateDates(start_date, end_date)
 
         # force click on third screen (left menu)
         self.ui.btn_3.click()
@@ -139,6 +140,8 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    # locale
+    locale.setlocale(locale.LC_ALL, 'pt_BR')
     app = QApplication(sys.argv)
     window = MainWindow()
     sys.exit(app.exec())

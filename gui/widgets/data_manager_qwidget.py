@@ -422,7 +422,7 @@ class DataManager(QWidget):
                     raw_data[idx] = this
                     idx += 1
 
-        return raw_data
+        return raw_data, start_date, end_date
 
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent(event)
