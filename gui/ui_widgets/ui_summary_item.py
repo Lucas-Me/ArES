@@ -28,8 +28,8 @@ class UI_ParameterSummaryItem(object):
 		#
 		self.profile_layout = QHBoxLayout(self.profile_frame)
 		self.profile_layout.setContentsMargins(0, 0, 0, 0)
-		self.profile_layout.addWidget(parent.profile)
-		self.profile_layout.setAlignment(parent.profile, Qt.AlignmentFlag.AlignCenter)
+		self.profile_layout.addWidget(parent.profile_box)
+		self.profile_layout.setAlignment(parent.profile_box, Qt.AlignmentFlag.AlignCenter)
 
 		# INSERTING WIDGETS IN MAIN LAYOUT
 		self.main_layout.addWidget(self.parameter_label)

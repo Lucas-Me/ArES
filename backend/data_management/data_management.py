@@ -113,7 +113,7 @@ class AbstractData(object):
       # VALUES 
       self.values = kwargs.get('value', [])
       self.dates = kwargs.get('dates', [])
-   
+
 
 class RawData(AbstractData):
 

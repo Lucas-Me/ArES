@@ -4,6 +4,9 @@ from qt_core import *
 # IMPORT UI MODULES
 from gui.ui_widgets.ui_summary_item import UI_ParameterSummaryItem
 
+# IMPORT CUSTOM MODULES
+from gui.widgets.profile_picker import Profile
+
 # Paramater Selection Widget Class
 class ParameterSummaryItem(QFrame):
 
@@ -14,6 +17,7 @@ class ParameterSummaryItem(QFrame):
 		enterprise : str,
 		width : int,
 		height : int,
+		profile = Profile(color = '#fafafa'),
 		first = False
 	):
 		super().__init__()
@@ -29,12 +33,20 @@ class ParameterSummaryItem(QFrame):
 		self.enter_color = '#e4e4e4'
 		self.leave_color = '#ffffff'
 		self.is_first = first
-		self.profile = ProfileBox(color= '#fafafa', border_color ='#dcdcdc', width = 25, height = 25)
+		self.profile = profile
+		self.profile_box = ProfileBox(parent = self, border_color ='#dcdcdc', width = 25, height = 25)
 
 		# SETUP UI
 		self.ui = UI_ParameterSummaryItem()
 		self.ui.setup_ui(self)
 		self.style_sheet(self.leave_color)
+
+	def getProfile(self):
+		return self.profile
+
+	def setProfile(self, profile):
+		self.profile = profile
+		self.profile_box.update()
 
 	def adjustColumnWidth(self):
 		pass
@@ -85,24 +97,17 @@ class ParameterSummaryItem(QFrame):
 class ProfileBox(QWidget):
 
 	pressed = Signal(QWidget)
-	def __init__(self, color, border_color, width, height):
+	def __init__(self, border_color, width, height, parent : ParameterSummaryItem = None):
 		super().__init__()
 	
 		# PROPERTIES
-		self.setColor(color)
+		self.p = parent
 		self.pen = QPen()
 
 		# CONFIGURATION
 		self.setFixedSize(width, height)
 		self.pen.setColor(border_color)
 		self.pen.setWidth(2)
-
-	def setColor(self, color):
-		self.color = QColor(color)
-		self.update()
-
-	def getColor(self):
-		return self.color
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 
@@ -112,7 +117,7 @@ class ProfileBox(QWidget):
 
 		# FILLING RECT
 		painter.setPen(Qt.NoPen)
-		painter.fillRect(rect, QBrush(self.color))
+		painter.fillRect(rect, QBrush(self.p.getProfile().getColor()))
 
 		# DRAW BORDERS
 		painter.setPen(self.pen)
@@ -122,5 +127,5 @@ class ProfileBox(QWidget):
 		painter.end()
 
 	def mousePressEvent(self, event: QMouseEvent) -> None:
-		self.pressed.emit(self)
+		self.pressed.emit(self.p)
 		return super().mousePressEvent(event)

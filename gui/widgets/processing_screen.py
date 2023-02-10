@@ -15,9 +15,7 @@ class ProcessingScreen(QWidget):
 
 		# PRIVATE VARIABLES
 		self.raw_data = []
-		self.selected_profiles = {}
 		self.standard_profile = Profile(color = QColor('#fafafa'), name = 'simple')
-		self.profileBoxes = []
 
 		# SETUP UI
 		self.ui = UI_ProcessScreen()
@@ -44,51 +42,41 @@ class ProcessingScreen(QWidget):
 
 		# adding to list
 		n = len(data)
-		profile_boxes = [None]*n
 		for i in range(n):
 			item = self.ui.parameter_list.addRow(
 				parameter = data[i].metadata['parameter'],
 				station = data[i].metadata['name'],
-				enterprise = data[i].metadata['enterprise']
+				enterprise = data[i].metadata['enterprise'],
+				profile = self.standard_profile
 				)
 
-			# STANDARD PROFILE
-			self.selected_profiles[data[i]] = self.standard_profile
-			profile_boxes[i] = item.profile
-
 			# SIGNALS
-			item.profile.pressed.connect(self.profileBoxClicked)
+			item.profile_box.pressed.connect(self.profileBoxClicked)
 
 		# SETTING PROPERTIES
-		self.profileBoxes = profile_boxes
 		self.raw_data = data
 
 	@Slot(QWidget)
 	def profileBoxClicked(self, item):
 		# getting properies
-		_object = self.raw_data[self.profileBoxes.index(item)]
-		current_profile = self.selected_profiles[_object]
+		current_profile = item.getProfile()
 		profile = self.ui.profile_picker.nextProfile(current_profile)
 
 		# test if None
 		if profile is None:
-			self.selected_profiles[_object] = self.standard_profile
+			item.setProfile(self.standard_profile)
 		else:
-			self.selected_profiles[_object] = profile
-
-		# setting color in table
-		item.setColor(self.selected_profiles[_object].color)
+			item.setProfile(profile)
 
 	@Slot(object)
 	def resetProfileBox(self, profile):
-		for k, v in self.selected_profiles.items():
-			if v == profile:
-				row = self.raw_data.index(k)
-				item = self.ui.parameter_list.item(row)
-				item_widget = self.ui.parameter_list.itemWidget(item)
-				#
-				self.selected_profiles[k] = self.standard_profile
-				item_widget.profile.setColor(self.standard_profile.color)
+		target = self.ui.parameter_list
+		for row in range(target.count()):
+			item = target.item(row)
+			item_widget = target.itemWidget(item)
+			#
+			if item_widget.getProfile() == profile:
+				item_widget.setProfile(self.standard_profile)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''
