@@ -1,6 +1,7 @@
 # IMPORT MODULES
 import numpy as np
 import re
+from copy import copy, deepcopy
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import find_unit
@@ -116,17 +117,25 @@ class AbstractData(object):
       self.dates = kwargs.get('dates', [])
 
       def setValues(self, values):
+         if not isinstance(values, np.ndarray):
+            values = np.array(values)
+
          self.values = values
 
       def getValues(self):
          return self.values
 
       def setDates(self, dates):
+         if not isinstance(dates, np.ndarray):
+            dates = np.array(dates)
+
          self.dates = dates
 
       def getDates(self):
          return self.dates
-         
+      
+      def copy(self):
+         return deepcopy(self)
 
 class RawData(AbstractData):
 
@@ -145,9 +154,8 @@ class RawData(AbstractData):
       filtered_flags = np.where(matchs, self.flags, np.nan)
       #
       return ModifiedData(
-         metadata = self.metadata,
+         metadata = self.metadata.copy(),
          values = filtered_values,
-         flags = filtered_flags,
          dates = self.dates
       )
 
@@ -160,3 +168,90 @@ class ModifiedData(AbstractData):
       # Array de representatividada para cada data, em float (% = float * 100)
       self.representatividade = kwargs.get('representatividade', np.where(np.isnan(self.values), np.nan, 1))
 
+   def maskByThreshold(self, threshold):
+      '''
+      Mascara os dados de acordo com a representatividade e retorna somente o array de valores
+      '''
+      values = np.where(self.representatividade < threshold, np.nan, self.values) # nao é uma referencia
+      return values
+
+   def apply(self, **kwargs):
+      '''
+      Apply a function over the whole dataset.
+      '''
+      new = self.copy()
+      if kwargs.pop('groupby', False): # group if True
+         new = new.groupby(kwargs.pop('format_'))
+         return new.apply(**kwargs) # func is still in here
+
+      # From now on, apply the function.
+      func = kwargs.pop('func')
+
+      # the ramining items on the dict "kwargs" are arguments for the function "func"
+      values, representatividade = func(new.values, **kwargs)
+
+      # setting results to new object and returning it
+      new.setValues(values)
+      new.setRepresentatividade(representatividade)
+
+      return new
+
+   def groupby(self, format_ : str = "%Y-%m-%d"):
+      '''
+      Agrupa os dados e retorna um novo tipo de objeto.
+      -  format - > é o criterio de formatacao dos indices (datas), espera-se que apos a formatacao o array resultante tenham elementos repetidos
+      '''
+      
+      # formatting index (dates)
+      formatted_dates = [self.dates[i].item().strftime(format_) for i in range(self.dates.shape[0])]
+      formatted_dates = np.array(formatted_dates, dtype ='datetime64')
+      grouped = GroupedData(
+         values = self.values,
+         criteria = formatted_dates
+      )
+
+      return grouped
+
+   def setRepresentatividade(self, representatividade):
+      if not isinstance(representatividade, np.ndarray):
+         representatividade = np.array(representatividade)
+      
+      self.representatividade = representatividade
+
+class GroupedData(object):
+
+      def __init__(self, *args, **kwargs):
+
+         # SETTING UP
+         self.setupGroups(**kwargs)
+
+      def setupGroups(self, **kwargs):
+         # It jsut works because the criteria array is sorted (ascending)
+
+         values = kwargs.pop['values']
+         criteria = kwargs.pop['criteria']
+         
+         # Creating groups
+         dates, index = np.unique(kwargs.pop['criteria'], return_index =  True)
+         index = np.append(index, criteria.shape[0])[1:]
+
+         # grouping values
+         self.grouped_values = np.split(values, index)[:-1] # last group is empty
+         self.dates = dates
+
+      def apply(self, **kwargs):
+         # From now on, apply the function.
+         func = kwargs.pop('func')
+
+         # the ramining items on the dict "kwargs" are arguments for the function "func"
+         values = np.fromiter(map(func, self.grouped_values))
+         representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values))
+
+         return ModifiedData(
+            values = values,
+            dates = self.dates,
+            representatividade = representatividade
+         )
+
+      def calculateRepresentatividade(self, array):
+         return np.count_nonzero(~np.isnan(array)) / array.shape[0]

@@ -70,7 +70,7 @@ class MethodTable(QTableWidget):
 						"Média geométrica", "Média harmônica",
 						"Máxima"]
 
-		self.groups = ["Não agrupar", "Data", "Mês e ano", "Ano"]
+		self.groups = ["Data", "Mês e ano", "Ano"]
 		self.header_names = ['', 'Método', 'Agrupar']
 		self.margins = 2.5
 

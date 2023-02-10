@@ -1,3 +1,6 @@
+# IMPORT MODULES
+import numpy as np
+
 # IMPORT QT CORE
 from qt_core import *
 
@@ -6,7 +9,9 @@ from gui.pages.ui_processingscreen import UI_ProcessScreen
 
 # IMPORT CUSTOM MODULES
 from gui.widgets.profile_picker import Profile
-from backend.data_management.data_management import ModifiedData
+
+# IMPORT CUSTOM FUNCTIONS
+from backend.data_management import stats
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -121,8 +126,8 @@ class ProcessingScreen(QWidget):
 			# convert PPB to PPM if needed
 			filtered_data = self.convertPPB2PPM(filtered_data)
 
-			# check if a profile was selected for the given object, else ignore.
-	
+			# check if a profile was selected for a given object, and apply if needed.
+			final_data = self.runProfile(filtered_data, i)
 
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)
@@ -156,3 +161,40 @@ class ProcessingScreen(QWidget):
 
 		return data_object
 
+	def runProfile(self, data_object, index):
+		# PROPERTIES
+		target_list = self.ui.parameter_list
+		widget = target_list.item(index)
+		profile = target_list.itemWidget(widget).getProfile()
+
+		# checking methods
+		methods = profile.getMethods()
+		n = len(methods)
+		for order in range(n): # if n == 0, will not enter loop anyway
+			calc = methods[order][0]
+			group = methods[order][1]
+			threshold = 0 # TESTE
+			format_ = "%Y-%m-%d" # TESTE
+
+			# Applyng threshold
+			data_object.setValues(data_object.maskByThreshold(threshold))
+			
+			# if "moving avareage" is selected, there is no need the group the data beforehand
+			if calc == "Média móvel":
+				kwargs = dict(
+					func = stats.media_movel,
+					date_array = data_object.getDates(),
+					dt = np.timedelta64(8, "h")
+				)
+
+			else:
+				kwargs = dict(
+					func = stats.media,
+					groupby = True,
+					format_ = format_
+				)
+				# if it reached here, then there is a need to groupby first
+
+			data_object = data_object.apply(**kwargs)
+
+		
