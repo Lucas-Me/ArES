@@ -10,7 +10,7 @@ from gui.windows.main_window.ui_main_window import *
 
 # IMPORT DIALGO
 from gui.windows.dialog.import_dialog import ImportDialog
-from gui.windows.loading.splash_screen import SplashScreen
+from gui.windows.dialog.splash_screen import SplashScreen
 
 
 class LoadUi(QObject):

@@ -1,25 +1,19 @@
 # IMPORT MODULES
 import numpy as np
+from copy import deepcopy
 
 # IMPORT QT CORE
 from qt_core import *
 
 # IMPORT CUSTOM UI
 from gui.pages.ui_processingscreen import UI_ProcessScreen
+from gui.windows.dialog.loading_dialog import LoadingDialog
 
 # IMPORT CUSTOM MODULES
 from gui.widgets.profile_picker import Profile
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
-
-
-# VARIABLES
-formats = {"Data" : "%Y-%m-%d", "Mês e ano": "%Y-%m-01", "Ano" : "%Y-01-01"}
-functions = {"Média móvel":stats.media_movel, "Média aritmética":stats.media,
-			"Média geométrica" : stats.media_geometrica, "Média harmônica" : stats.media_harmonica,
-			"Máxima" : stats.maxima}
-frequencies = {"Data" : np.timedelta64(1,'D'), "Mês e ano": np.timedelta64(1,'M'), "Ano" : np.timedelta64(1,'Y')}
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -116,33 +110,64 @@ class ProcessingScreen(QWidget):
 			1. Executar um loop em cada item da lista 'raw_data'
 			2. Filtrar por flags e converter unidades [ppb] para [ppm] se necessário
 			3. Transformar de acordo com o Perfil especifica pelo usuário. Caso não haja perfil, apena retorna os dados brutos.
+		
+		Todas essas operacoes sao realizadas em uma Thread separada (vide classe "Worker" abaixo)
+		para nao interromper (congelar) o programa principal.
 		'''
-		# creating empty array of shape (N,)
+		# counting the number of rows to process
 		n = len(self.raw_data)
-		processed_data = [None] * n 
-
+		
 		# creating regex string to filter values by flags
 		regex = self.getRegexString()
 
-		# Loop throught each item of "raw_data"
+		# Retrieving the profiles containing the methods selected by the user
+		target_list = self.ui.parameter_list
+		methods = [None] * n
 		for i in range(n):
-			# applying flag filter
-			filtered_data = self.raw_data[i].filterByFlags(regex) # returns a ModifedData object
+			widget = target_list.item(i)
+			profile = target_list.itemWidget(widget).getProfile()
 
-			# convert PPB to PPM if needed
-			filtered_data = self.convertPPB2PPM(filtered_data)
+			# checking methods
+			methods[i] = profile.getMethods()
 
-			# check if a profile was selected for a given object, and apply if needed.
-			final_data = self.runProfile(filtered_data, i)
+		# is it necessary to convert [ppb] to [ppm]?
+		convert = self.ui.ppb_button.isChecked()
 
-			# updating metadata
-			del filtered_data.metadata['frequency']
-			final_data.metadata.update(filtered_data.metadata)
+		# create loading dialog
+		dialog = LoadingDialog(text = 'Processando dados', parent = self)
+		dialog.show()
 
-			# finalizing
-			processed_data[i] = final_data
+		# Create a QThread object
+		self.thread = QThread()
 
-		self.processed_data = processed_data
+		# Create a worker object
+		self.worker = Worker(
+			regex = regex,
+			convert = convert,
+			raw_data = self.raw_data,
+			methods = methods
+		)
+
+		# Move worker to the thread
+		self.worker.moveToThread(self.thread)
+
+		# Connect signals and slots
+		self.thread.started.connect(self.worker.start)
+		#
+		self.worker.resultReady.connect(self.thread.quit)
+		self.worker.resultReady.connect(self.worker.deleteLater)
+		self.worker.resultReady.connect(self.handleProcessedResults)
+		self.worker.resultReady.connect(lambda: dialog.closeWindow(True))
+		#
+		self.thread.finished.connect(self.thread.deleteLater)
+
+		# Start the thread
+		self.thread.start()
+
+	@Slot(list)
+	def handleProcessedResults(self, results):
+		self.processed_data = results
+		print(results)
 
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)
@@ -163,34 +188,61 @@ class ProcessingScreen(QWidget):
 
 		return regex
 
-	def convertPPB2PPM(self, data_object):
-		pname = data_object.metadata['parameter'] # get parameter name
 
-		if 'ppb' in pname and self.ui.ppb_button.isChecked():
-			
-			# apply conversion
-			data_object.setValues(data_object.getValues() * 1e-3)
+class Worker(QObject):
+	'''
+	Worker created in order to run the processTasks methods in the background.
+	'''
 
-			# change parameter unit
-			data_object.metadata['parameter'] = pname.replace('ppb', 'ppm')
+	resultReady = Signal(list)
 
-		return data_object
+	def __init__(self, **kwargs) -> None:
+		super().__init__(kwargs.get('parent', None))
+		self.raw_data = kwargs.get('raw_data', None)
+		self.regex = kwargs.get('regex')
+		self.convert = kwargs.get('convert')
+		self.methods = kwargs.get('methods')
 
-	def runProfile(self, data_object, index):
-		# PROPERTIES
-		target_list = self.ui.parameter_list
-		widget = target_list.item(index)
-		profile = target_list.itemWidget(widget).getProfile()
+		# VARIABLES
+		self.formats = {"Data" : "%Y-%m-%d", "Mês e ano": "%Y-%m-01", "Ano" : "%Y-01-01"}
+		self.functions = {"Média móvel":stats.media_movel, "Média aritmética":stats.media,
+				"Média geométrica" : stats.media_geometrica, "Média harmônica" : stats.media_harmonica,
+				"Máxima" : stats.maxima}
+		self.frequencies = {"Data" : np.timedelta64(1,'D'), "Mês e ano": np.timedelta64(1,'M'), "Ano" : np.timedelta64(1,'Y')}
 
-		# checking methods
-		methods = profile.getMethods()
+
+	def start(self):
+		# Loop throught each item of "raw_data"
+		n = len(self.raw_data)
+		processed_data = [None] * n  # new empty array
+
+		for i in range(n):
+			# applying flag filter
+			filtered_data = self.raw_data[i].filterByFlags(self.regex) # returns a ModifedData object
+
+			# convert PPB to PPM if needed
+			filtered_data = self.convertPPB2PPM(filtered_data, self.convert)
+
+			# check if a profile was selected for a given object, and apply if needed.
+			final_data = self.runProfile(filtered_data, self.methods[i])
+
+			# updating metadata
+			del filtered_data.metadata['frequency']
+			final_data.metadata.update(filtered_data.metadata)
+
+			# finalizing
+			processed_data[i] = final_data
+
+		self.resultReady.emit(processed_data)
+
+	def runProfile(self, data_object, methods):
 		n = len(methods)
 		for order in range(n): # if n == 0, will not enter loop anyway
 			calc = methods[order][0]
 			group = methods[order][1]
 			#
 			threshold = 0 # TESTE
-			func = functions[calc]
+			func = self.functions[calc]
 
 			# Applyng threshold
 			data_object.setValues(data_object.maskByThreshold(threshold))
@@ -207,14 +259,25 @@ class ProcessingScreen(QWidget):
 				kwargs = dict(
 					func = func,
 					groupby = True,
-					format_ = formats[group]
+					format_ = self.formats[group]
 				)
 				# if it reached here, then there is a need to groupby first
 
 			data_object = data_object.apply(**kwargs)
 
 		data_object.metadata['methods'] = methods
-		data_object.metadata['frequency'] = frequencies[methods[-1][1]]
+		data_object.metadata['frequency'] = self.frequencies[methods[-1][1]]
 		return data_object
 
-		
+	def convertPPB2PPM(self, data_object, convert):
+		pname = data_object.metadata['parameter'] # get parameter name
+
+		if 'ppb' in pname and convert:
+			
+			# apply conversion
+			data_object.setValues(data_object.getValues() * 1e-3)
+
+			# change parameter unit
+			data_object.metadata['parameter'] = pname.replace('ppb', 'ppm')
+
+		return data_object

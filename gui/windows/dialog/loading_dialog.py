@@ -103,6 +103,7 @@ class LoadingDialog(QDialog):
 				background-color: transparent;
 				font: 500 13pt 'Microsoft New Tai Lue';
 				color: #8396a2;
+				text-align: middle;
 			}}
 		''')
 
