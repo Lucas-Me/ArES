@@ -6,6 +6,7 @@ from gui.pages.ui_processingscreen import UI_ProcessScreen
 
 # IMPORT CUSTOM MODULES
 from gui.widgets.profile_picker import Profile
+from backend.data_management.data_management import ModifiedData
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -15,6 +16,7 @@ class ProcessingScreen(QWidget):
 
 		# PRIVATE VARIABLES
 		self.raw_data = []
+		self.processed_data = []
 		self.standard_profile = Profile(color = QColor('#fafafa'), name = 'simple')
 
 		# SETUP UI
@@ -25,6 +27,7 @@ class ProcessingScreen(QWidget):
 		# SIGNALS AND SLOTS
 		self.ui.profile_picker.list.removedProfile.connect(self.resetProfileBox)
 		self.ui.profile_picker.list.profileDoubleClicked.connect(self.showProfileEditor)
+		self.ui.next_button.clicked.connect(self.processTasks)
 
 	@Slot(QDialog)
 	def showProfileEditor(self, dialog : QDialog):
@@ -89,4 +92,67 @@ class ProcessingScreen(QWidget):
 		opt.initFrom(self)
 		p = QPainter(self)
 		self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+
+	def processTasks(self):
+		'''
+		Processos os dados brutos coletados e organizados, e aplica uma transformacao
+		a eles, se necessário.
+		O resultado fica disponível nesta página, mas também na página de visualização de dados. (Gráfico)
+
+		Fluxo de operacação:
+			1. Executar um loop em cada item da lista 'raw_data'
+			2. Filtrar por flags e converter unidades [ppb] para [ppm] se necessário
+			3. Transformar de acordo com o Perfil especifica pelo usuário. Caso não haja perfil, apena retorna os dados brutos.
+			4. ??
+		'''
+		# creating empty array of shape (N,)
+		n = len(self.raw_data)
+		processed_data = [None] * n 
+
+		# creating regex string to filter values by flags
+		regex = self.getRegexString()
+
+		# Loop throught each item of "raw_data"
+		for i in range(n):
+			
+			# applying flag filter
+			filtered_data = self.raw_data[i].filterByFlags(regex) # returns a ModifedData object
+
+			# convert PPB to PPM if needed
+			filtered_data = self.convertPPB2PPM(filtered_data)
+
+			# check if a profile was selected for the given object, else ignore.
+	
+
+	def getRegexString(self):
+		# GETTING FLAGS TO FILTER BY (# regex)
+		validos = '[V*]\w|^$' # any word that starts with V or any empty character
+		suspeitos = '[?*]\w' # any words that starts with ?
+		invalidos = '[I*]\w' # any word that start with I
+		#
+		flags = [validos, suspeitos, invalidos]
+		regex = ''
+
+		# loop through each checkbox
+		comboboxes = self.ui.checkbox_flags
+		for i in range(len(comboboxes)):
+			if comboboxes[i].isChecked():
+				regex += flags[i] + '|'
+
+		regex = regex[:-1] # removing last character "|"
+
+		return regex
+
+	def convertPPB2PPM(self, data_object):
+		pname = data_object.metadata['parameter'] # get parameter name
+
+		if 'ppb' in pname and self.ui.ppb_button.isChecked():
+			
+			# apply conversion
+			data_object.setValues(data_object.getValues() * 1e-3)
+
+			# change parameter unit
+			data_object.metadata['parameter'] = pname.replace('ppb', 'ppm')
+
+		return data_object
 

@@ -1,5 +1,6 @@
 # IMPORT MODULES
 import numpy as np
+import re
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import find_unit
@@ -114,6 +115,18 @@ class AbstractData(object):
       self.values = kwargs.get('value', [])
       self.dates = kwargs.get('dates', [])
 
+      def setValues(self, values):
+         self.values = values
+
+      def getValues(self):
+         return self.values
+
+      def setDates(self, dates):
+         self.dates = dates
+
+      def getDates(self):
+         return self.dates
+         
 
 class RawData(AbstractData):
 
@@ -123,13 +136,27 @@ class RawData(AbstractData):
       # FLAGS FOR EACH DATE
       self.flags = kwargs.get('flags', [])
    
+   def filterByFlags(self, flags_regex):
+      r = re.compile(flags_regex)
+      vmatch = np.vectorize(lambda x:bool(r.match(x)))
+      matchs = vmatch(self.flags) # array of booleans, True if condition is met
+      #
+      filtered_values = np.where(matchs, self.values, np.nan)
+      filtered_flags = np.where(matchs, self.flags, np.nan)
+      #
+      return ModifiedData(
+         metadata = self.metadata,
+         values = filtered_values,
+         flags = filtered_flags,
+         dates = self.dates
+      )
+
 
 class ModifiedData(AbstractData):
 
    def __init__(self, *args, **kwargs):
       super().__init__(*args, **kwargs)
 
-      # Array de representatividada para cada data, em %
-      self.representatividade = kwargs.get('representatividade', [])
+      # Array de representatividada para cada data, em float (% = float * 100)
+      self.representatividade = kwargs.get('representatividade', np.where(np.isnan(self.values), np.nan, 1))
 
-      
