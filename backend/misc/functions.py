@@ -6,6 +6,8 @@ from qt_core import *
 
 # IMPORT MODULES
 import os
+import re
+from backend.misc.alias import *
 
 def get_imagepath(icon_name, folder):
 		app_path = os.path.abspath(os.getcwd())
@@ -24,6 +26,28 @@ def find_unit(parameter_name):
 	start = parameter_name.rfind(rchar)
 
 	return parameter_name[start + 1:-1]
+
+
+def get_alias(varname : str) -> str:
+   '''
+   Recebe uma string com o nome de uma variavel e retorna uma outra string com
+   a sua abreviação, omitindo a unidade.
+   Ex: Hidrocarbonetos Totais (ppb) -> HCT
+   '''
+   # usando as variaveis globais
+   global VARIAVEIS
+   global VAR_ALIAS
+
+   # a string é composta pelo nome da variavel e por fim sua unidade.
+   words = re.compile('\s+').split(varname)
+   varname = ' '.join(words[:-1])
+   try:
+      alias = VAR_ALIAS[VARIAVEIS.index(str(varname))]
+   except:
+      alias = varname
+   
+   return alias
+
 
 def drawShadow(
 	_painter : QPainter,

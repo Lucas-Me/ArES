@@ -68,6 +68,8 @@ class MainWindow(QMainWindow):
         # SIGNALS AND SLOTS
         # connect the ui loaded signal
         self.uiLoaded.connect(self.closeLoadingScreen)
+        self.uiLoaded.connect(self.uiLoadingThread.quit)
+        self.uiLoaded.connect(self.loadUI.deleteLater)
 
         # connet the start
         self.uiLoadingThread.started.connect(self.loadUI.start)
@@ -78,9 +80,6 @@ class MainWindow(QMainWindow):
     def closeLoadingScreen(self):
         # Close the loading screen
         self.loadingScreen.close()
-
-        # terminating thread
-        self.uiLoadingThread.quit()
 
         # show the main UI
         self.show()

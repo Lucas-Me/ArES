@@ -4,7 +4,7 @@ import re
 from copy import copy, deepcopy
 
 # IMPORT CUSTOM FUNCTIONS
-from backend.misc.functions import find_unit
+from backend.misc.functions import find_unit, get_alias
 
 class StationData(object):
    '''
@@ -115,6 +115,19 @@ class AbstractData(object):
       # VALUES 
       self.values = kwargs.get('values', [])
       self.dates = kwargs.get('dates', [])
+
+      # SETTINGS
+      self.setupAlias()
+
+   def setupAlias(self):
+      '''
+      Retorna um alias para este objeto, composto por:
+      [nome estacao] - [var alias]
+      '''
+      varname = self.metadata['parameter']
+      var_alias = get_alias(varname)
+
+      self.metadata['alias'] = f"{self.metadata['name']} - {var_alias}"
 
    def setValues(self, values):
       if not isinstance(values, np.ndarray):

@@ -167,7 +167,6 @@ class ProcessingScreen(QWidget):
 	@Slot(list)
 	def handleProcessedResults(self, results):
 		self.processed_data = results
-		print(results)
 
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)
@@ -198,10 +197,10 @@ class Worker(QObject):
 
 	def __init__(self, **kwargs) -> None:
 		super().__init__(kwargs.get('parent', None))
-		self.raw_data = kwargs.get('raw_data', None)
-		self.regex = kwargs.get('regex')
-		self.convert = kwargs.get('convert')
-		self.methods = kwargs.get('methods')
+		self.raw_data = deepcopy(kwargs.get('raw_data', None))
+		self.regex = deepcopy(kwargs.get('regex'))
+		self.convert = deepcopy(kwargs.get('convert'))
+		self.methods = deepcopy(kwargs.get('methods'))
 
 		# VARIABLES
 		self.formats = {"Data" : "%Y-%m-%d", "Mês e ano": "%Y-%m-01", "Ano" : "%Y-01-01"}
