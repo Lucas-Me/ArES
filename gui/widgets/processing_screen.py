@@ -1,6 +1,5 @@
 # IMPORT MODULES
 import numpy as np
-from time import time
 
 # IMPORT QT CORE
 from qt_core import *
@@ -20,6 +19,7 @@ formats = {"Data" : "%Y-%m-%d", "Mês e ano": "%Y-%m-01", "Ano" : "%Y-01-01"}
 functions = {"Média móvel":stats.media_movel, "Média aritmética":stats.media,
 			"Média geométrica" : stats.media_geometrica, "Média harmônica" : stats.media_harmonica,
 			"Máxima" : stats.maxima}
+frequencies = {"Data" : np.timedelta64(1,'D'), "Mês e ano": np.timedelta64(1,'M'), "Ano" : np.timedelta64(1,'Y')}
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -117,8 +117,6 @@ class ProcessingScreen(QWidget):
 			2. Filtrar por flags e converter unidades [ppb] para [ppm] se necessário
 			3. Transformar de acordo com o Perfil especifica pelo usuário. Caso não haja perfil, apena retorna os dados brutos.
 		'''
-		start = time()
-
 		# creating empty array of shape (N,)
 		n = len(self.raw_data)
 		processed_data = [None] * n 
@@ -137,16 +135,13 @@ class ProcessingScreen(QWidget):
 			# check if a profile was selected for a given object, and apply if needed.
 			final_data = self.runProfile(filtered_data, i)
 
-			# updating metadata and frequency
+			# updating metadata
+			del filtered_data.metadata['frequency']
 			final_data.metadata.update(filtered_data.metadata)
-			final_data.setup_frequency()
 
 			# finalizing
 			processed_data[i] = final_data
-			print(final_data.metadata)
 
-		end = time()
-		print(f'Tarefa realizada: {end - start}s')
 		self.processed_data = processed_data
 
 	def getRegexString(self):
@@ -195,7 +190,6 @@ class ProcessingScreen(QWidget):
 			group = methods[order][1]
 			#
 			threshold = 0 # TESTE
-			format_ = formats[group]
 			func = functions[calc]
 
 			# Applyng threshold
@@ -213,14 +207,14 @@ class ProcessingScreen(QWidget):
 				kwargs = dict(
 					func = func,
 					groupby = True,
-					format_ = format_
+					format_ = formats[group]
 				)
 				# if it reached here, then there is a need to groupby first
 
 			data_object = data_object.apply(**kwargs)
 
 		data_object.metadata['methods'] = methods
-
+		data_object.metadata['frequency'] = frequencies[methods[-1][1]]
 		return data_object
 
 		
