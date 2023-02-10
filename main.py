@@ -34,6 +34,9 @@ class LoadUi(QObject):
         # open page 3
         self.mainWindow.ui.btn_3.clicked.connect(lambda: self.mainWindow.change_page(page = 2, button = self.mainWindow.ui.btn_3))
 
+        # open page 4
+        self.mainWindow.ui.btn_4.clicked.connect(lambda: self.mainWindow.change_page(page = 3, button = self.mainWindow.ui.btn_4))
+
         # SQL request
         self.mainWindow.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.mainWindow.updateDatabaseSQL)
 

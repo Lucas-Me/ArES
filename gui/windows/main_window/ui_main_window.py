@@ -69,7 +69,8 @@ class UI_MainWindow(object):
         self.btn_1.set_active(True)
         self.btn_2 = PyPushButton("Dados", icon_path='icon_datamanager.svg', **btn_properties)
         self.btn_3 = PyPushButton("Método", icon_path = 'process_screen_icon.svg', **btn_properties)
-        self.btn_4 = PyPushButton("Ajustes", icon_path = 'icon_settings.svg', **btn_properties)
+        self.btn_4 = PyPushButton("Gráfico", icon_path = 'icon_settings.svg', **btn_properties)
+        self.btn_5 = PyPushButton("Ajustes", icon_path = 'icon_settings.svg', **btn_properties)
 
         # menu spacer
         self.left_menu_spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -87,13 +88,13 @@ class UI_MainWindow(object):
         self.left_menu_layout.addWidget(self.btn_2)
         self.left_menu_layout.addWidget(self.btn_3)
         self.left_menu_layout.addWidget(self.btn_4)
+        self.left_menu_layout.addWidget(self.btn_5)
         self.left_menu_layout.addItem(self.left_menu_spacer)
         self.left_menu_layout.addWidget(self.left_menu_label_version)
 
         # CONTENT
         # //////////////////////////////////////////////////////////////////////
         self.content = QFrame()
-        # self.content.setStyleSheet(f"background-color: {self.background_color}")
         
         # CONTENT LAYOUT
         self.content_layout = QVBoxLayout(self.content)
@@ -127,7 +128,6 @@ class UI_MainWindow(object):
 
         # Add to content layout
         self.content_layout.addWidget(self.pages)
-        # self.content_layout.addWidget(self.bottom_bar)
 
         # ADD WIDGETS TO APP
         self.main_layout.addWidget(self.left_menu)

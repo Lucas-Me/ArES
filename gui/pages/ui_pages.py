@@ -5,6 +5,7 @@ from qt_core import *
 from gui.widgets.data_manager_qwidget import DataManager
 from gui.widgets.login_screen import LoginScreen
 from gui.widgets.processing_screen import ProcessingScreen
+from gui.widgets.visualization_screen import DataVisualizationScreen
 
 class UI_StackedPages(object):
     def setup_ui(self, parent):
@@ -20,7 +21,11 @@ class UI_StackedPages(object):
         # CREATE PAGE 3
         self.process_page = ProcessingScreen(parent)
 
+        # CREATE PAGE 4
+        self.visualization_page = DataVisualizationScreen(parent)
+
         # insert pages into StackedWdiget (parent)
         parent.addWidget(self.login_page)
         parent.addWidget(self.data_page)
         parent.addWidget(self.process_page)
+        parent.addWidget(self.visualization_page)
