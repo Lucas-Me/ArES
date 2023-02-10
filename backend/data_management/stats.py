@@ -53,3 +53,12 @@ def media(array):
         result = np.nanmean(array, axis = 0)
 
     return result
+
+def maxima(array):
+    '''Extrai o valor máximo dada uma serie de dados.
+    A serie pode conter NaN.'''
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        result = np.nanmax(array, axis = 0)
+
+    return result

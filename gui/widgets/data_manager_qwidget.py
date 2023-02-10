@@ -370,7 +370,7 @@ class DataManager(QWidget):
 
                     # reindexing the values from arrays
                     values, flags = reindex(_object.dates, _object.parameters[k][0], _object.parameters[k][1], new_dates)
-
+                   
                     # creating object
                     this = RawData(
                         values = values,

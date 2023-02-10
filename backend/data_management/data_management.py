@@ -113,29 +113,29 @@ class AbstractData(object):
       self.metadata = kwargs.get('metadata', {}) # holds info about parameter name, station, enterprise etc.
 
       # VALUES 
-      self.values = kwargs.get('value', [])
+      self.values = kwargs.get('values', [])
       self.dates = kwargs.get('dates', [])
 
-      def setValues(self, values):
-         if not isinstance(values, np.ndarray):
-            values = np.array(values)
+   def setValues(self, values):
+      if not isinstance(values, np.ndarray):
+         values = np.array(values)
 
-         self.values = values
+      self.values = values
 
-      def getValues(self):
-         return self.values
+   def getValues(self):
+      return self.values
 
-      def setDates(self, dates):
-         if not isinstance(dates, np.ndarray):
-            dates = np.array(dates)
+   def setDates(self, dates):
+      if not isinstance(dates, np.ndarray):
+         dates = np.array(dates)
 
-         self.dates = dates
+      self.dates = dates
 
-      def getDates(self):
-         return self.dates
-      
-      def copy(self):
-         return deepcopy(self)
+   def getDates(self):
+      return self.dates
+   
+   def copy(self):
+      return deepcopy(self)
 
 class RawData(AbstractData):
 
@@ -151,7 +151,6 @@ class RawData(AbstractData):
       matchs = vmatch(self.flags) # array of booleans, True if condition is met
       #
       filtered_values = np.where(matchs, self.values, np.nan)
-      filtered_flags = np.where(matchs, self.flags, np.nan)
       #
       return ModifiedData(
          metadata = self.metadata.copy(),
@@ -218,6 +217,16 @@ class ModifiedData(AbstractData):
       
       self.representatividade = representatividade
 
+   def setup_frequency(self):
+      dt = np.roll(self.dates, 1) - self.dates
+      unique, counts = np.unique(dt, return_counts=True)
+      freq = np.asarray((unique, counts)).T
+      ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
+      
+      # frequencia de amostragem
+      self.metadata['frequency'] = np.abs(freq[ii, 0])
+      
+
 class GroupedData(object):
 
       def __init__(self, *args, **kwargs):
@@ -228,11 +237,11 @@ class GroupedData(object):
       def setupGroups(self, **kwargs):
          # It jsut works because the criteria array is sorted (ascending)
 
-         values = kwargs.pop['values']
-         criteria = kwargs.pop['criteria']
+         values = kwargs.pop('values')
+         criteria = kwargs.pop('criteria')
          
          # Creating groups
-         dates, index = np.unique(kwargs.pop['criteria'], return_index =  True)
+         dates, index = np.unique(criteria, return_index =  True)
          index = np.append(index, criteria.shape[0])[1:]
 
          # grouping values
@@ -244,8 +253,8 @@ class GroupedData(object):
          func = kwargs.pop('func')
 
          # the ramining items on the dict "kwargs" are arguments for the function "func"
-         values = np.fromiter(map(func, self.grouped_values))
-         representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values))
+         values = np.fromiter(map(func, self.grouped_values), dtype = float)
+         representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
 
          return ModifiedData(
             values = values,

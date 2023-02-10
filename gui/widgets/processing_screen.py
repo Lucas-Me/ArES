@@ -1,5 +1,6 @@
 # IMPORT MODULES
 import numpy as np
+from time import time
 
 # IMPORT QT CORE
 from qt_core import *
@@ -12,6 +13,13 @@ from gui.widgets.profile_picker import Profile
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
+
+
+# VARIABLES
+formats = {"Data" : "%Y-%m-%d", "Mês e ano": "%Y-%m-01", "Ano" : "%Y-01-01"}
+functions = {"Média móvel":stats.media_movel, "Média aritmética":stats.media,
+			"Média geométrica" : stats.media_geometrica, "Média harmônica" : stats.media_harmonica,
+			"Máxima" : stats.maxima}
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -108,8 +116,9 @@ class ProcessingScreen(QWidget):
 			1. Executar um loop em cada item da lista 'raw_data'
 			2. Filtrar por flags e converter unidades [ppb] para [ppm] se necessário
 			3. Transformar de acordo com o Perfil especifica pelo usuário. Caso não haja perfil, apena retorna os dados brutos.
-			4. ??
 		'''
+		start = time()
+
 		# creating empty array of shape (N,)
 		n = len(self.raw_data)
 		processed_data = [None] * n 
@@ -119,7 +128,6 @@ class ProcessingScreen(QWidget):
 
 		# Loop throught each item of "raw_data"
 		for i in range(n):
-			
 			# applying flag filter
 			filtered_data = self.raw_data[i].filterByFlags(regex) # returns a ModifedData object
 
@@ -128,6 +136,18 @@ class ProcessingScreen(QWidget):
 
 			# check if a profile was selected for a given object, and apply if needed.
 			final_data = self.runProfile(filtered_data, i)
+
+			# updating metadata and frequency
+			final_data.metadata.update(filtered_data.metadata)
+			final_data.setup_frequency()
+
+			# finalizing
+			processed_data[i] = final_data
+			print(final_data.metadata)
+
+		end = time()
+		print(f'Tarefa realizada: {end - start}s')
+		self.processed_data = processed_data
 
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)
@@ -173,8 +193,10 @@ class ProcessingScreen(QWidget):
 		for order in range(n): # if n == 0, will not enter loop anyway
 			calc = methods[order][0]
 			group = methods[order][1]
+			#
 			threshold = 0 # TESTE
-			format_ = "%Y-%m-%d" # TESTE
+			format_ = formats[group]
+			func = functions[calc]
 
 			# Applyng threshold
 			data_object.setValues(data_object.maskByThreshold(threshold))
@@ -182,19 +204,23 @@ class ProcessingScreen(QWidget):
 			# if "moving avareage" is selected, there is no need the group the data beforehand
 			if calc == "Média móvel":
 				kwargs = dict(
-					func = stats.media_movel,
+					func = func,
 					date_array = data_object.getDates(),
 					dt = np.timedelta64(8, "h")
 				)
 
 			else:
 				kwargs = dict(
-					func = stats.media,
+					func = func,
 					groupby = True,
 					format_ = format_
 				)
 				# if it reached here, then there is a need to groupby first
 
 			data_object = data_object.apply(**kwargs)
+
+		data_object.metadata['methods'] = methods
+
+		return data_object
 
 		
