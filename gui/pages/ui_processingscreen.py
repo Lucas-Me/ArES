@@ -5,6 +5,7 @@ from qt_core import *
 from backend.misc.functions import get_imagepath
 from gui.widgets.parameter_summary import ParameterSummary, ParameterHeader
 from gui.widgets.profile_picker import ProfilePicker
+from gui.widgets.py_push_button import ClassicButton
 
 # Data Manager Page UI Class
 class UI_ProcessScreen(object):
@@ -27,7 +28,14 @@ class UI_ProcessScreen(object):
         self.date_label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.date_label.setObjectName('date_label')
         
-        # SETTINGS FRAME
+        # SUMMARY FRAME
+        # ///////////////////////////////////////////////////////////////
+        self.summary_frame = QFrame()
+        self.summary_frame.setObjectName('summary_frame')
+        self.summary_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.summary_frame.setFixedHeight(200)
+
+         # SETTINGS FRAME
         # ///////////////////////////////////////////////////////////////
         self.settings_frame = QFrame()
         self.settings_frame.setObjectName('settings_frame')
@@ -44,9 +52,16 @@ class UI_ProcessScreen(object):
         self.settings_label.setObjectName('settings_label')
         self.settings_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
+        # CONVERSION PPB TO PPM
+        self.ppb_button = QCheckBox("[ppb] >> [ppm]")
+        self.ppb_button.setFixedWidth(self.settings_frame.width() - 20)
+        self.ppb_button.setFixedHeight(30)
+        self.ppb_button.setObjectName('convert')
+
         # ADD TO FRAME
         self.settings_layout.addWidget(self.settings_label, alignment = Qt.AlignmentFlag.AlignTop)
-        
+        self.settings_layout.addWidget(self.ppb_button, alignment=Qt.AlignmentFlag.AlignTop)
+
         # COMBOBOXES
         labels = ['Válidos', 'Inválidos', 'Suspeitos']
         names = ['validos', 'invalidos', 'suspeitos']
@@ -61,12 +76,6 @@ class UI_ProcessScreen(object):
             self.checkbox_flags.append(box)
 
         self.checkbox_flags[0].setChecked(True)
-        # SUMMARY FRAME
-        # ///////////////////////////////////////////////////////////////
-        self.summary_frame = QFrame()
-        self.summary_frame.setObjectName('summary_frame')
-        self.summary_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.summary_frame.setFixedHeight(200)
 
         # PROFILE FRAME
         # ////////////////////////////////////////////////////////////////
@@ -98,15 +107,35 @@ class UI_ProcessScreen(object):
         self.parameter_layout.addWidget(self.header)
         self.parameter_layout.addWidget(self.parameter_list)
 
+        # BOTTOM FRAME
+        # /////////////////////////////////////////////////////////////////
+        self.bottom_layout = QHBoxLayout()
+
+        # Next Button
+        self.next_button = ClassicButton(
+            text = 'Processar',
+            icon_allign='right',
+            width = 180,
+            height = 40,
+            icon_width= 40,
+            icon_path= 'icon_next_btn.svg',
+            paint_icon=False
+        )
+        self.next_button.setObjectName('next_btn')
+
+        # ADD TO BOTTOM LAYOUT
+        self.bottom_layout.addWidget(self.next_button, alignment= Qt.AlignmentFlag.AlignRight)
+
         # MAIN LAYOUT CONFIGURATION
         # ////////////////////////////////////////////////////////////////
 
         # add to main layout
         self.main_layout.addWidget(self.date_label, 0, 0)
-        self.main_layout.addWidget(self.settings_frame, 1, 0)
-        self.main_layout.addWidget(self.summary_frame, 1, 1)
+        self.main_layout.addWidget(self.summary_frame, 1, 0)
+        self.main_layout.addWidget(self.settings_frame, 1, 1)
         self.main_layout.addWidget(self.profile_frame, 1, 2)
         self.main_layout.addLayout(self.parameter_layout, 2, 0, 1, 3)
+        self.main_layout.addLayout(self.bottom_layout, 3, 0, 1, 3)
 
         # alignment
         self.main_layout.setAlignment(self.date_label, Qt.AlignmentFlag.AlignLeft)
@@ -149,7 +178,7 @@ class UI_ProcessScreen(object):
                 border: none;
                 text-align: left;
             }}
-            #validos, #invalidos, #suspeitos {{
+            #validos, #invalidos, #suspeitos, #convert {{
                 background-color: #fafafa;
                 font: 500 12pt '{font}';
                 color: {font_color};
@@ -158,24 +187,40 @@ class UI_ProcessScreen(object):
                 text-align: middle;
                 padding-left: 10px;
             }}
-            #validos::indicator:checked, #invalidos::indicator:checked, #suspeitos::indicator:checked {{
+            #convert::indicator:checked, #validos::indicator:checked, #invalidos::indicator:checked, #suspeitos::indicator:checked {{
                 image: url({checked_path});
             }}
-            #validos:checked, #invalidos:checked, #suspeitos:checked {{
+            #convert:checked, #validos:checked, #invalidos:checked, #suspeitos:checked {{
                 border-color: #58aeee;
                 color: #58aeee;
             }}
-            #validos:checked:hover, #invalidos:checked:hover, #suspeitos:checked:hover {{
+            #convert:checked:hover, #validos:checked:hover, #invalidos:checked:hover, #suspeitos:checked:hover {{
                 background-color: #e4e4e4;
             }}
-            #validos::indicator:unchecked, #invalidos::indicator:unchecked, #suspeitos::indicator:unchecked {{
+            #convert::indicator:unchecked, #validos::indicator:unchecked, #invalidos::indicator:unchecked, #suspeitos::indicator:unchecked {{
                 image: url({unchecked_path});
             }}
-            #validos:unchecked, #invalidos:unchecked, #suspeitos:unchecked {{
+            #convert:unchecked, #validos:unchecked, #invalidos:unchecked, #suspeitos:unchecked {{
                 border-color: #5c5c5c;
                 color: #5c5c5c;
             }}
-            #validos:unchecked:hover, #invalidos:unchecked:hover, #suspeitos:unchecked:hover {{
+            #convert:unchecked:hover, #validos:unchecked:hover, #invalidos:unchecked:hover, #suspeitos:unchecked:hover {{
+                background-color: #e4e4e4;
+            }}
+            #next_btn {{
+                background-color: #ffffff;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
+                border-radius: {border_radius};
+                font: 500 14pt {font};
+                color: {font_color};
+                padding-left: 20px;
+                text-align: left;
+            }}
+            #next_btn:hover {{
+                background-color: #fafafa;
+            }}
+            #next_btn:pressed {{
                 background-color: #e4e4e4;
             }}
         ''')
