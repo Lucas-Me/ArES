@@ -92,6 +92,13 @@ class MainWindow(QMainWindow):
             btn.set_active(False)
 
     def change_page(self, page : int, button : QPushButton):
+        if page == 2:
+            # check if there is at least one parameter loaded
+            n = len(self.ui.ui_pages.process_page.raw_data)
+            if n == 0:
+                return None
+        
+        # Change page
         self.reset_menu_selection()
         self.ui.pages.setCurrentIndex(page)
         button.set_active(True)

@@ -21,7 +21,7 @@ class UI_MainWindow(object):
         # SET INITAL COLORS
         self.background_color = '#f5f5f5'
         self.top_bar_color = '#f5f5f5'
-        self.left_menu_color = '#4969b2'
+        self.left_menu_color = '#2a3f54'
 
         # CREATE CENTRAL WIDGET
         self.central_frame = QFrame()
@@ -70,7 +70,7 @@ class UI_MainWindow(object):
         self.btn_2 = PyPushButton("Dados", icon_path='icon_datamanager.svg', **btn_properties)
         self.btn_3 = PyPushButton("Método", icon_path = 'process_screen_icon.svg', **btn_properties)
         self.btn_4 = PyPushButton("Gráfico", icon_path = 'icon_settings.svg', **btn_properties)
-        self.btn_5 = PyPushButton("Ajustes", icon_path = 'icon_settings.svg', **btn_properties)
+        self.btn_settings = PyPushButton("Ajustes", icon_path = 'icon_settings.svg', **btn_properties)
 
         # menu spacer
         self.left_menu_spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -88,8 +88,8 @@ class UI_MainWindow(object):
         self.left_menu_layout.addWidget(self.btn_2)
         self.left_menu_layout.addWidget(self.btn_3)
         self.left_menu_layout.addWidget(self.btn_4)
-        self.left_menu_layout.addWidget(self.btn_5)
         self.left_menu_layout.addItem(self.left_menu_spacer)
+        self.left_menu_layout.addWidget(self.btn_settings)
         self.left_menu_layout.addWidget(self.left_menu_label_version)
 
         # CONTENT

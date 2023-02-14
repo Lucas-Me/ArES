@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.cm as cm
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.backends.qt_compat import (
@@ -19,16 +20,49 @@ from matplotlib.backends.qt_compat import (
 
 # DEFAULT MATPLOTLIB OPTIONS
 # ///////////////////////////////////////////////////////////////////////
+
+CB91_Blue = '#2CBDFE'
+CB91_Green = '#47DBCD'
+CB91_Pink = '#F3A0F2'
+CB91_Purple = '#9D2EC5'
+CB91_Violet = '#661D98'
+CB91_Amber = '#F5B14C'
+
+color_list = [CB91_Blue, CB91_Pink, CB91_Green, CB91_Amber,
+              CB91_Purple, CB91_Violet]
+
 mpl.use("QtAgg")
-mpl.rcParams.update({
-	'axes.spines.top' : False,
-	'axes.spines.right' : False,
-	'axes.spines.left' : False,
-	'figure.subplot.bottom' : 0.1,
-	'figure.subplot.top' : 0.95,
-	'axes.grid' : True,
-	"axes.grid.axis" : "y",
-})
+# mpl.rcParams.update({
+# 	'axes.spines.top' : False,
+# 	'axes.spines.right' : False,
+# 	'figure.subplot.bottom' : 0.1,
+# 	'figure.subplot.top' : 0.95,
+# 	'axes.grid' : True,
+# 	"axes.grid.axis" : "y",
+# 	'axes.prop_cycle' : plt.cycler(color = color_list)
+# })
+mpl.rcParams.update({'axes.axisbelow': False,
+ 'axes.edgecolor': 'gray',
+ 'axes.facecolor': 'None',
+ 'axes.grid': False,
+ 'axes.labelcolor': 'dimgray',
+ 'axes.spines.right': False,
+ 'axes.spines.top': False,
+ 'figure.facecolor': 'white',
+ 'lines.solid_capstyle': 'round',
+ 'patch.edgecolor': 'w',
+ 'patch.force_edgecolor': True,
+ 'text.color': 'dimgray',
+ 'xtick.bottom': False,
+ 'xtick.color': 'dimgray',
+ 'xtick.direction': 'out',
+ 'xtick.top': False,
+ 'ytick.color': 'dimgray',
+ 'ytick.direction': 'out',
+ 'ytick.left': False,
+ 'ytick.right': False,
+ 'font.family' : 'Microsoft New Tai Lue'
+ })
 
 # CLASSES
 # ///////////////////////////////////////////////////////////////////////
