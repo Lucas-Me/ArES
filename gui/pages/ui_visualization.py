@@ -17,49 +17,45 @@ class UI_DataVisualization(object):
 		self.main_layout.setContentsMargins(0, 0, 0, 0)
 		self.main_layout.setSpacing(0)
 		
-		# TOP FRAME
-		# /////////////////////////////////////////////
-		self.top_frame = QFrame()
-		self.top_frame.setFixedHeight(35)
-		self.top_frame.setObjectName('top_frame')
-		
-		# layout
-		self.top_frame_layout = QHBoxLayout(self.top_frame)
-
-		# CENTRAL LAYOUT
-		# ////////////////////////////////////////////
-		self.central_layout = QHBoxLayout()
-		self.central_layout.setContentsMargins(0, 0, 0, 0)
-		self.central_layout.setSpacing(0)
-
-		# CANVAS
-		self.canvas = AbstractCanvas()
-
-		# RIGHT MENU
-		self.right_menu = QFrame()
-		self.right_menu.setObjectName('right_menu')
-		self.right_menu.setFixedWidth(200)
-
-		# add to central layout
-		self.central_layout.addWidget(self.canvas)
-		self.central_layout.addWidget(self.right_menu)
-
 		# ADD TO CENTRAL LAYOUT
 		# ///////////////////////////////////////////
-		self.main_layout.addWidget(self.top_frame)
-		self.main_layout.addLayout(self.central_layout)
+		self.main_layout.addWidget(parent.tab_widget)
 
 		# STYlE
 		self.setup_stylesheet(parent)
 
 	def setup_stylesheet(self, parent : QWidget):
+		# COLORS AND PROPERTIES
 		bg_color = '#ededed'
+		font = 'Microsoft New Tai Lue'
+		radius = 3
 
+		# STYLE
 		parent.setStyleSheet(f'''
-			#top_frame {{
-				background-color: {bg_color};
+			QTabWidget::pane {{ /* The tab widget frame */
+				border: 1px solid #2a3f54;
 			}}
-			#right_menu {{
-				background-color: #6daaab;
+			QTabWidget::tab-bar {{
+				left: 5px; /* move to the right by 5px */
+			}}
+			/* Style the tab using the tab sub-control. Note that
+				it reads QTabBar _not_ QTabWidget */
+			QTabBar::tab {{
+				background: #ffffff;
+				font: 500 12pt '{font}';
+				color: #2a3f54;
+				min-width: 20ex;
+				min-height: 8ex;
+				border: none;
+				border-radius: {radius}px;
+			}}
+			QTabBar::tab:!selected:hover {{
+				background-color: #bfbfbf;
+			}}
+			QTabBar::tab:selected {{
+				border: 1px solid lightgray;
+			}}
+			QTabBar::tab:!selected {{
+				background-color: #ededed;
 			}}
 		''')
