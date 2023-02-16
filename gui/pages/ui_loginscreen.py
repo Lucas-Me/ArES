@@ -117,13 +117,17 @@ class UI_LoginScreen(object):
 
         # WELCOME LABEL
         self.greetings_label = QLabel()
-        self.greetings_label.setFixedSize(QSize(250, 50))
+        self.greetings_label.setMinimumWidth(250)
+        self.greetings_label.setFixedHeight(50)
         self.greetings_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
+        self.greetings_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         # LOGGED LABEL
         self.logged_label = QLabel()
-        self.logged_label.setFixedSize(QSize(350, 40))
+        self.logged_label.setMinimumWidth(340)
+        self.logged_label.setFixedHeight(50)
         self.logged_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.logged_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         # LAST VERIFICATION LABEL
         self.verification_label = QLabel()
@@ -283,7 +287,7 @@ class UI_LoginScreen(object):
                 padding-bottom: 10px;
             }}
             #greetings_label {{
-                font: bold 20pt "Open Sans";
+                font: bold 18pt "Open Sans";
                 color: #409cc1;
             }}
             #logged_label {{
