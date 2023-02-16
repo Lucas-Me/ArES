@@ -81,11 +81,11 @@ class MainWindow(QMainWindow):
         self.uiLoadingThread.start()
 
     def closeLoadingScreen(self):
-        # Close the loading screen
-        self.loadingScreen.close()
-
         # show the main UI
         self.show()
+
+        # Close the loading screen
+        self.loadingScreen.close()
 
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
