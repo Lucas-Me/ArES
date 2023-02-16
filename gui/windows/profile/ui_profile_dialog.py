@@ -48,6 +48,7 @@ class UI_ProfileDialog(object):
 		self.name.setFixedSize(w / 2, 25)
 		self.name.setObjectName('name')
 		self.name.setClearButtonEnabled(True)
+		self.name.setPlaceholderText('Digite um nome..')
 		image = QPixmap(get_imagepath('pencil.svg', 'gui/images/icons'))
 		image.scaled(QSize(25, 25), Qt.AspectRatioMode.KeepAspectRatio)
 		self.name.addAction(image, QLineEdit.LeadingPosition)
