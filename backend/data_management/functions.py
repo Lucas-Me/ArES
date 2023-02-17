@@ -299,7 +299,7 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 					current_col += 2
 
 			# writing enterprise header
-			ws.merge_range(1, current_col, 1, current_col + size, enterprise, header_fmt)
+			ws.merge_range(0, current_col - cols, 0, current_col - 1, enterprise, header_fmt)
 
 
 def workbook_processed(files: list) -> xlsxwriter.Workbook:
