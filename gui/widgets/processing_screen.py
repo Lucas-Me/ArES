@@ -1,7 +1,7 @@
 # IMPORT MODULES
 import numpy as np
 from copy import deepcopy
-import os
+import os, xlsxwriter
 
 # IMPORT QT CORE
 from qt_core import *
@@ -17,6 +17,9 @@ from gui.widgets.profile_picker import Profile
 from backend.data_management import stats
 from backend.misc.functions import get_frequency
 from backend.data_management.functions import export_to_xlsx
+
+# IMPORT DIALOGS
+from gui.windows.dialog.import_dialog import ImportDialog
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -208,29 +211,29 @@ class ProcessingScreen(QWidget):
 			dir = self.save_dir,
 			filter = "Excel files (*.xlsx)",
 		)
-		print(kind)
+
 		# check if fname is valid
 		if len(fname) > 0:
 			# update save directory
 			self.save_dir = os.path.dirname(fname)
-			if kind == 'raw':
-				export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
-			else:
-				export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
-			# try:
-			# 	if kind == 'raw':
-			# 		export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
-			# 	else:
-			# 		export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
 
-			# except Exception as err:
-			# 	print(err)
-			# 	x = QMessageBox(QMessageBox.Critical, "Erro", "Erro ao salvar", parent = self)
-			# 	x.addButton(QMessageBox.Ok)
-			# 	x.setInformativeText('Não foi possível salvar a planilha de dados. '
-			# 						'\nVerifique se ela esta aberta em outro programa.')
-			# 	x.exec()
-			# 	return None
+			# try to export xlsx file
+			try:
+				if kind == 'raw':
+					export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
+				else:
+					export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
+
+			# throw an exception if failed
+			except xlsxwriter.exceptions.FileCreateError as err:
+				dialog = ImportDialog(
+					title = 'Erro',
+					message = 'Não foi possível salvar a planilha de dados',
+					description='Certifique-se de que a planilha não esteja aberta em outro programa',
+					parent = self
+				)
+				dialog.ignore_button.hide()
+				dialog.exec()
 
 
 class Worker(QObject):
