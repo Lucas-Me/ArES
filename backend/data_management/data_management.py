@@ -4,7 +4,7 @@ import re
 from copy import copy, deepcopy
 
 # IMPORT CUSTOM FUNCTIONS
-from backend.misc.functions import find_unit, get_alias
+from backend.misc.functions import find_unit, get_alias, get_frequency
 
 class StationData(object):
    '''
@@ -24,13 +24,8 @@ class StationData(object):
       self.metadata['enterprise'] = name
 
    def setup_frequency(self):
-      dt = np.roll(self.dates, 1) - self.dates
-      unique, counts = np.unique(dt, return_counts=True)
-      freq = np.asarray((unique, counts)).T
-      ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
-      
-      # frequencia de amostragem de unidade de horas
-      self.metadata['frequency'] = np.abs(freq[ii, 0]) // np.timedelta64(1, 'h')
+      # frequencia de amostragem em unidade de horas
+      self.metadata['frequency'] = get_frequency(self.dates) // np.timedelta64(1, 'h')
       
       # deduz o tipo de estacao pela frequencia
       if self.metadata['frequency'] == 1:

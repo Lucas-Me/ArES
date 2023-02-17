@@ -111,6 +111,33 @@ class UI_ProcessScreen(object):
         # /////////////////////////////////////////////////////////////////
         self.bottom_layout = QHBoxLayout()
 
+        # Export Raw Data
+        self.export_raw = ClassicButton(
+            text = 'Dados brutos',
+            width = 140,
+            height = 40,
+            icon_width= 30,
+            icon_path= 'export.svg',
+            paint_icon=True,
+            icon_color = '#2b2b2b',
+            hover_color= '#58aeee'
+        )
+        self.export_raw.setObjectName('export_raw')
+
+        # Export Processed Data
+        self.export_modified = ClassicButton(
+            text = 'Processados',
+            width = 140,
+            height = 40,
+            icon_width= 30,
+            icon_path= 'export.svg',
+            paint_icon=True,
+            icon_color = '#2b2b2b',
+            hover_color= '#58aeee'
+        )
+        self.export_modified.setObjectName('export_modified')
+        self.export_modified.hide()
+
         # Next Button
         self.next_button = ClassicButton(
             text = 'Processar',
@@ -124,6 +151,9 @@ class UI_ProcessScreen(object):
         self.next_button.setObjectName('next_btn')
 
         # ADD TO BOTTOM LAYOUT
+        self.bottom_layout.addWidget(self.export_raw, alignment = Qt.AlignmentFlag.AlignLeft)
+        self.bottom_layout.addItem(QSpacerItem(50, 50, QSizePolicy.MinimumExpanding, QSizePolicy.Fixed))
+        self.bottom_layout.addWidget(self.export_modified, alignment= Qt.AlignmentFlag.AlignRight)
         self.bottom_layout.addWidget(self.next_button, alignment= Qt.AlignmentFlag.AlignRight)
 
         # MAIN LAYOUT CONFIGURATION
@@ -222,6 +252,17 @@ class UI_ProcessScreen(object):
             }}
             #next_btn:pressed {{
                 background-color: #e4e4e4;
+            }}
+            #export_modified, #export_raw{{
+                background-color: transparent;
+                border: none;
+                font: 500 12pt {font};
+                color: #2b2b2b;
+                padding-top: 5px;
+                text-align: right;
+            }}
+            #export_modified:hover, #export_raw:hover{{
+                color: #58aeee;
             }}
         ''')
 

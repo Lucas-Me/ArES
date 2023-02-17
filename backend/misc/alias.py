@@ -5,7 +5,9 @@ SCRIPT CRIADO PARA ARMAZENAR AS ABREVIAÇÕES DOS PARÂMETROS DE QUALIDADE DO AR
 ARIAVEIS = [
    'Precipitação Pluviométrica', 
    'Velocidade do Vento',
+   'Velocidade Escalar do Vento'
    'Direção do Vento',
+   'Direção Escalar do Vento',
    'Temperatura',
    'Radiação Solar',
    'Umidade Relativa',
@@ -31,6 +33,8 @@ ARIAVEIS = [
 VAR_ALIAS = [
    'Prec.',
    'Vel. Vento',
+   'Vel. Vento',
+   'Dir. Vento',
    'Dir. Vento',
    'Temp',
    'Rad. Solar',

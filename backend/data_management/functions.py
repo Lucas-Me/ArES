@@ -3,11 +3,11 @@
 # IMPORT MODULES
 import numpy as np
 import os
-import xlrd
-from copy import copy, deepcopy
+import xlrd, xlsxwriter
 
 # IMPORT CUSTOM MODULES
 from backend.data_management.data_management import XlsStationData
+from backend.misc.functions import find_unit
 
 def xls_reader(file_path : str):
 	'''
@@ -190,3 +190,117 @@ def reindex(old_dates, values, flags, new_dates):
 	new_flags[fill_spots] = old_inside_flags 
 
 	return (new_values, new_flags)
+
+
+def export_to_xlsx(*args, **kwargs):
+	'''
+	Exporta os arquivos contendo dados brutos ou dados processados em uma planilha excel
+	'''
+	# extracting args
+	files = kwargs.pop('files')
+	kind = kwargs.pop('kind')
+    
+	# Start writing on XLSX File
+	with xlsxwriter.Workbook(kwargs.pop('fname')) as wb:
+		if kind == 'raw':
+			workbook_raw(files, wb)
+		else:
+			workbook_processed(files, wb)
+
+
+def workbook_raw(files: list, wb : xlsxwriter.workbook):
+	# organizando os dados de acordo com seu tipo
+	tipos = np.array([_object.metadata['type'] for _object in files])
+	unique = np.unique(tipos)
+
+	# formats
+	header_fmt = wb.add_format(dict(bold = True, bg_color = "#bcced8", border = 2, align = "center", valign = "center"))
+	dados_fmt = wb.add_format(dict(num_format = "0.00", align = "right", border = 1))
+	flags_fmt = wb.add_format(dict(align = "right", border = 1))
+	
+	cell_dateformat = dict(
+			num_format = "dd/mm/yyyy hh:mm",
+			align = "left",
+			border = 1
+		)
+
+	# create one sheet for each type of station
+	for sheet_n in range(len(unique)):
+		# tipo
+		type_ = unique[sheet_n]
+		indices = np.extract(tipos == type_, np.arange(len(files)))
+		
+		# getting station name and enterprise
+		station_name = np.array([files[i].metadata['name'] for i in indices])
+		enterprise = np.array([files[i].metadata['enterprise'] for i in indices])
+
+		# sorting by station and enterprise
+		sorted_objects = {k:{} for k in enterprise}
+		for i in range(len(indices)):
+			stations = sorted_objects[enterprise[i]]
+			index_list = stations.get(station_name[i], [])
+			index_list.append(indices[i])
+			stations[station_name[i]] = index_list
+
+		# create worksheet
+		ws = wb.add_worksheet(type_)
+
+		# ROW 1 -> EMPRESAS
+		# ROW 2 -> ESTACAO
+		# ROW 3 -> PARAMETRO
+		# ROW 4 -> VALOR & FLAG
+		# ROW >= 5 -> DADOS
+		row0 = 4
+
+		# inserting data column. Theoretically, same type objects share the same date array
+		date_array = files[indices[0]].getDates()
+		dates = [date.item() for date in date_array]
+		ws.merge_range(0, 0, row0 - 1, 0, "Datas", header_fmt)
+
+		# number of cols and rows
+		nrows = date_array.shape[0] + row0
+		ncols = 1 + len(indices) * 2
+
+		# writing date columns
+		ws.write_column(row0, 0, dates, cell_dateformat)
+
+		# loop through each enterprise
+		current_col = 1
+		for enterprise, stations in sorted_objects.items():
+			cols = 0
+			for station_name, parameters in enterprise.items():
+				size = len(parameters) * 2
+				cols += size
+
+				# station header
+				ws.merge_range(1, current_col, 1, current_col + size, station_name, header_fmt)
+
+				# loop through each parameter
+				for idx in parameters:
+					object_ = files[idx]
+					name, unit = find_unit(object_.metadata['parameter'], return_name= True)
+
+					# parameter header
+					ws.merge_range(2, current_col, 2, current_col + 1, 2, name, header_fmt)
+
+					# Value and Flag header
+					ws.write(3, current_col, f"Valor [{unit}]", header_fmt)
+					ws.write(3, current_col + 1, 'Flag', header_fmt)
+					
+					# getting values and flags arrays
+					values = object_.getValues()
+					flags = object_.getFlags()
+
+					# loop thorugh values and flags
+					for i in range(values.shape[0]):
+						ws.write(row0 + i, current_col, values[i], dados_fmt)
+						ws.write(row0 + i, current_col + 1, flags[i], flags_fmt)
+					
+					current_col += 2
+
+			# writing enterprise header
+			ws.merge_range(1, current_col, 1, current_col + size, enterprise, header_fmt)
+
+
+def workbook_processed(files: list) -> xlsxwriter.Workbook:
+	pass

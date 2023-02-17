@@ -175,6 +175,7 @@ class ClassicButton(QPushButton):
         icon_allign = "left",
         icon_color = "#000000",
         paint_icon = True,
+        hover_color = None
         ) -> None:
         super().__init__()
 
@@ -187,7 +188,9 @@ class ClassicButton(QPushButton):
         self.icon_path = icon_path
         self.icon_width = icon_width
         self.icon_allign = icon_allign
+        self.color = icon_color
         self.icon_color = icon_color
+        self.hover_color = icon_color if hover_color is None else hover_color
         self.allign_left = icon_allign == 'left'
         self.paint_icon = paint_icon
 
@@ -233,3 +236,21 @@ class ClassicButton(QPushButton):
             painter.fillRect(icon.rect(), color)
         qp.drawPixmap(x, y, dx, dy, icon)
         painter.end()
+
+    def enterEvent(self, event:QEnterEvent) -> None:
+        '''
+        Se o mouse estiver sobre o botao, pinta o icone de amarelo.
+        '''
+        self.icon_color = self.hover_color
+        self.update()
+
+        return super().enterEvent(event)
+
+    def leaveEvent(self, event: QEvent) -> None:
+        '''
+        Se o mouse deixar o botao, pinta o icon da cor original.
+        '''
+        self.icon_color = self.color
+        self.update()
+        
+        return super().leaveEvent(event)

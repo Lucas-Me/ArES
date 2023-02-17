@@ -7,6 +7,7 @@ from qt_core import *
 # IMPORT MODULES
 import os
 import re
+import numpy as np
 from backend.misc.alias import *
 
 def get_imagepath(icon_name, folder):
@@ -15,7 +16,7 @@ def get_imagepath(icon_name, folder):
 
 		return os.path.join(icons_folder, icon_name).replace('\\', '/')
 
-def find_unit(parameter_name):
+def find_unit(parameter_name, return_name = False):
 	'''
 	Extrai a unidade a partir do nome completo do parametro.
 	'''
@@ -25,7 +26,13 @@ def find_unit(parameter_name):
 	rchar = reverse[last_char]
 	start = parameter_name.rfind(rchar)
 
-	return parameter_name[start + 1:-1]
+	if not return_name:
+		# retorna somente a unidade
+		return parameter_name[start + 1:-1]
+	
+	else:
+		# retorna o nome e unidade, separados
+		return parameter_name[:start - 1], parameter_name[start + 1:-1]
 
 
 def get_alias(varname : str) -> str:
@@ -145,3 +152,15 @@ def drawShadow(
 	_painter.setBrush(QBrush("#FFFFFF"));
 	_painter.setRenderHint(QPainter.Antialiasing);
 	_painter.drawRoundedRect(QRectF(QPointF(_margin, _margin), QPointF(_width - _margin, _height - _margin)), _radius, _radius)
+
+def get_frequency(date_array):
+	'''
+	Estima a frequencia de uma dada sequencia.
+	Tambem se aplica a objetos datetime, nesse caso o resultado sera um Timedelta.
+	'''
+	dt = np.roll(date_array, 1) - date_array
+	unique, counts = np.unique(dt, return_counts=True)
+	freq = np.asarray((unique, counts)).T
+	ii = np.where(freq[:, 1] == np.nanmax(freq[:, 1]))[0][0]
+      
+	return np.abs(freq[ii, 0])

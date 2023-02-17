@@ -14,6 +14,7 @@ from gui.widgets.profile_picker import Profile
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
+from backend.misc.functions import get_frequency
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -35,6 +36,12 @@ class ProcessingScreen(QWidget):
 		self.ui.profile_picker.list.removedProfile.connect(self.resetProfileBox)
 		self.ui.profile_picker.list.profileDoubleClicked.connect(self.showProfileEditor)
 		self.ui.next_button.clicked.connect(self.processTasks)
+
+	def exportStatus(self):
+		if len(self.processed_data) > 0:
+			self.ui.export_modified.show()
+		else:
+			self.ui.export_modified.hide()
 
 	@Slot(QDialog)
 	def showProfileEditor(self, dialog : QDialog):
@@ -167,6 +174,7 @@ class ProcessingScreen(QWidget):
 	@Slot(list)
 	def handleProcessedResults(self, results):
 		self.processed_data = results
+		self.exportStatus()
 
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)
@@ -265,7 +273,11 @@ class Worker(QObject):
 			data_object = data_object.apply(**kwargs)
 
 		data_object.metadata['methods'] = methods
-		data_object.metadata['frequency'] = self.frequencies[methods[-1][1]]
+		key = methods[-1][1] if len(methods) > 0 else ''
+		
+		# get frequency of dataset
+		data_object.metadata['frequency'] = self.frequencies.get(key, get_frequency(data_object.getDates()))
+
 		return data_object
 
 	def convertPPB2PPM(self, data_object, convert):
