@@ -201,12 +201,14 @@ def export_to_xlsx(*args, **kwargs):
 	kind = kwargs.pop('kind')
     
 	# Start writing on XLSX File
-	with xlsxwriter.Workbook(kwargs.pop('fname')) as wb:
-		if kind == 'raw':
-			workbook_raw(files, wb)
-		else:
-			workbook_processed(files, wb)
-
+	wb = xlsxwriter.Workbook(kwargs.pop('fname'))
+	if kind == 'raw':
+		workbook_raw(files, wb)
+	else:
+		workbook_processed(files, wb)
+	
+	# save workbook
+	wb.close()
 
 def workbook_raw(files: list, wb : xlsxwriter.workbook):
 	# organizando os dados de acordo com seu tipo
@@ -214,15 +216,17 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 	unique = np.unique(tipos)
 
 	# formats
-	header_fmt = wb.add_format(dict(bold = True, bg_color = "#bcced8", border = 2, align = "center", valign = "center"))
-	dados_fmt = wb.add_format(dict(num_format = "0.00", align = "right", border = 1))
-	flags_fmt = wb.add_format(dict(align = "right", border = 1))
+	header_fmt = wb.add_format(dict(bold = True, bg_color = "#bcced8", border = 1, align = "center", valign = "center", border_color = '#a6a6a6', font_size= 8))
+	dados_fmt = wb.add_format(dict(num_format = "0.00", align = "right", border = 1, border_color = '#a6a6a6', font_size= 8))
+	flags_fmt = wb.add_format(dict(align = "left", border = 1, border_color = '#a6a6a6', font_size= 8))
 	
-	cell_dateformat = dict(
+	cell_dateformat = wb.add_format(dict(
 			num_format = "dd/mm/yyyy hh:mm",
 			align = "left",
-			border = 1
-		)
+			border = 1,
+			border_color= '#a6a6a6',
+			font_size = 8
+		))
 
 	# create one sheet for each type of station
 	for sheet_n in range(len(unique)):
@@ -244,6 +248,7 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 
 		# create worksheet
 		ws = wb.add_worksheet(type_)
+		ws.hide_gridlines(2)
 
 		# ROW 1 -> EMPRESAS
 		# ROW 2 -> ESTACAO
@@ -268,12 +273,12 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 		current_col = 1
 		for enterprise, stations in sorted_objects.items():
 			cols = 0
-			for station_name, parameters in enterprise.items():
+			for station_name, parameters in stations.items():
 				size = len(parameters) * 2
 				cols += size
 
 				# station header
-				ws.merge_range(1, current_col, 1, current_col + size, station_name, header_fmt)
+				ws.merge_range(1, current_col, 1, current_col + size - 1, station_name, header_fmt)
 
 				# loop through each parameter
 				for idx in parameters:
@@ -281,7 +286,7 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 					name, unit = find_unit(object_.metadata['parameter'], return_name= True)
 
 					# parameter header
-					ws.merge_range(2, current_col, 2, current_col + 1, 2, name, header_fmt)
+					ws.merge_range(2, current_col, 2, current_col + 1, name, header_fmt)
 
 					# Value and Flag header
 					ws.write(3, current_col, f"Valor [{unit}]", header_fmt)
@@ -290,10 +295,15 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 					# getting values and flags arrays
 					values = object_.getValues()
 					flags = object_.getFlags()
+					isvalid = ~np.isnan(values) # any value that isn't NaN
 
 					# loop thorugh values and flags
 					for i in range(values.shape[0]):
-						ws.write(row0 + i, current_col, values[i], dados_fmt)
+						if isvalid[i]:
+							ws.write(row0 + i, current_col, values[i], dados_fmt)
+						else:
+							ws.write(row0 + i, current_col, '', flags_fmt)
+
 						ws.write(row0 + i, current_col + 1, flags[i], flags_fmt)
 					
 					current_col += 2

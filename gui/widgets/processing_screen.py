@@ -1,6 +1,7 @@
 # IMPORT MODULES
 import numpy as np
 from copy import deepcopy
+import os
 
 # IMPORT QT CORE
 from qt_core import *
@@ -15,6 +16,7 @@ from gui.widgets.profile_picker import Profile
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
 from backend.misc.functions import get_frequency
+from backend.data_management.functions import export_to_xlsx
 
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
@@ -23,6 +25,7 @@ class ProcessingScreen(QWidget):
 		super().__init__(parent = parent)
 
 		# PRIVATE VARIABLES
+		self.save_dir = os.path.expanduser("~")
 		self.raw_data = []
 		self.processed_data = []
 		self.standard_profile = Profile(color = QColor('#fafafa'), name = 'simple')
@@ -36,6 +39,8 @@ class ProcessingScreen(QWidget):
 		self.ui.profile_picker.list.removedProfile.connect(self.resetProfileBox)
 		self.ui.profile_picker.list.profileDoubleClicked.connect(self.showProfileEditor)
 		self.ui.next_button.clicked.connect(self.processTasks)
+		self.ui.export_raw.clicked.connect(lambda: self.export('raw'))
+		self.ui.export_modified.clicked.connect(lambda: self.export('modified'))
 
 	def exportStatus(self):
 		if len(self.processed_data) > 0:
@@ -194,6 +199,38 @@ class ProcessingScreen(QWidget):
 		regex = regex[:-1] # removing last character "|"
 
 		return regex
+
+	def export(self, kind):
+		# getting filename and path
+		fname, filter = QFileDialog.getSaveFileName(
+			parent = self,
+			caption = "Salvar tabela como...",
+			dir = self.save_dir,
+			filter = "Excel files (*.xlsx)",
+		)
+		print(kind)
+		# check if fname is valid
+		if len(fname) > 0:
+			# update save directory
+			self.save_dir = os.path.dirname(fname)
+			if kind == 'raw':
+				export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
+			else:
+				export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
+			# try:
+			# 	if kind == 'raw':
+			# 		export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
+			# 	else:
+			# 		export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
+
+			# except Exception as err:
+			# 	print(err)
+			# 	x = QMessageBox(QMessageBox.Critical, "Erro", "Erro ao salvar", parent = self)
+			# 	x.addButton(QMessageBox.Ok)
+			# 	x.setInformativeText('Não foi possível salvar a planilha de dados. '
+			# 						'\nVerifique se ela esta aberta em outro programa.')
+			# 	x.exec()
+			# 	return None
 
 
 class Worker(QObject):

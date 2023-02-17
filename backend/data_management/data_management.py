@@ -152,6 +152,7 @@ class RawData(AbstractData):
 
       # FLAGS FOR EACH DATE
       self.flags = kwargs.get('flags', [])
+      print(np.unique(self.flags))
    
    def filterByFlags(self, flags_regex):
       r = re.compile(flags_regex)
@@ -166,7 +167,9 @@ class RawData(AbstractData):
          dates = self.dates
       )
 
-
+   def getFlags(self):
+      return self.flags
+   
 class ModifiedData(AbstractData):
 
    def __init__(self, *args, **kwargs):
