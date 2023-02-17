@@ -175,7 +175,7 @@ def reindex(old_dates, values, flags, new_dates):
 
 	# CRIA NOVAS VARIAVEIS
 	new_values = np.full(new_dates.shape, np.nan)
-	new_flags = np.full(new_dates.shape, '')
+	new_flags = np.full(new_dates.shape, '').astype('<U2') # 2 caracteres
 	
 	# EXTRAI OS VALORES DOS ARRAYS ANTIGOS QUE ESTAO DENTRO DOS NOVOS INDICES (DATAS)
 	isin = np.isin(old_dates, new_dates)

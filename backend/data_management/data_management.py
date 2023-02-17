@@ -152,7 +152,6 @@ class RawData(AbstractData):
 
       # FLAGS FOR EACH DATE
       self.flags = kwargs.get('flags', [])
-      print(np.unique(self.flags))
    
    def filterByFlags(self, flags_regex):
       r = re.compile(flags_regex)
