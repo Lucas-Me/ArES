@@ -42,7 +42,7 @@ class ProcessingScreen(QWidget):
 		dialog.showWindow()
 
 	def updateDates(self, start_date, end_date):
-		fmt = '%Y %b %d'
+		fmt = ' %d %b %y'
 		text = f"{start_date.strftime(fmt)} - {end_date.strftime(fmt)}"
 		self.ui.date_label.setText(text)
 

@@ -27,7 +27,7 @@ class LoginScreen(QWidget):
 		self.last_refresh = 'Nunca'
 
 		# SETUP CONNECTION
-		self.sql = SqlConnection("PC-INV109399", 'banco_gear') # CONFIGURACOES 
+		self.sql = SqlConnection("BP-J6XCZT3-INEA", 'banco_gear') # CONFIGURACOES 
 
 		# SETUP UI
 		self.ui = UI_LoginScreen()

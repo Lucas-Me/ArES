@@ -48,9 +48,9 @@ class SqlConnection(object):
 				user = username,
 				password = password,
 			)
-			# self.atualizar_inventario()
 
 		except Error as err:
+			print(err)
 			code = err.errno
 
 		return code
