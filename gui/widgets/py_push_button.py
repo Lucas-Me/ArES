@@ -254,3 +254,111 @@ class ClassicButton(QPushButton):
         self.update()
         
         return super().leaveEvent(event)
+    
+class IconButton(QPushButton):
+
+    def __init__(
+        self,
+        height, 
+        width, 
+        icon_path,
+        icon_color = "#000000",
+        paint_icon = True,
+        hover_color = None
+        ) -> None:
+        super().__init__()
+
+        # SETTINGS
+        self.setFixedSize(QSize(width, height))
+        self.setCursor(Qt.PointingHandCursor)
+        
+        # PROPERTIES
+        self.icon = self.setupIcon(icon_path)
+        self.color_backup = icon_color
+        self.icon_color = icon_color
+        self.hover_color = icon_color if hover_color is None else hover_color
+        self.paint_icon = paint_icon
+
+        # SUBPRODUCTS
+        self.setupRect()
+
+    def setupRect(self):
+        icon_dx, icon_dy = self.icon.width(), self.icon.height()
+        scale_width = icon_dx >= icon_dy
+        rect = self.rect()
+
+        if scale_width:
+            # uses width as reference
+            self.dx = rect.width()
+            self.dy = self.dx * icon_dy // icon_dx
+
+            # position
+            self.x =  0
+            self.y = (rect.height() - self.dy) // 2 # margins
+
+        else:
+            # uses height as reference
+            self.dy = rect.height()
+            self.dx = self.dy * icon_dx // icon_dy
+
+            # position
+            self.y =  0
+            self.x = (rect.width() - self.dx) // 2 # margins
+
+        # scale icon ot dimensions
+        self.icon = self.icon.scaled(self.dx, self.dy, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
+    def setupIcon(self, image):
+        # format Path
+        app_path = os.path.abspath(os.getcwd())
+        folder = "gui/images/icons"
+        path = os.path.join(app_path, folder)
+        icon_path = os.path.normpath(os.path.join(path, image))
+
+        # pixmap
+        icon = QPixmap(icon_path)
+
+        return icon
+    
+    def paintEvent(self, event) -> None:
+        # Return default style
+        QPushButton.paintEvent(self, event)
+
+        # Painter
+        qp = QPainter()
+        qp.begin(self)
+        qp.setRenderHint(QPainter.Antialiasing)
+        qp.setPen(Qt.NoPen)
+        
+        # draw icon
+        self.draw_icon(qp, self.icon_color)
+        
+        qp.end()
+
+    def draw_icon(self, qp, color):                
+        # draw icon
+        painter = QPainter(self.icon)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        if self.paint_icon:
+            painter.fillRect(self.icon.rect(), color)
+
+        qp.drawPixmap(self.x, self.y, self.dx, self.dy, self.icon)
+        painter.end()
+
+    def enterEvent(self, event:QEnterEvent) -> None:
+        '''
+        Se o mouse estiver sobre o botao, pinta o icone de amarelo.
+        '''
+        self.icon_color = self.hover_color
+        self.update()
+
+        return super().enterEvent(event)
+
+    def leaveEvent(self, event: QEvent) -> None:
+        '''
+        Se o mouse deixar o botao, pinta o icon da cor original.
+        '''
+        self.icon_color = self.color_backup
+        self.update()
+        
+        return super().leaveEvent(event)

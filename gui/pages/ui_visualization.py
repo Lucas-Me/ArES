@@ -1,9 +1,6 @@
 # IMPORT QT_CORE
 from qt_core import *
 
-# IMPORT CUSTOM WIDGETS
-from backend.plot.visualization import AbstractCanvas
-
 # Data Manager Page UI Class
 class UI_DataVisualization(object):
     

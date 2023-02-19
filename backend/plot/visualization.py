@@ -5,6 +5,7 @@ CONTEM AS CLASSES RESPONSAVEIS PELA VISUALIZACAO EM GRAFICO NA QUINTA PAGINA DO 
 # IMPORT MODULES
 import os
 import numpy as np
+import datetime
 
 # IMPORT PLOT RELATED MODULES
 import matplotlib.dates as mdates
@@ -31,7 +32,6 @@ CB91_Amber = '#F5B14C'
 color_list = [CB91_Blue, CB91_Pink, CB91_Green, CB91_Amber,
               CB91_Purple, CB91_Violet]
 
-mpl.use("QtAgg")
 # mpl.rcParams.update({
 # 	'axes.spines.top' : False,
 # 	'axes.spines.right' : False,
@@ -121,45 +121,141 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
     def __init__(self, width = 16, height = 7, dpi = 100):
 
-        
         # iniciando
         self.fig = Figure(figsize = (width, height), dpi = dpi)
-        self.axes = self.fig.add_subplot(111)
+        self.ax = self.fig.add_subplot(111)
 		
 		# wtf?
         self.colors = {}
         self.alias = {}
-        
-        # propriedades do grafico
         self.legend = None
-        self.label = self.axes.title.get_text()
-        self.label_fontsize = self.axes.title.get_fontsize()
-        self.label_fontweight = self.axes.title.get_fontweight()
+        
+        # PROPRIEDADES DO GRAFICO
+        self.params = {
+            # Titulo
+            'title-label' : self.ax.title.get_text(),
+            'title-fontsize' : self.ax.title.get_fontsize(),
+            'title-fontweight' : self.ax.title.get_fontweight(),
+            
+            # Eixo horizontal
+            'xaxis-label' : self.ax.xaxis.get_label().get_text(),
+            'xaxis-fontsize' : self.ax.xaxis.get_label().get_fontsize(),
+            'xaxis-fontweight' : self.ax.xaxis.get_label().get_fontweight(),
 
-        # Eixo Horizontal
-        self.xlabel = self.axes.xaxis.get_label().get_text()
-        self.xlabel_fontsize = self.axes.xaxis.get_label().get_fontsize()
-        self.xlabel_fontweight = self.axes.xaxis.get_label().get_fontweight()
-        self.xticks_fontsize = mpl.rcParams['font.size']
-        self.xlabel_dateformat = "Mês"
-        self.xlabel_daterange = 1
-        #
-        self.xticks = self.axes.get_xticks()
-        self.xtick_labels = self.axes.get_xticklabels()
-        self.xtick_rotation = 0
-        #
-        self.xtick_min = 0
-        self.xtick_max = self.axes.get_xticks().max()
-        self.xtick_size = self.xticks.shape[0]
+            # Eixo vertical
+            'yaxis-label' : self.ax.yaxis.get_label().get_text(),
+            'yaxis-fontsize' : self.ax.yaxis.get_label().get_fontsize(),
+            'yaxis-fontweight' : self.ax.yaxis.get_label().get_fontweight(),
 
-        # Eixo Vertical
-        self.ylabel = self.axes.yaxis.get_label().get_text()
-        self.ylabel_fontsize = self.axes.yaxis.get_label().get_fontsize()
-        self.ylabel_fontweight = self.axes.yaxis.get_label().get_fontweight()
-        self.yticks_fontsize = mpl.rcParams['font.size']
-        #
-        self.ytick_max = self.axes.get_yticks().max()
-        self.ytick_min = 0
-        self.ytick_size = self.axes.get_yticks().shape[0]
+            # Rotulos do eixo Y
+            'yticks' : self.ax.get_yticks(),
+            'yticks-fontsize' : 12,
+            'yticks-fontweight' : 10
+        }
 
+        # CONSTRUCTOR
         super(AbstractCanvas, self).__init__(self.fig)
+
+    def setTitle(self, **kwargs):
+        kwargs = dict(
+            label = kwargs.pop('label', self.params['title-label']),
+            fontsize = kwargs.pop('fontsize', self.params['title-fontsize']),
+            fontweight = kwargs.pop('fontweight', self.params['title-fontweight'])
+        )
+
+        # update title on chart
+        self.ax.set_title(**kwargs)
+
+        # update private params
+        self.params['title-label'] = kwargs['label']
+        self.params['title-fontsize'] = kwargs['fontsize']
+        self.params['title-fontweight'] = kwargs['fontweight']
+
+    def setLabel(self, axis = 'x', **kwargs):
+        kwargs = {
+            f'{axis}label' : kwargs.pop('label', self.params[f'{axis}axis-label']),
+            'fontsize' : kwargs.pop('fontsize', self.params[f'{axis}axis-fontsize']),
+            'fontweight' : kwargs.pop('fontweight', self.params[f'{axis}axis-fontweight'])
+        }
+
+        # update axis label
+        if axis == 'x':
+            self.ax.set_xlabel(**kwargs)
+
+        else:
+            self.ax.set_ylabel(**kwargs)
+
+        # update private params
+        self.params[f'{axis}axis-label'] = kwargs[f'{axis}label']
+        self.params[f'{axis}axis-fontsize'] = kwargs['fontsize']
+        self.params[f'{axis}axis-fontweight'] = kwargs['fontweight']
+
+    def setVerticalTicks(self, **kwargs):
+        '''
+        Rótulos do eixo Vertical.
+        '''
+        ticks = kwargs.pop('ticks', self.params['yticks'])
+        kwargs = {
+            'fontsize' : kwargs.pop('fontsize', self.params['yticks-fontsize']),
+            'fontweight' : kwargs.pop('fontweight', self.params['yticks-fontweight'])
+        }
+        
+        # update axis ticks
+        self.ax.set_yticks(ticks, **kwargs)
+
+        # update private params
+        self.params['yticks'] = ticks
+        self.params['yticks-fontsize'] = kwargs['fontsize']
+        self.params['yticks-fontweight'] = kwargs['fontweight']
+
+
+class TimeSeriesCanvas(AbstractCanvas):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # SETTING UP HORIZONTAL AXIS
+        self.ax.xaxis.set_major_locator(mdates.MonthLocator(interval = 2))
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%Y'))
+
+        year = datetime.datetime.now().year
+        self.ax.set_xlim(datetime.date(year, 1, 1), datetime.date(year, 12, 31))
+        
+        # Propriedades do grafico
+        self.params.update({
+            # Rotulos do eixo X
+            'xticks-min' : self.ax.get_xlim()[0],
+            'xticks-max' : self.ax.get_xlim()[1],
+            'xticks-locator': self.ax.xaxis.get_major_locator(),
+            'xticks-formatter' : self.ax.xaxis.get_major_formatter(),
+            'xticks-rotation' : 0,
+            'xticks-fontsize' : 12,
+            'xticks-fontweight' : 10
+        })
+
+    def setHorizontalLabels(self, **kwargs):
+        rotation = kwargs.pop('rotation', self.params['xticks-rotation'])
+        fontsize = kwargs.pop('fontsize', self.params['xticks-fontsize'])
+        fontweight = kwargs.pop('fontweight', self.params['xticks-fontweight'])
+
+        # label properties
+        for label in self.ax.get_xticklabels(which='major'):
+            label.set(rotation=rotation, fontsize = fontsize, fontweight = fontweight)
+
+        # update private params
+        self.params['xticks-rotation'] = rotation
+        self.params['xticks-fontsize'] = fontsize
+        self.params['xticks-fontweight'] = fontweight
+        
+    def setHorizontalTicks(self, **kwargs):
+        locator = kwargs.pop('locator', self.params['xticks-locator'])
+        formatter = kwargs.pop('formatter', self.params['xticks-formatter'])
+
+        # updating locator and fomatter
+        self.ax.xaxis.set_major_locator(locator)
+        self.ax.xaxis.set_major_formatter(formatter)
+
+        # update private params
+        self.params['xticks-locator'] = locator
+        self.params['xticks-formatter'] = formatter
+

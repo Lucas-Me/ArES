@@ -3,7 +3,7 @@ from qt_core import *
 
 # IMPORT CUSTOM UI
 from gui.pages.ui_visualization import UI_DataVisualization
-from gui.widgets.graphics_widget import Dashboard
+from gui.widgets.dashboard import Dashboard
 
 # Data Manager Page Class
 class DataVisualizationScreen(QWidget):
