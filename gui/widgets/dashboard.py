@@ -4,10 +4,6 @@ from qt_core import *
 # IMPORT CUSTOM UI
 from gui.ui_widgets.ui_dashboard import UI_Dashboard
 
-# CUSTOM WIDGETS
-from gui.widgets.chart_properties.top_level_item import TopLevelItem
-from gui.widgets.chart_properties.handles_item import HandlesItem
-
 # Data Manager Page Class
 class Dashboard(QWidget):
 

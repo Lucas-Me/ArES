@@ -1,6 +1,5 @@
 # IMPORTS
-import os
-import re
+import os, re, datetime
 import numpy as np
 
 # IMPORT QT CORE
@@ -337,6 +336,7 @@ class DataManager(QWidget):
         # setting up
         raw_data = [None] * self.total_selected
         start_date, end_date = self.ui.date_edit.getDates()
+        end_date = end_date + datetime.timedelta(days = 1) # modificando para ser intervalo fechado
 
         # loop through archives
         idx = 0
@@ -422,7 +422,7 @@ class DataManager(QWidget):
                     raw_data[idx] = this
                     idx += 1
 
-        return raw_data, start_date, end_date
+        return raw_data, start_date, end_date - datetime.timedelta(days = 1)
 
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent(event)
