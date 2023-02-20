@@ -123,6 +123,7 @@ class AbstractData(object):
       var_alias = get_alias(varname)
 
       self.metadata['alias'] = f"{self.metadata['name']} - {var_alias}"
+      self.metadata['signature'] = f"{self.metadata['signature'][:3]} - {self.metadata['alias']}" 
 
    def setValues(self, values):
       if not isinstance(values, np.ndarray):

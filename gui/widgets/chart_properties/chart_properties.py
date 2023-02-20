@@ -1,12 +1,18 @@
 # IMPORT QT MODULES
 from qt_core import *
 
+# IMPORT BUILT-IN MODULES
+from copy import deepcopy
+
 # CUSTOM WIDGETS
 from gui.widgets.chart_properties.top_level_item import TopLevelItem
 from gui.widgets.chart_properties.handles_item import HandlesItem
 
 class ChartProperties(QTreeWidget):
     
+	# bocCliked : Signal -> lista[top level idx, row, status]
+	buttonClicked = Signal(list)
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		
@@ -86,10 +92,15 @@ class ChartProperties(QTreeWidget):
 
 		# update tree widget
 		for i in range(len(handles)):
-			widget = HandlesItem(text=handles[i].metadata['alias'], height = 30)
+			widget = HandlesItem(text=handles[i].metadata['alias'], height = 30, row = i, top_level=index)
 			child = QTreeWidgetItem()
 			tree_item.addChild(child)
 			self.setItemWidget(child, 0, widget)
+
+			# SIGNALS AND SLOTS
+			widget.toggled.connect(
+				lambda x: self.buttonClicked.emit(x)
+				)
 
 	def init(self):
 		items = ['Gráfico de linha', 'Gráfico de barra', 'Títulos', 'Eixo Vertical', 'Eixo Horizontal', 'Legenda']

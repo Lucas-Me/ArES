@@ -333,4 +333,8 @@ class Worker(QObject):
 			# change parameter unit
 			data_object.metadata['parameter'] = pname.replace('ppb', 'ppm')
 
+			# change alias and signature
+			data_object.metadata['signature'] = data_object.metadata['signature'].replace('ppb', 'ppm')
+			data_object.metadata['alias'] = data_object.metadata['alias'].replace('ppb', 'ppm')
+
 		return data_object

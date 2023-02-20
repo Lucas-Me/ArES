@@ -39,29 +39,34 @@ color_list = [CB91_Blue, CB91_Pink, CB91_Green, CB91_Amber,
 # 	'figure.subplot.top' : 0.95,
 # 	'axes.grid' : True,
 # 	"axes.grid.axis" : "y",
-# 	'axes.prop_cycle' : plt.cycler(color = color_list)
 # })
+
+default_color = 'black'
 mpl.rcParams.update({'axes.axisbelow': False,
- 'axes.edgecolor': 'gray',
- 'axes.facecolor': 'None',
- 'axes.grid': False,
- 'axes.labelcolor': 'dimgray',
- 'axes.spines.right': False,
- 'axes.spines.top': False,
- 'figure.facecolor': 'white',
- 'lines.solid_capstyle': 'round',
- 'patch.edgecolor': 'w',
- 'patch.force_edgecolor': True,
- 'text.color': 'dimgray',
- 'xtick.bottom': False,
- 'xtick.color': 'dimgray',
- 'xtick.direction': 'out',
- 'xtick.top': False,
- 'ytick.color': 'dimgray',
- 'ytick.direction': 'out',
- 'ytick.left': False,
- 'ytick.right': False,
- 'font.family' : 'Microsoft New Tai Lue'
+    'axes.edgecolor': 'gray',
+    'axes.facecolor': 'None',
+    'axes.grid': True,
+	"axes.grid.axis" : "y",
+    'grid.color' : 'silver',
+    'axes.labelcolor': default_color,
+    'axes.spines.right': False,
+    'axes.spines.left': False,
+    'axes.spines.top': False,
+    'figure.facecolor': 'white',
+    'lines.solid_capstyle': 'round',
+    'patch.edgecolor': 'w',
+    'patch.force_edgecolor': True,
+    'text.color': default_color,
+    'xtick.bottom': True,
+    'xtick.color': default_color,
+    'xtick.direction': 'out',
+    'xtick.top': False,
+    'ytick.color': default_color,
+    'ytick.direction': 'out',
+    'ytick.left': False,
+    'ytick.right': False,
+    'font.family' : 'Microsoft New Tai Lue',
+    'axes.prop_cycle' : plt.cycler(color = color_list)
  })
 
 # CLASSES
@@ -129,6 +134,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.colors = {}
         self.alias = {}
         self.legend = None
+        self.handles = {}
         
         # PROPRIEDADES DO GRAFICO
         self.params = {
@@ -148,7 +154,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
             'yaxis-fontweight' : self.ax.yaxis.get_label().get_fontweight(),
 
             # Rotulos do eixo Y
-            'yticks' : self.ax.get_yticks(),
+            'yticks-min' : self.ax.get_ylim()[0],
+            'yticks-max' : self.ax.get_ylim()[1],
+            'yticks-size' : self.ax.get_yticks().shape[0],
             'yticks-fontsize' : 12,
             'yticks-fontweight' : 10
         }
@@ -160,6 +168,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # limpa os elementos do eixo
         self.ax.cla()
         
+        # limpa os demais elementos
+        self.handles.clear()
+
         # adiciona os titulos novamente
         self.setTitle()
         self.setLabel(axis = 'x')
@@ -206,21 +217,48 @@ class AbstractCanvas(FigureCanvasQTAgg):
         '''
         Rótulos do eixo Vertical.
         '''
-        ticks = kwargs.pop('ticks', self.params['yticks'])
+        min_y = kwargs.pop('min', self.params['yticks-min'])
+        max_y = kwargs.pop('max', self.params['yticks-max'])
+        size = kwargs.pop('size', self.params['yticks-size'])
         kwargs = {
             'fontsize' : kwargs.pop('fontsize', self.params['yticks-fontsize']),
             'fontweight' : kwargs.pop('fontweight', self.params['yticks-fontweight'])
         }
         
         # update axis ticks
-        self.ax.set_yticks(ticks, **kwargs)
+        self.ax.set_yticks(np.linspace(min_y, max_y, size), **kwargs)
 
         # update private params
-        self.params['yticks'] = ticks
+        self.params['yticks-min'] = min_y
+        self.params['yticks-max'] = max_y
+        self.params['yticks-size'] = size
         self.params['yticks-fontsize'] = kwargs['fontsize']
         self.params['yticks-fontweight'] = kwargs['fontweight']
 
+    def adjustVerticalAxis(self):
+        handles, labels = self.ax.get_legend_handles_labels()
+        
+        n = len(handles)
+        max_y = np.full(n + 1, np.nan)
+        min_y = np.full(n + 1, np.nan)
+        for i in range(n):
+            ydata = handles[i].get_ydata()
+            max_y[i] = np.nanmax(ydata)
+            min_y[i] = np.nanmin(ydata)
+        
+        max_y[-1] = self.params['yticks-max']
+        min_y[-1] = self.params['yticks-min']
 
+        # comparing and setting up
+        self.setVerticalTicks(max = np.nanmax(max_y), min = np.nanmin(min_y))
+            
+    def removePlot(self, id_):
+        self.handles[id_].remove()
+        del self.handles[id_]
+
+        # update pllot
+        self.draw()
+        
 class TimeSeriesCanvas(AbstractCanvas):
 
     def __init__(self, *args, **kwargs):
@@ -275,3 +313,21 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.setHorizontalTicks()
         self.setHorizontalLabels()
     
+    def plot(self, series : object):
+        # getting properties
+        values = series.getValues()
+        dates = series.getDates()
+
+        # object metadata
+        id_ = series.metadata['signature']
+        label = self.alias.get(id_, series.metadata['alias'])
+
+        # ploting
+        hl, = self.ax.plot(dates, values, label = label)
+        self.handles[id_] = hl
+
+        # adjusting axis
+        self.adjustVerticalAxis()
+
+        # draw
+        self.draw()

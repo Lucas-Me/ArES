@@ -2,7 +2,7 @@
 from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
-from backend.plot.visualization import TimeSeriesCanvas
+from backend.plot.charts import TimeSeriesCanvas
 from gui.widgets.py_push_button import IconButton
 from gui.widgets.chart_properties.chart_properties import ChartProperties
 

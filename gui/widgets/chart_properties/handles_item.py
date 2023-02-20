@@ -2,11 +2,12 @@
 from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
-from gui.widgets.py_radio_button import PyCheckButton, PyRadioButton
+from gui.widgets.py_radio_button import PyRadioButton
 
 class HandlesItem(QFrame):
     
-	def __init__(self, text, height, *args, **kwargs):
+	toggled = Signal(list)
+	def __init__(self, text, height, row, top_level, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
 		# settings
@@ -14,11 +15,17 @@ class HandlesItem(QFrame):
 
 		# PROPERTIES
 		self.text = text
+		self.top_index = top_level
+		self.index = row
 
 		# SETUP UI
 		self.setupUI()
 		self.setupStyle()
 
+		# SIGNALS AND SLOTS
+		self.button.toggled.connect(
+			lambda status: self.toggled.emit([self.top_index, self.index, status])
+		)
 
 	def setupUI(self):
 		self.main_layout = QHBoxLayout(self)

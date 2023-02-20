@@ -25,6 +25,9 @@ class DataVisualizationScreen(QWidget):
     def getDataHandles(self):
         return self.data_handles
     
+    def getHandle(self, index):
+        return self.data_handles[index]
+
     def addDashboard(self):
         # creating and updating dashboard
         dashboard = Dashboard(parent = self)

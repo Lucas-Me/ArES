@@ -23,6 +23,23 @@ class Dashboard(QWidget):
 		
 		# SIGNALS AND SLOTS
 		self.ui.toggle_menu.clicked.connect(self.toggle_menu)
+		self.ui.right_menu.buttonClicked.connect(self.updateChartElement)
+
+	@Slot(list)
+	def updateChartElement(self, options):
+		# getting args
+		top_level_row = options[0]
+		child_row = options[1]
+		status = options[2]
+
+		# preparing for plot
+		if top_level_row == 0: # line plot
+			series = self.parent.getHandle(child_row)
+			
+			if status:
+				self.ui.canvas.plot(series)
+			else:
+				self.ui.canvas.removePlot(id_ = series.metadata['signature'])
 
 	def updateItems(self):
 		# getting parent handles
