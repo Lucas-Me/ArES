@@ -276,8 +276,9 @@ class Worker(QObject):
 			final_data = self.runProfile(filtered_data, self.methods[i])
 
 			# updating metadata
-			del filtered_data.metadata['frequency']
-			final_data.metadata.update(filtered_data.metadata)
+			dcopy = filtered_data.metadata.copy()
+			del dcopy['frequency']
+			final_data.metadata.update(dcopy)
 
 			# finalizing
 			processed_data[i] = final_data

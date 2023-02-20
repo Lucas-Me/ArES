@@ -16,6 +16,7 @@ class Dashboard(QWidget):
 
 		# PROPERTIES
 		self.parent = parent
+		self.bar_rows = []
 
 		# setting UI
 		self.ui = UI_Dashboard()
@@ -32,14 +33,39 @@ class Dashboard(QWidget):
 		child_row = options[1]
 		status = options[2]
 
-		# preparing for plot
-		if top_level_row == 0: # line plot
-			series = self.parent.getHandle(child_row)
+		# subproducts
+		base = 0
+		plot_idx = top_level_row - base
+		series = self.parent.getHandle(child_row)
+
+		# either add or remove artist
+		if status: 
+
+			# check if artist is already present in other format
+			tree = self.ui.right_menu
+			item = tree.topLevelItem(top_level_row + (-1) ** plot_idx).child(child_row)
+			widget = tree.itemWidget(item, 0)
+			if widget.button.isChecked():
+				widget.button.setChecked(False) # it will remove the artists by itself
 			
-			if status:
+			# Plot new artist
+			if plot_idx == 0:
 				self.ui.canvas.plot(series)
+
 			else:
-				self.ui.canvas.removePlot(id_ = series.metadata['signature'])
+				self.bar_rows.append(child_row)
+				self.plotBars()
+
+		else: # remove artist
+			if plot_idx == 1:
+				del self.bar_rows[self.bar_rows.index(child_row)]
+				self.plotBars()
+
+			self.ui.canvas.removePlot(id_ = series.metadata['signature'])
+
+	def plotBars(self):
+		list_objects = [self.parent.getHandle(index) for index in self.bar_rows]
+		self.ui.canvas.barPlot(list_objects)
 
 	def updateItems(self):
 		# getting parent handles
@@ -51,6 +77,9 @@ class Dashboard(QWidget):
 
 		# reseta o grafico
 		self.ui.canvas.resetChart()
+
+		# reset private propertie
+		self.bar_rows.clear()
 
 	def toggle_menu(self):
 		# check

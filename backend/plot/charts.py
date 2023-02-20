@@ -32,15 +32,6 @@ CB91_Amber = '#F5B14C'
 color_list = [CB91_Blue, CB91_Pink, CB91_Green, CB91_Amber,
               CB91_Purple, CB91_Violet]
 
-# mpl.rcParams.update({
-# 	'axes.spines.top' : False,
-# 	'axes.spines.right' : False,
-# 	'figure.subplot.bottom' : 0.1,
-# 	'figure.subplot.top' : 0.95,
-# 	'axes.grid' : True,
-# 	"axes.grid.axis" : "y",
-# })
-
 default_color = 'black'
 mpl.rcParams.update({'axes.axisbelow': False,
     'axes.edgecolor': 'gray',
@@ -54,8 +45,8 @@ mpl.rcParams.update({'axes.axisbelow': False,
     'axes.spines.top': False,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
-    'patch.edgecolor': 'w',
-    'patch.force_edgecolor': True,
+    'patch.edgecolor': 'none',
+    'patch.force_edgecolor': False,
     'text.color': default_color,
     'xtick.bottom': True,
     'xtick.color': default_color,
@@ -66,7 +57,13 @@ mpl.rcParams.update({'axes.axisbelow': False,
     'ytick.left': False,
     'ytick.right': False,
     'font.family' : 'Microsoft New Tai Lue',
-    'axes.prop_cycle' : plt.cycler(color = color_list)
+    'axes.prop_cycle' : plt.cycler(color = color_list),
+
+    # legend
+    'legend.loc' : 'lower center',
+    'legend.frameon' : False,
+    'legend.fancybox' : False,
+    'legend.shadow' : False
  })
 
 # CLASSES
@@ -130,11 +127,11 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.fig = Figure(figsize = (width, height), dpi = dpi)
         self.ax = self.fig.add_subplot(111)
 		
-		# wtf?
-        self.colors = {}
-        self.alias = {}
-        self.legend = None
-        self.handles = {}
+		# CUSTOM PROPERTIES
+        self.colors = {} # store colors
+        self.labels = {} # store labels
+        self.handles = {} # store artists
+        self.legend = self.fig.legend([], [])
         
         # PROPRIEDADES DO GRAFICO
         self.params = {
@@ -164,6 +161,15 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # CONSTRUCTOR
         super(AbstractCanvas, self).__init__(self.fig)
 
+    def updateLegend(self):
+        self.legend.remove()
+        
+        # get axis artists
+        handles, labels = self.ax.get_legend_handles_labels()
+
+        # creating new legend
+        self.legend = self.fig.legend(handles, labels)
+
     def resetChart(self):
         # limpa os elementos do eixo
         self.ax.cla()
@@ -178,6 +184,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # Rotulos do eixo Y
         self.setVerticalTicks()
+
+        # legenda
+        self.updateLegend()
 
     def setTitle(self, **kwargs):
         kwargs = dict(
@@ -242,7 +251,12 @@ class AbstractCanvas(FigureCanvasQTAgg):
         max_y = np.full(n + 1, np.nan)
         min_y = np.full(n + 1, np.nan)
         for i in range(n):
-            ydata = handles[i].get_ydata()
+            if isinstance(handles[i], mpl.container.BarContainer):
+                children = handles[i].get_children()
+                ydata = np.fromiter(map(lambda x: x.get_height(), children), float)
+            else:
+                ydata = handles[i].get_ydata()
+
             max_y[i] = np.nanmax(ydata)
             min_y[i] = np.nanmin(ydata)
         
@@ -253,12 +267,21 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.setVerticalTicks(max = np.nanmax(max_y), min = np.nanmin(min_y))
             
     def removePlot(self, id_):
+        if id_ not in self.handles:
+            return None
+        
+        # deleting artist
         self.handles[id_].remove()
+
+        # deleting private properties
         del self.handles[id_]
 
-        # update pllot
+        # update plot
+        self.ax.relim(True)
+        self.updateLegend()
         self.draw()
         
+
 class TimeSeriesCanvas(AbstractCanvas):
 
     def __init__(self, *args, **kwargs):
@@ -268,6 +291,9 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.ax.xaxis.set_major_locator(mdates.MonthLocator(interval = 2))
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%Y'))
         
+        # PROPERTIES
+        self.nbars = 0
+
         # Propriedades do grafico
         self.params.update({
             # Rotulos do eixo X
@@ -320,14 +346,84 @@ class TimeSeriesCanvas(AbstractCanvas):
 
         # object metadata
         id_ = series.metadata['signature']
-        label = self.alias.get(id_, series.metadata['alias'])
+
+        # Plot properties
+        kwargs = {
+            'label' : self.labels.get(id_, series.metadata['alias']),
+            'color' : self.colors.get(id_, None)
+        }
 
         # ploting
-        hl, = self.ax.plot(dates, values, label = label)
+        hl, = self.ax.plot(dates, values, **kwargs)
+
+        # storing artist, color and labels
         self.handles[id_] = hl
+        self.colors[id_] = hl.get_color()
+        self.labels[id_] = hl.get_label()
 
         # adjusting axis
         self.adjustVerticalAxis()
+        
+        # updating legend
+        self.updateLegend()
+
+        # draw
+        self.draw()
+
+    def barPlot(self, series_list : list[object]):
+        n = len(series_list)
+
+        # largura de cada barra sera definida a partir da menor frequencia dentre os dados
+        frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
+        freq = np.min(frequencies)
+        ref_time = series_list[0].getDates()[0]
+
+        # total width
+        total_width = 0.8
+        t1 = ref_time.astype('datetime64[m]') + freq
+        t1 = mdates.date2num(t1)
+        t0 = mdates.date2num(ref_time)
+        delta_t = (t1 - t0) * total_width
+
+        for i in range(n):
+            # getting series
+            series = series_list[i]
+
+            # remove if already in plot
+            self.removePlot(series.metadata['signature'])
+
+            # getting properties
+            values = series.getValues()
+            dates = series.getDates()
+            dates_num = mdates.date2num(dates)
+            
+            # getting position of left corner
+            offset = delta_t * (2 * i - n) / (2 * n)
+            position_dates = mdates.num2date(dates_num + offset)
+
+            # object metadata
+            id_ = series.metadata['signature']
+
+            # Plot properties
+            kwargs = {
+                'label' : self.labels.get(id_, series.metadata['alias']),
+                'facecolor' : self.colors.get(id_, None),
+                'align' : 'center',
+                'width' : delta_t / n
+            }
+
+            hl = self.ax.bar(position_dates, values, **kwargs)
+
+            # storing artist, color and labels
+            self.handles[id_] = hl
+            self.colors[id_] = hl.get_children()[0].get_facecolor()
+            self.labels[id_] = hl.get_label()
+
+        # adjusting axis
+        self.adjustVerticalAxis()
+        
+        # updating legend
+        self.updateLegend()
 
         # draw
         self.draw()
