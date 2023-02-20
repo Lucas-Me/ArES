@@ -32,6 +32,9 @@ class Dashboard(QWidget):
 		for i in range(2):
 			self.ui.right_menu.resetTopLevelItem(i, handles)
 
+		# reseta o grafico
+		self.ui.canvas.resetChart()
+
 	def toggle_menu(self):
 		# check
 		status = self.ui.right_menu.isHidden()

@@ -156,6 +156,18 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # CONSTRUCTOR
         super(AbstractCanvas, self).__init__(self.fig)
 
+    def resetChart(self):
+        # limpa os elementos do eixo
+        self.ax.cla()
+        
+        # adiciona os titulos novamente
+        self.setTitle()
+        self.setLabel(axis = 'x')
+        self.setLabel(axis = 'y')
+
+        # Rotulos do eixo Y
+        self.setVerticalTicks()
+
     def setTitle(self, **kwargs):
         kwargs = dict(
             label = kwargs.pop('label', self.params['title-label']),
@@ -217,9 +229,6 @@ class TimeSeriesCanvas(AbstractCanvas):
         # SETTING UP HORIZONTAL AXIS
         self.ax.xaxis.set_major_locator(mdates.MonthLocator(interval = 2))
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%Y'))
-
-        year = datetime.datetime.now().year
-        self.ax.set_xlim(datetime.date(year, 1, 1), datetime.date(year, 12, 31))
         
         # Propriedades do grafico
         self.params.update({
@@ -259,3 +268,10 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.params['xticks-locator'] = locator
         self.params['xticks-formatter'] = formatter
 
+    def resetChart(self):
+        super().resetChart()
+
+        # rotulos do eixo X
+        self.setHorizontalTicks()
+        self.setHorizontalLabels()
+    
