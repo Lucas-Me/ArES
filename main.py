@@ -43,6 +43,9 @@ class LoadUi(QObject):
         # NEXT button on DATA MANAGER SCREEEn
         self.mainWindow.ui.ui_pages.data_page.ui.next_btn.clicked.connect(self.mainWindow.requestData)
 
+        # PROCESS button on PROCESS SCREEn
+        self.mainWindow.ui.ui_pages.process_page.resultReady.connect(self.mainWindow.updateDataHandles)
+
         # EMIT SIGNAL
         self.mainWindow.uiLoaded.emit()
 
@@ -132,6 +135,11 @@ class MainWindow(QMainWindow):
 
         # force click on third screen (left menu)
         self.ui.btn_3.click()
+
+    @Slot(list)
+    def updateDataHandles(self, processed_data : list[object]):
+        screen = self.ui.ui_pages.visualization_page
+        screen.updateDataHandles(processed_data)
 
     def connnectionErrorDialog(self):
         '''

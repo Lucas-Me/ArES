@@ -24,6 +24,7 @@ from gui.windows.dialog.import_dialog import ImportDialog
 # Data Manager Page Class
 class ProcessingScreen(QWidget):
 
+	resultReady = Signal(list)
 	def __init__(self, parent : QStackedWidget):
 		super().__init__(parent = parent)
 
@@ -183,6 +184,7 @@ class ProcessingScreen(QWidget):
 	def handleProcessedResults(self, results):
 		self.processed_data = results
 		self.exportStatus()
+		self.resultReady.emit(self.processed_data)
 
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)

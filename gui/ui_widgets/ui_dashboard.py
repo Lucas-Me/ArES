@@ -4,6 +4,7 @@ from qt_core import *
 # IMPORT CUSTOM WIDGETS
 from backend.plot.visualization import TimeSeriesCanvas
 from gui.widgets.py_push_button import IconButton
+from gui.widgets.chart_properties.chart_properties import ChartProperties
 
 # Data Manager Page UI Class
 class UI_Dashboard(object):
@@ -21,17 +22,16 @@ class UI_Dashboard(object):
 		# CANVAS AND MENU
 		# ////////////////////////////////////////////////////////////////
 		self.canvas_layout = QHBoxLayout()
-		self.canvas_layout.setContentsMargins(0, 0, 0, 0)
+		self.canvas_layout.setContentsMargins(0, 5, 5, 0)
 		self.canvas_layout.setSpacing(0)
 
 		# CANVAS
 		self.canvas = TimeSeriesCanvas()
 
 		# RIGHT MENU
-		self.right_menu = QFrame()
+		self.right_menu = ChartProperties()
 		self.right_menu.setObjectName('right_menu')
-		self.right_menu.setFixedWidth(0)
-		self.right_menu.hide()
+		self.right_menu.setFixedWidth(350)
 
 		# add to layout
 		self.canvas_layout.addWidget(self.canvas)
@@ -79,17 +79,12 @@ class UI_Dashboard(object):
 			#dashboard {{
 				background-color: #ffffff;
 			}}
-			#right_menu {{
-				background-color: #6daaab;
-				border: 1px solid #398d8f;
-				border-bottom-left-radius: 10px;
-			}}
 			#toolbar{{
 				background-color: #fafafa;
 				border: 1px solid #dcdcdc;
 				border-radius: 10px;
 			}}
-			#toggle_menu{{
+			#toggle_menu, #right_menu{{
 				border: none;
 				background-color: transparent;
 			}}

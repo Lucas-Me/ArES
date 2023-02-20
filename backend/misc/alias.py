@@ -2,14 +2,16 @@
 SCRIPT CRIADO PARA ARMAZENAR AS ABREVIAÇÕES DOS PARÂMETROS DE QUALIDADE DO AR E METEOROLOGIA
 '''
 
-ARIAVEIS = [
+VARIAVEIS = [
+   'Desvio Padrão Dir. Vento',
    'Precipitação Pluviométrica', 
    'Velocidade do Vento',
-   'Velocidade Escalar do Vento'
+   'Velocidade Escalar do Vento',
    'Direção do Vento',
    'Direção Escalar do Vento',
    'Temperatura',
    'Radiação Solar',
+   'Radiação Solar Liquida',
    'Umidade Relativa',
    'Pressão Atmosférica',
    'Partículas Totais em Suspensão',
@@ -31,6 +33,7 @@ ARIAVEIS = [
 ]
 
 VAR_ALIAS = [
+   'Desvio Dir. Vento',
    'Prec.',
    'Vel. Vento',
    'Vel. Vento',
@@ -38,6 +41,7 @@ VAR_ALIAS = [
    'Dir. Vento',
    'Temp',
    'Rad. Solar',
+   'Rad. Solar Liq.',
    'UR',
    'Pressão',
    'PTS',

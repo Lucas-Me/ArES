@@ -8,34 +8,52 @@ from gui.widgets.dashboard import Dashboard
 # Data Manager Page Class
 class DataVisualizationScreen(QWidget):
 
-	def __init__(self, parent : QStackedWidget):
-		super().__init__(parent = parent)
+    def __init__(self, parent : QStackedWidget):
+        super().__init__(parent = parent)
 
-		# PROPERTIES
-		self.tab_widget = TabWidget(parent = self)
-		self.screen = Dashboard()
-		test = Dashboard()
-		
-		# SETUO UI
-		self.ui = UI_DataVisualization()
-		self.ui.setup_ui(self)
+        # PROPERTIES
+        self.tab_widget = TabWidget(parent = self)
+        self.data_handles = []
+        
+        # SETUP UI
+        self.ui = UI_DataVisualization()
+        self.ui.setup_ui(self)
 
-		# SETTINGS
-		self.tab_widget.addTab(self.screen, 'Tela 1')
-		self.tab_widget.addTab(test, 'Tela 2')
+        # SETTINGS
+        self.addDashboard()
 
-	
-	def paintEvent(self, event: QPaintEvent) -> None:
-		'''
-		Reinicia o painter deste QWidget, para que ele nao herde as propriedades do
-		parent.
-		'''
-		# super().paintEvent(event)
+    def getDataHandles(self):
+        return self.data_handles
+    
+    def addDashboard(self):
+        # creating and updating dashboard
+        dashboard = Dashboard(parent = self)
+        dashboard.updateItems()
 
-		opt = QStyleOption()
-		opt.initFrom(self)
-		p = QPainter(self)
-		self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+        # inserting dashboard into tab widget
+        n = self.tab_widget.count()
+        self.tab_widget.addTab(dashboard, f'Tela {n + 1}')
+
+    def updateDataHandles(self, handles : list):
+        self.data_handles = handles
+
+        # updating dashboard options
+        n = self.tab_widget.count()
+        for i in range(n):
+            widget = self.tab_widget.widget(i)
+            widget.updateItems()
+
+    def paintEvent(self, event: QPaintEvent) -> None:
+        '''
+        Reinicia o painter deste QWidget, para que ele nao herde as propriedades do
+        parent.
+        '''
+        # super().paintEvent(event)
+
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
 
 
 class TabBar(QTabBar):

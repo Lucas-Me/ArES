@@ -1,6 +1,9 @@
 # IMPORT QT MODULES
 from qt_core import *
 
+# CUSTOM WIDGETS
+from gui.widgets.chart_properties.top_level_item import TopLevelItem
+from gui.widgets.chart_properties.handles_item import HandlesItem
 
 class ChartProperties(QTreeWidget):
     
@@ -8,9 +11,11 @@ class ChartProperties(QTreeWidget):
 		super().__init__(*args, **kwargs)
 		
 		# SETTINGS
-		self.setColumnCount(2)
-		self.header().setSectionResizeMode(QHeaderView.Stretch)
-		self.header().resizeSections()
+		self.setColumnCount(1)
+		self.header().hide() # esconde o cabecalho
+		self.setSelectionMode(QTreeView.SelectionMode.NoSelection)
+
+		# PROPERTIES
 
 		# variaveis
 		self.items_timeseries = {
@@ -66,26 +71,41 @@ class ChartProperties(QTreeWidget):
 				}
 		]
 
+		self.setupStyle()
+		self.init()
 
-	def run(self):
-		items = self.items_timeseries
-		if self.active_scatter: items = self.items_scatterplot
-		TreeWidgetItems = []
-		widgets = self.widgets[self.active_scatter]
-		for key in widgets.keys():
-			item = QTreeWidgetItem([key])
-			TreeWidgetItems.append(item)
+	def resetTopLevelItem(self, index, handles):
+		# removing old top level
+		name = self.takeTopLevelItem(index).text(0)
 
-		self.insertTopLevelItems(0, TreeWidgetItems)
-		j = 0
-		for key, values in widgets.items():
-			for i in range(len(values)):
-				properties = items[key][i]
-				child = QTreeWidgetItem()
-				child.setText(0, properties)
-				TreeWidgetItems[j].addChild(child)
-				self.setItemWidget(child, 1, values[i])
+		#creating new top level
+		tree_item = QTreeWidgetItem([name])
+		top_level_widget = TopLevelItem(text = name, height = 30)
+		self.insertTopLevelItem(index, tree_item)
+		self.setItemWidget(tree_item, 0, top_level_widget)
 
-			j += 1
+		# update tree widget
+		for i in range(len(handles)):
+			widget = HandlesItem(text=handles[i].metadata['alias'], height = 30)
+			child = QTreeWidgetItem()
+			tree_item.addChild(child)
+			self.setItemWidget(child, 0, widget)
+
+	def init(self):
+		items = ['Gráfico de linha', 'Gráfico de barra', 'Títulos', 'Eixo Vertical', 'Eixo Horizontal', 'Legenda']
+		top_level_items = [QTreeWidgetItem([label]) for label in items]
+		self.insertTopLevelItems(0, top_level_items)
+
+		# TOP LEVEL WIDGETS
+		for item in top_level_items:
+			self.setItemWidget(item, 0, TopLevelItem(text = item.text(0), height = 30))
 		
-		return None
+
+	def setupStyle(self):
+		self.setStyleSheet('''
+			QTreeWidget::item{
+				height: 35px;
+			}
+		''')
+
+

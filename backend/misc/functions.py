@@ -53,8 +53,7 @@ def get_alias(varname : str) -> str:
    except:
       alias = varname
    
-   return alias
-
+   return alias + ' ' + words[-1]
 
 def drawShadow(
 	_painter : QPainter,
