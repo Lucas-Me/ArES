@@ -1,6 +1,8 @@
 '''
 CONTEM AS CLASSES RESPONSAVEIS PELA VISUALIZACAO EM GRAFICO NA QUINTA PAGINA DO SOFTWARE
 '''
+# IMPORT QT CORE
+from qt_core import *
 
 # IMPORT MODULES
 import os
@@ -13,6 +15,8 @@ import matplotlib.cm as cm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.legend import Legend
+from matplotlib.backend_bases import PickEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.backends.qt_compat import (
     QtWidgets, __version__,
@@ -128,7 +132,8 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 
 class AbstractCanvas(FigureCanvasQTAgg):
-
+    
+    legendClicked = Signal()
     def __init__(self, width = 16, height = 7, dpi = 100):
 
         # iniciando
@@ -173,6 +178,10 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # CONSTRUCTOR
         super(AbstractCanvas, self).__init__(self.fig)
 
+        # SIGNALS AND SLOTS
+        self.mpl_connect('pick_event', self.on_pick)
+        
+
     def updateLegend(self, **kwargs):
         args = dict(
             ncol = kwargs.pop('ncol', self.params['legend-ncol']),
@@ -187,6 +196,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # creating new legend
         self.legend = self.fig.legend(handles, labels, **args)
+        self.legend.set_picker(True)
 
         # save options
         self.params['legend-ncol'] = args['ncol']
@@ -294,6 +304,10 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.updateLegend()
         self.draw()
 
+    def on_pick(self, event : PickEvent):
+        dblclick = event.mouseevent.dblclick
+        if dblclick and isinstance(event.artist, Legend):
+            self.legendClicked.emit()
 
 class TimeSeriesCanvas(AbstractCanvas):
 

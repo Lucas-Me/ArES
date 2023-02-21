@@ -7,7 +7,7 @@ from gui.ui_widgets.ui_dashboard import UI_Dashboard
 # IMPORT CUSTOM WIDGETS
 from backend.plot.charts import TimeSeriesCanvas
 from gui.widgets.chart_properties.chart_properties import ChartProperties
-
+from gui.windows.dialog.legend.color_dialog import LegendDialog
 
 # Data Manager Page Class
 class Dashboard(QWidget):
@@ -34,6 +34,11 @@ class Dashboard(QWidget):
 		self.right_menu.formatterChanged.connect(self.updateDateTicks)
 		self.right_menu.labelDateChanged.connect(self.updateDateLabels)
 		self.right_menu.legendChanged.connect(self.updateLegendProperties)
+		self.canvas.legendClicked.connect(self.editLegend)
+
+	def editLegend(self):
+		dialog = LegendDialog(parent = self.parent)
+		dialog.show()
 
 	@Slot(list)
 	def updateLegendProperties(self, options):
