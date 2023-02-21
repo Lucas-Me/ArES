@@ -62,7 +62,7 @@ mpl.rcParams.update({'axes.axisbelow': False,
     'axes.prop_cycle' : plt.cycler(color = color_list),
 
     # legend
-    'legend.loc' : 'lower center',
+    'legend.loc' : 'upper center',
     'legend.frameon' : False,
     'legend.fancybox' : False,
     'legend.shadow' : False,
@@ -238,14 +238,14 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
     def setTickParams(self, axis = 'y', **kwargs):
         kwargs = {
-            'labelsize' : kwargs.pop('fontsize', self.params['yticks-fontsize']),
+            'labelsize' : kwargs.pop('fontsize', self.params[f'{axis}ticks-fontsize']),
         }
         
         # changing fontsize or fontweight
         self.ax.tick_params(axis=axis, which='major', **kwargs)
 
         # updating private variables
-        self.params['yticks-fontsize'] = kwargs['labelsize']
+        self.params[f'{axis}ticks-fontsize'] = kwargs['labelsize']
 
     def setVerticalTicks(self, **kwargs):
         '''
@@ -277,7 +277,6 @@ class AbstractCanvas(FigureCanvasQTAgg):
         del self.handles[id_]
 
         # update plot
-        self.ax.relim(True)
         self.updateLegend()
         self.draw()
 
@@ -307,18 +306,19 @@ class TimeSeriesCanvas(AbstractCanvas):
         })
 
     def setHorizontalLabels(self, **kwargs):
-        rotation = kwargs.pop('rotation', self.params['xticks-rotation'])
-        fontsize = kwargs.pop('fontsize', self.params['xticks-fontsize'])
-        fontweight = kwargs.pop('fontweight', self.params['xticks-fontweight'])
+        args = dict(
+            labelrotation = kwargs.pop('rotation', self.params['xticks-rotation']),
+            labelsize = kwargs.pop('fontsize', self.params['xticks-fontsize']),
+        )
 
         # label properties
-        for label in self.ax.get_xticklabels(which='major'):
-            label.set(rotation=rotation, fontsize = fontsize, fontweight = fontweight)
+        self.ax.tick_params(axis='x', which='major', **args)
+        # for label in self.ax.get_xticklabels(which='major'):
+        #     label.set(rotation=rotation, fontsize = fontsize, fontweight = fontweight)
 
         # update private params
-        self.params['xticks-rotation'] = rotation
-        self.params['xticks-fontsize'] = fontsize
-        self.params['xticks-fontweight'] = fontweight
+        self.params['xticks-rotation'] = args['labelrotation']
+        self.params['xticks-fontsize'] = args['labelsize']
         
     def setHorizontalTicks(self, **kwargs):
         locator = kwargs.pop('locator', self.params['xticks-locator'])

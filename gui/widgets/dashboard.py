@@ -32,6 +32,14 @@ class Dashboard(QWidget):
 		self.right_menu.spinboxChanged.connect(self.updateVerticalAxisTicks)
 		self.right_menu.locatorChanged.connect(self.updateDateTicks)
 		self.right_menu.formatterChanged.connect(self.updateDateTicks)
+		self.right_menu.labelDateChanged.connect(self.updateDateLabels)
+
+	@Slot(dict)
+	def updateDateLabels(self, kwargs):
+		self.canvas.setHorizontalLabels(**kwargs)
+
+		# draw
+		self.canvas.draw()
 
 	@Slot(dict)
 	def updateDateTicks(self, kwargs):

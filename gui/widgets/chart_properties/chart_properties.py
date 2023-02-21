@@ -8,8 +8,8 @@ from copy import deepcopy
 from gui.widgets.chart_properties.top_level_item import TopLevelItem
 from gui.widgets.chart_properties.handles_item import HandlesItem
 from gui.widgets.chart_properties.label_edit import LabelEdit
-from gui.widgets.chart_properties.numeric_axis import NumericalAxisProperty
-from gui.widgets.chart_properties.date_axis import DateFormatterProperty, DateLocatorProperty
+from gui.widgets.chart_properties.property_axis import AxisProperty, LegendProperty
+from gui.widgets.chart_properties.date_axis import DateFormatterProperty, DateLocatorProperty, DateLabelProperty
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import get_imagepath
@@ -22,6 +22,8 @@ class ChartProperties(QTreeWidget):
 	spinboxChanged = Signal(list)
 	locatorChanged = Signal(dict)
 	formatterChanged = Signal(dict)
+	labelDateChanged = Signal(dict)
+	legendChanged = Signal(dict)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -71,6 +73,8 @@ class ChartProperties(QTreeWidget):
 			self.setItemWidget(item, 0, widget)
 
 		# LABELS EDIT
+		# //////////////////////////////////////////////////
+
 		labels = {'Gráfico' : 'title', 'Eixo Vertical' : 'ylabel', 'Eixo Horizontal' : 'xlabel'}
 		idx = items.index('Títulos')
 		for k, v in labels.items():
@@ -82,12 +86,14 @@ class ChartProperties(QTreeWidget):
 			# SIGNALS
 			widget.labelEdited.connect(self.lineEdited.emit)
 
-		# Vertical Axis
+		# VERTICAL AXIS
+		# //////////////////////////////////////////////////
+
 		texts = {'Quantidade' : 'size', 'Máximo' : 'max', 'Mínimo' : 'min', 'Tamanho da fonte' : 'fontsize'}
 		idx = items.index('Eixo Vertical')
 		for k in texts.keys():
 			spinbox = QSpinBox() if texts[k] in ['size', 'fontsize'] else QDoubleSpinBox()
-			widget = NumericalAxisProperty(height=self.item_height, text = k, property_ = texts[k], spinbox= spinbox)
+			widget = AxisProperty(height=self.item_height, text = k, property_ = texts[k], spinbox= spinbox)
 			child = QTreeWidgetItem()
 			self.topLevelItem(idx).addChild(child)
 			self.setItemWidget(child, 0, widget)
@@ -96,6 +102,7 @@ class ChartProperties(QTreeWidget):
 			widget.valueChanged.connect(self.spinboxChanged.emit)
 
 		# Horizontal Axis (Date
+		# //////////////////////////////////////////////////
 		idx = items.index('Eixo Horizontal')
 		
 		# LOCATOR
@@ -111,6 +118,38 @@ class ChartProperties(QTreeWidget):
 		self.topLevelItem(idx).addChild(child)
 		self.setItemWidget(child, 0, widget)
 		widget.formatterChanged.connect(self.formatterChanged.emit)
+
+		# X TICKS ROTATION
+		widget = DateLabelProperty("Rotação", 0, 360, 'rotation')
+		child = QTreeWidgetItem()
+		self.topLevelItem(idx).addChild(child)
+		self.setItemWidget(child, 0, widget)
+		widget.valueChanged.connect(self.labelDateChanged.emit)
+
+		# X TICKS SIZE
+		widget = DateLabelProperty("Tamanho", 0, 50, 'fontsize')
+		child = QTreeWidgetItem()
+		self.topLevelItem(idx).addChild(child)
+		self.setItemWidget(child, 0, widget)
+		widget.valueChanged.connect(self.labelDateChanged.emit)
+		
+		# LEGEND
+		# //////////////////////////////////////////////////
+		idx = items.index('Legenda')
+
+		# LEGEND COLUMNS
+		widget = LegendProperty("Colunas", 0, 50, 'ncol')
+		child = QTreeWidgetItem()
+		self.topLevelItem(idx).addChild(child)
+		self.setItemWidget(child, 0, widget)
+		widget.valueChanged.connect(self.legendChanged.emit)
+
+		# LEGEND FONTSIZE
+		widget = LegendProperty("Tamanho", 0, 50, 'fontsize')
+		child = QTreeWidgetItem()
+		self.topLevelItem(idx).addChild(child)
+		self.setItemWidget(child, 0, widget)
+		widget.valueChanged.connect(self.legendChanged.emit)
 
 	def setupStyle(self):
 		branch_closed = get_imagepath('branch_closed.svg', 'gui/images/icons') 

@@ -95,8 +95,8 @@ class DateFormatterProperty(QFrame):
 			'dd/mm/yyyy' : '%d/%m/%Y',
 			'dd/mm/yyyy HH' : '%d/%m/%Y %Hh',
 			'dd/mm/yyyy HH:MM' : '%d/%m/%Y %H:%M',
-			'dd/mmm/yyyy' : "%d-%b-%Y",
-			'mmm/yyyy' : "%b-%Y",
+			'dd/mmm/yyyy' : "%d/%b/%Y",
+			'mmm/yyyy' : "%b/%Y",
 			'yyyy' : '%Y'
 		}
 		self.combobox = QComboBox()
@@ -145,6 +145,65 @@ class DateFormatterProperty(QFrame):
 				padding-left: 5px;
 			}
 			#combobox {
+				font: 500 11pt 'Microsoft New Tai Lue';
+			}
+		''')
+
+
+class DateLabelProperty(QFrame):
+	
+	valueChanged = Signal(dict)
+	def __init__(self, text, vmin, vmax, item):
+		super().__init__()
+
+		# PROPERTIES
+		self.item = item
+		self.label = QLabel(text)
+		self.spinbox = QSpinBox()
+
+		# SETTING WIDGETS
+		self.spinbox.setRange(vmin, vmax)
+
+		# SETUP UI
+		self.setupUI()
+		self.setupStyle()
+
+		# SIGNALS
+		self.spinbox.editingFinished.connect(self.emitValue)
+
+	def emitValue(self):
+		item = self.spinbox.value()
+		self.valueChanged.emit({self.item: item})
+
+	def setupUI(self):
+		self.main_layout = QHBoxLayout(self)
+		self.main_layout.setContentsMargins(5, 5, 5, 5)
+		self.main_layout.setSpacing(5)
+		self.setObjectName('item')
+
+		# TEXT
+		self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		self.label.setObjectName('line')
+
+		# FONTSIZE
+		self.spinbox.setObjectName('combobox')
+		self.spinbox.setFixedSize(50, 25)
+
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.label)
+		self.main_layout.addWidget(self.spinbox)
+
+	def setupStyle(self):
+		self.setStyleSheet('''
+			#item{
+				background-color: #fafafa;
+				border: 1px solid #dcdcdc;
+			}
+			#line{
+				font: 500 11pt 'Microsoft New Tai Lue';
+				padding-left: 5px;
+			}
+			#spinbox{
 				font: 500 11pt 'Microsoft New Tai Lue';
 			}
 		''')
