@@ -163,20 +163,34 @@ class AbstractCanvas(FigureCanvasQTAgg):
             'yticks-max' : self.ax.get_ylim()[1],
             'yticks-size' : self.ax.get_yticks().shape[0],
             'yticks-fontsize' : 12,
-            'yticks-fontweight' : 10
+            'yticks-fontweight' : 10,
+
+            #legenda
+            'legend-ncol' : 1,
+            'legend-fontsize': 10,
         }
 
         # CONSTRUCTOR
         super(AbstractCanvas, self).__init__(self.fig)
 
-    def updateLegend(self):
+    def updateLegend(self, **kwargs):
+        args = dict(
+            ncol = kwargs.pop('ncol', self.params['legend-ncol']),
+            prop = {'size' : kwargs.pop('fontsize', self.params['legend-fontsize'])}
+        )
+
+        # remove old legeend
         self.legend.remove()
         
         # get axis artists
         handles, labels = self.ax.get_legend_handles_labels()
 
         # creating new legend
-        self.legend = self.fig.legend(handles, labels)
+        self.legend = self.fig.legend(handles, labels, **args)
+
+        # save options
+        self.params['legend-ncol'] = args['ncol']
+        self.params['legend-fontsize'] = args['prop']['size']
 
     def resetChart(self):
         # limpa os elementos do eixo

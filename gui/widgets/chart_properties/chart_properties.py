@@ -23,7 +23,7 @@ class ChartProperties(QTreeWidget):
 	locatorChanged = Signal(dict)
 	formatterChanged = Signal(dict)
 	labelDateChanged = Signal(dict)
-	legendChanged = Signal(dict)
+	legendChanged = Signal(list)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)

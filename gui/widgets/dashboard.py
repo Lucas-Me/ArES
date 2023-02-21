@@ -33,6 +33,14 @@ class Dashboard(QWidget):
 		self.right_menu.locatorChanged.connect(self.updateDateTicks)
 		self.right_menu.formatterChanged.connect(self.updateDateTicks)
 		self.right_menu.labelDateChanged.connect(self.updateDateLabels)
+		self.right_menu.legendChanged.connect(self.updateLegendProperties)
+
+	@Slot(list)
+	def updateLegendProperties(self, options):
+		self.canvas.updateLegend(**{options[0] : options[1]})
+
+		# draw
+		self.canvas.draw()
 
 	@Slot(dict)
 	def updateDateLabels(self, kwargs):
