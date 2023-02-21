@@ -40,6 +40,8 @@ mpl.rcParams.update({'axes.axisbelow': False,
 	"axes.grid.axis" : "y",
     'grid.color' : 'silver',
     'axes.labelcolor': default_color,
+    'axes.labelpad' : 8, 
+    'axes.titlepad' : 12,
     'axes.spines.right': False,
     'axes.spines.left': False,
     'axes.spines.top': False,
@@ -56,14 +58,20 @@ mpl.rcParams.update({'axes.axisbelow': False,
     'ytick.direction': 'out',
     'ytick.left': False,
     'ytick.right': False,
-    'font.family' : 'Microsoft New Tai Lue',
+    'font.family' : 'Calibri',
     'axes.prop_cycle' : plt.cycler(color = color_list),
 
     # legend
     'legend.loc' : 'lower center',
     'legend.frameon' : False,
     'legend.fancybox' : False,
-    'legend.shadow' : False
+    'legend.shadow' : False,
+
+    # subplot adjust
+    'figure.subplot.bottom' : 0.1,
+    'figure.subplot.left' : 0.1,
+    'figure.subplot.right' : 0.9,
+    'figure.subplot.top' : 0.9
  })
 
 # CLASSES
@@ -203,6 +211,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params['title-fontsize'] = kwargs['fontsize']
         self.params['title-fontweight'] = kwargs['fontweight']
 
+        # draw
+        self.draw()
+
     def setLabel(self, axis = 'x', **kwargs):
         kwargs = {
             f'{axis}label' : kwargs.pop('label', self.params[f'{axis}axis-label']),
@@ -221,6 +232,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params[f'{axis}axis-label'] = kwargs[f'{axis}label']
         self.params[f'{axis}axis-fontsize'] = kwargs['fontsize']
         self.params[f'{axis}axis-fontweight'] = kwargs['fontweight']
+
+        # draw
+        self.draw()
 
     def setVerticalTicks(self, **kwargs):
         '''
@@ -258,7 +272,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.ax.relim(True)
         self.updateLegend()
         self.draw()
-        
+
 
 class TimeSeriesCanvas(AbstractCanvas):
 

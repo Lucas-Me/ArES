@@ -4,6 +4,11 @@ from qt_core import *
 # IMPORT CUSTOM UI
 from gui.ui_widgets.ui_dashboard import UI_Dashboard
 
+# IMPORT CUSTOM WIDGETS
+from backend.plot.charts import TimeSeriesCanvas
+from gui.widgets.chart_properties.chart_properties import ChartProperties
+
+
 # Data Manager Page Class
 class Dashboard(QWidget):
 
@@ -12,6 +17,8 @@ class Dashboard(QWidget):
 
 		# PROPERTIES
 		self.parent = parent
+		self.canvas = TimeSeriesCanvas()
+		self.right_menu = ChartProperties()
 		self.bar_rows = []
 
 		# setting UI
@@ -20,7 +27,26 @@ class Dashboard(QWidget):
 		
 		# SIGNALS AND SLOTS
 		self.ui.toggle_menu.clicked.connect(self.toggle_menu)
-		self.ui.right_menu.buttonClicked.connect(self.updateChartElement)
+		self.right_menu.buttonClicked.connect(self.updateChartElement)
+		self.right_menu.lineEdited.connect(self.updateLabel)
+	
+	@Slot(list)
+	def updateLabel(self, options):
+		# unpacking args
+		kwargs = {
+			'label' : options[0],
+			'fontweight' : 'bold' if options[1] else 'normal',
+			'fontsize' : options[2]
+		}
+
+		if options[-1] == 'xlabel':
+			self.canvas.setLabel(axis = 'x', **kwargs)
+
+		elif options[-1] == 'ylabel':
+			self.canvas.setLabel(axis = 'y', **kwargs)
+		
+		else: #title
+			self.canvas.setTitle(**kwargs)
 
 	@Slot(list)
 	def updateChartElement(self, options):
@@ -38,7 +64,7 @@ class Dashboard(QWidget):
 		if status: 
 
 			# check if artist is already present in other format
-			tree = self.ui.right_menu
+			tree = self.right_menu
 			item = tree.topLevelItem(top_level_row + (-1) ** plot_idx).child(child_row)
 			widget = tree.itemWidget(item, 0)
 			if widget.button.isChecked():
@@ -46,7 +72,7 @@ class Dashboard(QWidget):
 			
 			# Plot new artist
 			if plot_idx == 0:
-				self.ui.canvas.plot(series)
+				self.canvas.plot(series)
 
 			else:
 				self.bar_rows.append(child_row)
@@ -57,12 +83,12 @@ class Dashboard(QWidget):
 				del self.bar_rows[self.bar_rows.index(child_row)]
 				self.plotBars()
 
-			self.ui.canvas.removePlot(id_ = series.metadata['signature'])
+			self.canvas.removePlot(id_ = series.metadata['signature'])
 
 	def plotBars(self):
 		list_objects = [self.parent.getHandle(index) for index in self.bar_rows]
 		if len(list_objects) > 0:
-			self.ui.canvas.barPlot(list_objects)
+			self.canvas.barPlot(list_objects)
 
 	def updateItems(self):
 		# getting parent handles
@@ -70,21 +96,21 @@ class Dashboard(QWidget):
 		
 		# reset tree widget options
 		for i in range(2):
-			self.ui.right_menu.resetTopLevelItem(i, handles)
+			self.right_menu.resetTopLevelItem(i, handles)
 
 		# reseta o grafico
-		self.ui.canvas.resetChart()
+		self.canvas.resetChart()
 
 		# reset private propertie
 		self.bar_rows.clear()
 
 	def toggle_menu(self):
 		# check
-		status = self.ui.right_menu.isHidden()
+		status = self.right_menu.isHidden()
 		if status:
-			self.ui.right_menu.show()
+			self.right_menu.show()
 		else:
-			self.ui.right_menu.hide()
+			self.right_menu.hide()
 
 
 	def paintEvent(self, event: QPaintEvent) -> None:

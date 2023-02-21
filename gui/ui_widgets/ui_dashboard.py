@@ -2,9 +2,7 @@
 from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
-from backend.plot.charts import TimeSeriesCanvas
 from gui.widgets.py_push_button import IconButton
-from gui.widgets.chart_properties.chart_properties import ChartProperties
 
 # Data Manager Page UI Class
 class UI_Dashboard(object):
@@ -25,17 +23,13 @@ class UI_Dashboard(object):
 		self.canvas_layout.setContentsMargins(0, 5, 5, 0)
 		self.canvas_layout.setSpacing(0)
 
-		# CANVAS
-		self.canvas = TimeSeriesCanvas()
-
 		# RIGHT MENU
-		self.right_menu = ChartProperties()
-		self.right_menu.setObjectName('right_menu')
-		self.right_menu.setFixedWidth(350)
+		parent.right_menu.setObjectName('right_menu')
+		parent.right_menu.setFixedWidth(350)
 
 		# add to layout
-		self.canvas_layout.addWidget(self.canvas)
-		self.canvas_layout.addWidget(self.right_menu)
+		self.canvas_layout.addWidget(parent.canvas)
+		self.canvas_layout.addWidget(parent.right_menu)
 
 		# BOTTOM TOOLBAR
 		# //////////////////////////////////////////////////////////////
