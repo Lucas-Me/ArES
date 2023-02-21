@@ -236,6 +236,17 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # draw
         self.draw()
 
+    def setTickParams(self, axis = 'y', **kwargs):
+        kwargs = {
+            'labelsize' : kwargs.pop('fontsize', self.params['yticks-fontsize']),
+        }
+        
+        # changing fontsize or fontweight
+        self.ax.tick_params(axis=axis, which='major', **kwargs)
+
+        # updating private variables
+        self.params['yticks-fontsize'] = kwargs['labelsize']
+
     def setVerticalTicks(self, **kwargs):
         '''
         Rótulos do eixo Vertical.
@@ -243,20 +254,17 @@ class AbstractCanvas(FigureCanvasQTAgg):
         min_y = kwargs.pop('min', self.params['yticks-min'])
         max_y = kwargs.pop('max', self.params['yticks-max'])
         size = kwargs.pop('size', self.params['yticks-size'])
-        kwargs = {
-            'fontsize' : kwargs.pop('fontsize', self.params['yticks-fontsize']),
-            'fontweight' : kwargs.pop('fontweight', self.params['yticks-fontweight'])
-        }
         
         # update axis ticks
-        self.ax.set_yticks(np.linspace(min_y, max_y, size), **kwargs)
+        self.ax.set_yticks(np.linspace(min_y, max_y, size))
+        
+        # updating limits
+        self.ax.set_ylim(min_y, max_y)
 
         # update private params
         self.params['yticks-min'] = min_y
         self.params['yticks-max'] = max_y
         self.params['yticks-size'] = size
-        self.params['yticks-fontsize'] = kwargs['fontsize']
-        self.params['yticks-fontweight'] = kwargs['fontweight']
             
     def removePlot(self, id_):
         if id_ not in self.handles:

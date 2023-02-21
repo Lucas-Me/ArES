@@ -192,6 +192,7 @@ class ModifiedData(AbstractData):
       new = self.copy()
       if kwargs.pop('groupby', False): # group if True
          new = new.groupby(kwargs.pop('format_'))
+         new.setMetadata(self.metadata)
          return new.apply(**kwargs) # func is still in here
 
       # From now on, apply the function.
@@ -259,6 +260,9 @@ class GroupedData(object):
          self.grouped_values = np.split(values, index)[:-1] # last group is empty
          self.dates = dates
 
+      def setMetadata(self, metadata):
+         self.metadata = metadata
+
       def apply(self, **kwargs):
          # From now on, apply the function.
          func = kwargs.pop('func')
@@ -270,7 +274,8 @@ class GroupedData(object):
          return ModifiedData(
             values = values,
             dates = self.dates,
-            representatividade = representatividade
+            representatividade = representatividade,
+            metadata = self.metadata
          )
 
       def calculateRepresentatividade(self, array):

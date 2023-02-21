@@ -29,6 +29,21 @@ class Dashboard(QWidget):
 		self.ui.toggle_menu.clicked.connect(self.toggle_menu)
 		self.right_menu.buttonClicked.connect(self.updateChartElement)
 		self.right_menu.lineEdited.connect(self.updateLabel)
+		self.right_menu.spinboxChanged.connect(self.updateVerticalAxisTicks)
+
+	@Slot(list)
+	def updateVerticalAxisTicks(self, options):
+		# unpacking values
+		kwargs = {options[1] : options[0]}
+
+		# updating
+		if options[1] == 'fontsize':
+			self.canvas.setTickParams(axis = 'y', **kwargs)
+		else:
+			self.canvas.setVerticalTicks(**kwargs)
+		
+		# draw
+		self.canvas.draw()
 	
 	@Slot(list)
 	def updateLabel(self, options):

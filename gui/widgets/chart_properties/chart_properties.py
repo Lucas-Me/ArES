@@ -8,6 +8,7 @@ from copy import deepcopy
 from gui.widgets.chart_properties.top_level_item import TopLevelItem
 from gui.widgets.chart_properties.handles_item import HandlesItem
 from gui.widgets.chart_properties.label_edit import LabelEdit
+from gui.widgets.chart_properties.vertical_axis import VerticalAxisProperty
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import get_imagepath
@@ -17,6 +18,7 @@ class ChartProperties(QTreeWidget):
 	# bocCliked : Signal -> lista[top level idx, row, status]
 	buttonClicked = Signal(list)
 	lineEdited = Signal(list)
+	spinboxChanged = Signal(list)
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -76,6 +78,20 @@ class ChartProperties(QTreeWidget):
 
 			# SIGNALS
 			widget.labelEdited.connect(self.lineEdited.emit)
+
+		# Vertical Axis
+		texts = {'Quantidade' : 'size', 'Máximo' : 'max', 'Mínimo' : 'min', 'Tamanho da fonte' : 'fontsize'}
+		idx = items.index('Eixo Vertical')
+		for k in texts.keys():
+			spinbox = QSpinBox() if texts[k] in ['size', 'fontsize'] else QDoubleSpinBox()
+			widget = VerticalAxisProperty(height=self.item_height, text = k, property_ = texts[k], spinbox= spinbox)
+			child = QTreeWidgetItem()
+			self.topLevelItem(idx).addChild(child)
+			self.setItemWidget(child, 0, widget)
+
+			# Signals
+			widget.valueChanged.connect(self.spinboxChanged.emit)
+
 
 	def setupStyle(self):
 		branch_closed = get_imagepath('branch_closed.svg', 'gui/images/icons') 
