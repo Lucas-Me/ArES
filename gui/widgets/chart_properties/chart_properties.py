@@ -8,6 +8,9 @@ from copy import deepcopy
 from gui.widgets.chart_properties.top_level_item import TopLevelItem
 from gui.widgets.chart_properties.handles_item import HandlesItem
 
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import get_imagepath
+
 class ChartProperties(QTreeWidget):
     
 	# bocCliked : Signal -> lista[top level idx, row, status]
@@ -86,13 +89,13 @@ class ChartProperties(QTreeWidget):
 
 		#creating new top level
 		tree_item = QTreeWidgetItem([name])
-		top_level_widget = TopLevelItem(text = name, height = 30)
+		top_level_widget = TopLevelItem(text = name, height = 35)
 		self.insertTopLevelItem(index, tree_item)
 		self.setItemWidget(tree_item, 0, top_level_widget)
 
 		# update tree widget
 		for i in range(len(handles)):
-			widget = HandlesItem(text=handles[i].metadata['alias'], height = 30, row = i, top_level=index)
+			widget = HandlesItem(text=handles[i].metadata['alias'], height = 35, row = i, top_level=index)
 			child = QTreeWidgetItem()
 			tree_item.addChild(child)
 			self.setItemWidget(child, 0, widget)
@@ -109,14 +112,29 @@ class ChartProperties(QTreeWidget):
 
 		# TOP LEVEL WIDGETS
 		for item in top_level_items:
-			self.setItemWidget(item, 0, TopLevelItem(text = item.text(0), height = 30))
-		
+			widget = TopLevelItem(text = item.text(0), height = 35)
+			self.setItemWidget(item, 0, widget)
 
 	def setupStyle(self):
-		self.setStyleSheet('''
-			QTreeWidget::item{
+		branch_closed = get_imagepath('branch_closed.svg', 'gui/images/icons') 
+		branch_open = get_imagepath('branch_open.svg', 'gui/images/icons')
+
+		self.setStyleSheet(f'''
+			QTreeWidget::item{{
 				height: 35px;
-			}
+				padding: 2px 0;
+			}}
+			QTreeWidget {{ qproperty-indentation: 35; }}
+			QTreeWidget::branch:has-children:!has-siblings:closed,
+			QTreeWidget::branch:closed:has-children:has-siblings {{
+				border-image: none;
+				image: url({branch_closed});
+			}}
+			QTreeWidget::branch:open:has-children:!has-siblings,
+			QTreeWidget::branch:open:has-children:has-siblings  {{
+				border-image: none;
+				image: url({branch_open});
+			}}
 		''')
 
 

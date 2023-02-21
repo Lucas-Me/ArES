@@ -61,7 +61,8 @@ class Dashboard(QWidget):
 
 	def plotBars(self):
 		list_objects = [self.parent.getHandle(index) for index in self.bar_rows]
-		self.ui.canvas.barPlot(list_objects)
+		if len(list_objects) > 0:
+			self.ui.canvas.barPlot(list_objects)
 
 	def updateItems(self):
 		# getting parent handles

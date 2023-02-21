@@ -132,7 +132,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.labels = {} # store labels
         self.handles = {} # store artists
         self.legend = self.fig.legend([], [])
-        
+
         # PROPRIEDADES DO GRAFICO
         self.params = {
             # Titulo
@@ -243,28 +243,6 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params['yticks-size'] = size
         self.params['yticks-fontsize'] = kwargs['fontsize']
         self.params['yticks-fontweight'] = kwargs['fontweight']
-
-    def adjustVerticalAxis(self):
-        handles, labels = self.ax.get_legend_handles_labels()
-        
-        n = len(handles)
-        max_y = np.full(n + 1, np.nan)
-        min_y = np.full(n + 1, np.nan)
-        for i in range(n):
-            if isinstance(handles[i], mpl.container.BarContainer):
-                children = handles[i].get_children()
-                ydata = np.fromiter(map(lambda x: x.get_height(), children), float)
-            else:
-                ydata = handles[i].get_ydata()
-
-            max_y[i] = np.nanmax(ydata)
-            min_y[i] = np.nanmin(ydata)
-        
-        max_y[-1] = self.params['yticks-max']
-        min_y[-1] = self.params['yticks-min']
-
-        # comparing and setting up
-        self.setVerticalTicks(max = np.nanmax(max_y), min = np.nanmin(min_y))
             
     def removePlot(self, id_):
         if id_ not in self.handles:
@@ -362,7 +340,12 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.labels[id_] = hl.get_label()
 
         # adjusting axis
-        self.adjustVerticalAxis()
+        max_y = np.nanmax(values)
+        min_y = np.nanmin(values)
+        self.setVerticalTicks(
+            max = np.nanmax([max_y, self.params['yticks-max']]),
+            min = np.nanmin([min_y, self.params['yticks-min']])
+        )
         
         # updating legend
         self.updateLegend()
@@ -372,6 +355,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
     def barPlot(self, series_list : list[object]):
         n = len(series_list)
+        prop_iter = iter(mpl.rcParams['axes.prop_cycle'])
 
         # largura de cada barra sera definida a partir da menor frequencia dentre os dados
         frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
@@ -384,7 +368,12 @@ class TimeSeriesCanvas(AbstractCanvas):
         t1 = mdates.date2num(t1)
         t0 = mdates.date2num(ref_time)
         delta_t = (t1 - t0) * total_width
+        
+        # preparing maximum and minimum values
+        max_y = [1] * n + [self.params['yticks-max']]
+        min_y = [0] * n + [self.params['yticks-min']]
 
+        # loop through each series
         for i in range(n):
             # getting series
             series = series_list[i]
@@ -395,6 +384,12 @@ class TimeSeriesCanvas(AbstractCanvas):
             # getting properties
             values = series.getValues()
             dates = series.getDates()
+
+            # maximum and minimum
+            max_y[i] = np.nanmax(values)
+            min_y[i] = np.nanmin(values)
+
+            # transform
             dates_num = mdates.date2num(dates)
             
             # getting position of left corner
@@ -407,7 +402,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             # Plot properties
             kwargs = {
                 'label' : self.labels.get(id_, series.metadata['alias']),
-                'facecolor' : self.colors.get(id_, None),
+                'facecolor' : self.colors.get(id_, next(prop_iter)['color']),
                 'align' : 'center',
                 'width' : delta_t / n
             }
@@ -420,7 +415,10 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.labels[id_] = hl.get_label()
 
         # adjusting axis
-        self.adjustVerticalAxis()
+        self.setVerticalTicks(
+            max = np.nanmax(max_y),
+            min = np.nanmin(min_y)
+        )
         
         # updating legend
         self.updateLegend()
