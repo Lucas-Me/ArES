@@ -1,7 +1,7 @@
 # IMPORT QT MODULES
 from qt_core import *
 
-class VerticalAxisProperty(QFrame):
+class NumericalAxisProperty(QFrame):
     
 	valueChanged = Signal(object)
 

@@ -1,7 +1,6 @@
 # IMPORT QT MODULES
 from qt_core import *
 
-# 
 
 class LabelEdit(QFrame):
     
