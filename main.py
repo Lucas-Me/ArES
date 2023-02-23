@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         for btn in self.ui.left_menu.findChildren(QPushButton):
             if btn.objectName() in ['logo']:
                 continue
-            
+
             btn.setActive(False)
 
     def change_page(self, page : int, button : QPushButton):
@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
         self.ui.ui_pages.process_page.updateDates(start_date, end_date)
 
         # force click on third screen (left menu)
-        self.ui.btn_3.click()
+        self.ui.left_menu.btn_process.click()
 
     @Slot(list)
     def updateDataHandles(self, processed_data : list[object]):
