@@ -6,6 +6,7 @@ from gui.pages.ui_pages import UI_StackedPages
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.py_push_button import PyPushButton
+from gui.widgets.menu.widget import Menu
 
 
 # MAIN WINDOW
@@ -33,65 +34,8 @@ class UI_MainWindow(object):
 
         # LEFT MENU
         # //////////////////////////////////////////////////////////////////////
-        self.left_menu = QFrame()
-        self.left_menu.setStyleSheet(f'''
-            background-color: {self.left_menu_color}; 
-            ''')
-        self.left_menu.setMaximumWidth(150)
-        self.left_menu.setMinimumWidth(150)
-        
-        # left menu layout
-        self.left_menu_layout = QVBoxLayout(self.left_menu)
-        self.left_menu_layout.setContentsMargins(0, 0, 0, 0)
-        self.left_menu_layout.setSpacing(5)
-
-        # TOP FRAME MENU
-        self.left_menu_top_frame = QFrame()
-        self.left_menu_top_frame.setMinimumHeight(90)
-        self.left_menu_top_frame.setStyleSheet(f"background-color: {self.left_menu_color}")
-
-        # TOP FRAME LAYOUT
-        self.left_menu_top_layout = QVBoxLayout(self.left_menu_top_frame)
-        self.left_menu_top_layout.setContentsMargins(0, 0, 0, 0)
-        self.left_menu_top_layout.setSpacing(0)
-
-        # TOP BINS
-        btn_properties = {
-            'height' : 50,
-            'text_color' : self.background_color,
-            'icon_color' : self.background_color,
-            'btn_color' : self.left_menu_color,
-            'btn_hover' : '#ffb703',
-            'width' : 135,
-            'text_padding' : 50
-        }
-        self.btn_1 = PyPushButton("Início", icon_path='icon_home.svg', **btn_properties)
-        self.btn_1.set_active(True)
-        self.btn_2 = PyPushButton("Dados", icon_path='icon_datamanager.svg', **btn_properties)
-        self.btn_3 = PyPushButton("Método", icon_path = 'process_screen_icon.svg', **btn_properties)
-        self.btn_4 = PyPushButton("Gráfico", icon_path = 'icon_settings.svg', **btn_properties)
-        self.btn_settings = PyPushButton("Ajustes", icon_path = 'icon_settings.svg', **btn_properties)
-
-        # menu spacer
-        self.left_menu_spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        
-        # label version
-        self.left_menu_label_version = QLabel("v1.3.0")
-        self.left_menu_label_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.left_menu_label_version.setMinimumHeight(30)
-        self.left_menu_label_version.setMaximumHeight(30)
-        self.left_menu_label_version.setStyleSheet(f'color: {self.background_color}; background-color: {self.left_menu_color}; font: 700 12pt "Microsoft New Tai Lue"')
-        
-        # ADD TO LEFT MENU LAYOUT# ADD TOP BINS TO LAYOUT
-        self.left_menu_layout.addWidget(self.left_menu_top_frame)
-        self.left_menu_layout.addWidget(self.btn_1)
-        self.left_menu_layout.addWidget(self.btn_2)
-        self.left_menu_layout.addWidget(self.btn_3)
-        self.left_menu_layout.addWidget(self.btn_4)
-        self.left_menu_layout.addItem(self.left_menu_spacer)
-        self.left_menu_layout.addWidget(self.btn_settings)
-        self.left_menu_layout.addWidget(self.left_menu_label_version)
-
+        self.left_menu = Menu()
+ 
         # CONTENT
         # //////////////////////////////////////////////////////////////////////
         self.content = QFrame()

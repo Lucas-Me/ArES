@@ -24,18 +24,19 @@ class LoadUi(QObject):
         # load the main UI
         self.mainWindow.ui = UI_MainWindow()
         self.mainWindow.ui.setup_ui(self.mainWindow)
+        left_menu = self.mainWindow.ui.left_menu
 
         # open page 1
-        self.mainWindow.ui.btn_1.clicked.connect(lambda: self.mainWindow.change_page(page = 0, button = self.mainWindow.ui.btn_1))
+        left_menu.btn_home.clicked.connect(lambda: self.mainWindow.change_page(page = 0, button = left_menu.btn_home))
         
         # open page 2
-        self.mainWindow.ui.btn_2.clicked.connect(lambda: self.mainWindow.change_page(page = 1, button = self.mainWindow.ui.btn_2))
+        left_menu.btn_data.clicked.connect(lambda: self.mainWindow.change_page(page = 1, button = left_menu.btn_data))
 
         # open page 3
-        self.mainWindow.ui.btn_3.clicked.connect(lambda: self.mainWindow.change_page(page = 2, button = self.mainWindow.ui.btn_3))
+        left_menu.btn_process.clicked.connect(lambda: self.mainWindow.change_page(page = 2, button = left_menu.btn_process))
 
         # open page 4
-        self.mainWindow.ui.btn_4.clicked.connect(lambda: self.mainWindow.change_page(page = 3, button = self.mainWindow.ui.btn_4))
+        # left_menu.btn_4.clicked.connect(lambda: self.mainWindow.change_page(page = 3, button = self.mainWindow.ui.btn_4))
 
         # SQL request
         self.mainWindow.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.mainWindow.updateDatabaseSQL)
@@ -69,7 +70,6 @@ class MainWindow(QMainWindow):
 
         # creating the QObject
         self.loadUI = LoadUi(self)
-        # self.loadUI.moveToThread(self.uiLoadingThread)
 
         # SIGNALS AND SLOTS
         # connect the ui loaded signal
@@ -92,7 +92,10 @@ class MainWindow(QMainWindow):
 
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
-            btn.set_active(False)
+            if btn.objectName() in ['logo']:
+                continue
+            
+            btn.setActive(False)
 
     def change_page(self, page : int, button : QPushButton):
         if page == 2:
@@ -104,7 +107,7 @@ class MainWindow(QMainWindow):
         # Change page
         self.reset_menu_selection()
         self.ui.pages.setCurrentIndex(page)
-        button.set_active(True)
+        button.setActive(True)
 
     def updateDatabaseSQL(self):
         server = self.ui.ui_pages.login_page.sql
