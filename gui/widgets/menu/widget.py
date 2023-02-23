@@ -27,7 +27,6 @@ class Menu(QFrame):
 			page = item,
 			button = self.charts_list.itemWidget(item)
 		)
-		print('cliquei!')
 
 	def setup_ui(self):
 		self.main_layout = QVBoxLayout(self)

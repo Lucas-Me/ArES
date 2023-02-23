@@ -133,18 +133,16 @@ class ChartButton(QPushButton):
 			self,
 			height = 40,
 			text = '',
-			padding_left = 55,
-			text_color = '#d7e0ef',
-			button_color = '#36475f',
+			text_color = '#36475f',
+			button_color = '#d7e0ef',
 			hover_color = '#30415a',
-			active_color = '#2a394f',
+			active_color = '#d7e0ef',
 			highlight = '#00ccff'
 		):
 
 		# PROPERTIES
 		self.is_active = False
 		self.left_margin = 5
-		self.text_padding = padding_left
 		self.text_color = text_color
 		self.button_color = button_color
 		self.hover_color = hover_color
@@ -164,8 +162,8 @@ class ChartButton(QPushButton):
 			QPushButton {{
 				background-color: {self.button_color};
 				color: {self.text_color};
-				font: bold 13pt 'Microsoft New Tai Lue';
-				padding-left: {self.text_padding};
+				font: bold 10pt 'Microsoft New Tai Lue';
+				padding-left: 10px;
 				text-align: left;
 				border: none;
 			}}
@@ -278,7 +276,7 @@ class CreateChartButton(QFrame):
 			#add_button {
 				background-color: #ffffff;
 				color: #36475f;
-				font: bold 10pt 'Microsoft New Tai Lue';
+				font: bold 9pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#add_button:hover {
