@@ -1,12 +1,9 @@
 # IMPORT QT CORE
 from qt_core import *
 
-# IMPORT MODULES
-from gui.pages.ui_pages import UI_StackedPages
-
 # IMPORT CUSTOM WIDGETS
-from gui.widgets.py_push_button import PyPushButton
 from gui.widgets.menu.widget import Menu
+from gui.pages.ui_pages import StackedPages
 
 
 # MAIN WINDOW
@@ -34,7 +31,7 @@ class UI_MainWindow(object):
 
         # LEFT MENU
         # //////////////////////////////////////////////////////////////////////
-        self.left_menu = Menu()
+        self.left_menu = Menu(parent)
  
         # CONTENT
         # //////////////////////////////////////////////////////////////////////
@@ -65,9 +62,7 @@ class UI_MainWindow(object):
         self.bottom_bar_layout.addWidget(self.bottom_label_right)
        
         # Application pages
-        self.pages = QStackedWidget(parent = parent)
-        self.ui_pages = UI_StackedPages()
-        self.ui_pages.setup_ui(self.pages)
+        self.pages = StackedPages(parent = parent)
         self.pages.setCurrentIndex(0)
 
         # Add to content layout

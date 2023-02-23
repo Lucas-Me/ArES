@@ -127,23 +127,24 @@ class TopLevelButton(QPushButton):
 		
 		painter.end()
 
-
 class ChartButton(QPushButton):
 
 	def __init__(
 			self,
 			height = 40,
 			text = '',
-			text_color = '#186B93',
-			button_color = '#e3e8f3',
-			hover_color = '#d7e0ef',
-			active_color = '#d7e0ef',
+			padding_left = 55,
+			text_color = '#d7e0ef',
+			button_color = '#36475f',
+			hover_color = '#30415a',
+			active_color = '#2a394f',
 			highlight = '#00ccff'
 		):
 
 		# PROPERTIES
 		self.is_active = False
 		self.left_margin = 5
+		self.text_padding = padding_left
 		self.text_color = text_color
 		self.button_color = button_color
 		self.hover_color = hover_color
@@ -158,12 +159,13 @@ class ChartButton(QPushButton):
 		self.setupStyle()
 
 	def setupStyle(self):
+		self.setObjectName('chart')
 		self.setStyleSheet(f'''
 			QPushButton {{
 				background-color: {self.button_color};
 				color: {self.text_color};
-				font: bold 10pt 'Microsoft New Tai Lue';
-				padding-left: 10px;
+				font: bold 13pt 'Microsoft New Tai Lue';
+				padding-left: {self.text_padding};
 				text-align: left;
 				border: none;
 			}}
@@ -204,7 +206,7 @@ class ChartButton(QPushButton):
 
 
 class CreateChartButton(QFrame):
-	
+
 	createRow = Signal(str)
 	def __init__(
 		self,
@@ -224,11 +226,11 @@ class CreateChartButton(QFrame):
 		# SIGNALS
 		self.add_button.clicked.connect(self.emitSignal)
 
-	def emitSignal(self):
+	def emitSignal(self, text):
 		text = self.edit.text()
 		if len(text) == 0:
-			text = self.placeholder
-		
+			text = self.edit.placeholderText()
+
 		self.createRow.emit(text)
 
 	def setupUI(self):
@@ -262,27 +264,27 @@ class CreateChartButton(QFrame):
 	def setupStyle(self):
 		self.setStyleSheet('''
 			#icon {
-				background-color: #e3e8f3;
-				color: #186B93;
-				font: bold 13pt 'Microsoft New Tai Lue';
+				background-color: #d7e0ef;
+				color: #36475f;
+				font: bold 10pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#name_edit {
-				background-color: #e3e8f3;
-				color: #186B93;
-				font: bold 9pt 'Microsoft New Tai Lue';
+				background-color: #d7e0ef;
+				color: #36475f;
+				font: bold 10pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#add_button {
-				background-color: #d7e0ef;
-				color: #186B93;
-				font: bold 13pt 'Microsoft New Tai Lue';
+				background-color: #ffffff;
+				color: #36475f;
+				font: bold 10pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#add_button:hover {
-				background-color: #d7e0ef;
+				background-color: #186B93;
 			}
 			#add_button:pressed {
-				background-color: #d7e0ef;
+				background-color: #186B93;
 			}
 		''')

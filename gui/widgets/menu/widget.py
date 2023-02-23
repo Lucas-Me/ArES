@@ -7,15 +7,27 @@ from gui.widgets.menu.chart_list_widget import ChartList
 
 class Menu(QFrame):
     
-	def __init__(self):
+	def __init__(self, parent):
 		super().__init__()
 		
+		# PROPERTIES
+		self.parent = parent
+
 		# SETTINGS
 		self.setFixedWidth(150)
 
 		# SETUP UI
 		self.setup_ui()
 
+		# Signals
+		self.charts_list.rowClicked.connect(self.establishSignal)
+
+	def establishSignal(self, item : QListWidgetItem):
+		self.parent.change_page(
+			page = item,
+			button = self.charts_list.itemWidget(item)
+		)
+		print('cliquei!')
 
 	def setup_ui(self):
 		self.main_layout = QVBoxLayout(self)

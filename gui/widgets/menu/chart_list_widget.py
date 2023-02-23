@@ -1,11 +1,15 @@
 # IMPORT QT MODULES
 from qt_core import *
 
+# IMPORT MODULES
+from copy import copy
+
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.menu.buttons import ChartButton, CreateChartButton
 
 class ChartList(QListWidget):
 
+    rowClicked = Signal(object)
     def __init__(self, width):
         super().__init__()
 
@@ -35,7 +39,7 @@ class ChartList(QListWidget):
     
     @Slot(str)
     def insertRow(self, text):
-        n = self.count()
+        n = copy(self.count())
 
         # don't create if greater than max
         if n > self.maxrows:
@@ -49,6 +53,12 @@ class ChartList(QListWidget):
         # create widget
         widget = ChartButton(text = text, height = 40)
         self.setItemWidget(item, widget)
+
+        # emit signal
+        widget.clicked.connect(
+            lambda: self.rowClicked.emit(item)
+        )
+        widget.click()
 
     def setup_style(self):
 

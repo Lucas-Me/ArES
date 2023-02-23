@@ -35,17 +35,14 @@ class LoadUi(QObject):
         # open page 3
         left_menu.btn_process.clicked.connect(lambda: self.mainWindow.change_page(page = 2, button = left_menu.btn_process))
 
-        # open page 4
-        # left_menu.btn_4.clicked.connect(lambda: self.mainWindow.change_page(page = 3, button = self.mainWindow.ui.btn_4))
-
         # SQL request
-        self.mainWindow.ui.ui_pages.data_page.ui.sql_btn.clicked.connect(self.mainWindow.updateDatabaseSQL)
+        self.mainWindow.ui.pages.data_page.ui.sql_btn.clicked.connect(self.mainWindow.updateDatabaseSQL)
 
         # NEXT button on DATA MANAGER SCREEEn
-        self.mainWindow.ui.ui_pages.data_page.ui.next_btn.clicked.connect(self.mainWindow.requestData)
+        self.mainWindow.ui.pages.data_page.ui.next_btn.clicked.connect(self.mainWindow.requestData)
 
         # PROCESS button on PROCESS SCREEn
-        self.mainWindow.ui.ui_pages.process_page.resultReady.connect(self.mainWindow.updateDataHandles)
+        self.mainWindow.ui.pages.process_page.resultReady.connect(self.mainWindow.updateDataHandles)
 
         # EMIT SIGNAL
         self.mainWindow.uiLoaded.emit()
@@ -92,36 +89,42 @@ class MainWindow(QMainWindow):
 
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
-            if btn.objectName() in ['logo', 'home', 'settings', 'data', 'methods', 'chart']:
+            if btn.objectName() in ['home', 'settings', 'data', 'methods', 'chart']:
                 btn.setActive(False)
 
-    def change_page(self, page : int, button : QPushButton):
-        if page == 2:
-            # check if there is at least one parameter loaded
-            n = len(self.ui.ui_pages.process_page.raw_data)
-            if n == 0:
-                return None
-        
+    def change_page(self, page, button : QPushButton):
+        if isinstance(page, int):
+            if page == 2:
+                # check if there is at least one parameter loaded
+                n = len(self.ui.pages.process_page.raw_data)
+                if n == 0:
+                    return None
+
+            # Change page
+            self.ui.pages.setCurrentIndex(page)
+
+        else: # not an int
+            self.ui.pages.setCurrentWidget(page)
+
         # Change page
         self.reset_menu_selection()
-        self.ui.pages.setCurrentIndex(page)
         button.setActive(True)
 
     def updateDatabaseSQL(self):
-        server = self.ui.ui_pages.login_page.sql
+        server = self.ui.pages.login_page.sql
         if not server.get_status(): # if not connected, display window
             self.connnectionErrorDialog()
             return None
 
         # browser sql files
-        self.ui.ui_pages.data_page.browse_sql(server)
+        self.ui.pages.data_page.browse_sql(server)
 
     def requestData(self):
         # getting server
-        server = self.ui.ui_pages.login_page.sql
+        server = self.ui.pages.login_page.sql
 
         # requesting data
-        data_manager = self.ui.ui_pages.data_page
+        data_manager = self.ui.pages.data_page
 
         try:
             data, start_date, end_date = data_manager.request_data(server)
@@ -131,22 +134,22 @@ class MainWindow(QMainWindow):
             return None
 
         # updating data on processing screen
-        self.ui.ui_pages.process_page.updateRawData(data)
-        self.ui.ui_pages.process_page.updateDates(start_date, end_date)
+        self.ui.pages.process_page.updateRawData(data)
+        self.ui.pages.process_page.updateDates(start_date, end_date)
 
         # force click on third screen (left menu)
         self.ui.left_menu.btn_process.click()
 
     @Slot(list)
     def updateDataHandles(self, processed_data : list[object]):
-        screen = self.ui.ui_pages.visualization_page
+        screen = self.ui.pages.visualization_page
         screen.updateDataHandles(processed_data)
 
     def connnectionErrorDialog(self):
         '''
         Janela de Dialogo quando ocorre algum problema na conexão SQL.
         '''
-        self.ui.ui_pages.login_page.disconnectSQL()
+        self.ui.pages.login_page.disconnectSQL()
         dialog = ImportDialog(
             title = 'Erro',
             message = 'Não foi possível se comunicar com o banco de dados',
