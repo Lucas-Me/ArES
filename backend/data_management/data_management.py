@@ -152,7 +152,7 @@ class RawData(AbstractData):
       super().__init__(*args, **kwargs)
 
       # FLAGS FOR EACH DATE
-      self.flags = kwargs.get('flags', [])
+      self.setFlags(kwargs.get('flags', []))
    
    def filterByFlags(self, flags_regex):
       r = re.compile(flags_regex)
@@ -166,6 +166,19 @@ class RawData(AbstractData):
          values = filtered_values,
          dates = self.dates
       )
+
+   def setFlags(self, flags : np.ndarray):
+      '''Handle flags'''
+
+      if isinstance(flags, list):
+         flags = np.array(flags, dtype = '<U2')
+
+      # if flag contains a None object, replace by an empty string
+      flags[flags == None] = ''
+      flags = flags.astype('<U2')
+
+      # setup flags
+      self.flags = flags
 
    def getFlags(self):
       return self.flags
