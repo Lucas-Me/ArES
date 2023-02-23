@@ -92,10 +92,8 @@ class MainWindow(QMainWindow):
 
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
-            if btn.objectName() in ['logo']:
-                continue
-
-            btn.setActive(False)
+            if btn.objectName() in ['logo', 'home', 'settings', 'data', 'methods', 'chart']:
+                btn.setActive(False)
 
     def change_page(self, page : int, button : QPushButton):
         if page == 2:
@@ -155,7 +153,7 @@ class MainWindow(QMainWindow):
             description='Certifique-se de que a conexão esteja estabelecida',
             parent = self
         )
-        dialog.okClicked.connect(lambda: self.change_page(page = 0, button = self.ui.btn_1))
+        dialog.okClicked.connect(lambda: self.change_page(page = 0, button = self.ui.left_menu.btn_home))
         dialog.exec()
 
 

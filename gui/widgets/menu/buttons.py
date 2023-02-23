@@ -126,3 +126,163 @@ class TopLevelButton(QPushButton):
 		qp.drawPixmap(self.x, self.y, self.dx, self.dy, self.icon)
 		
 		painter.end()
+
+
+class ChartButton(QPushButton):
+
+	def __init__(
+			self,
+			height = 40,
+			text = '',
+			text_color = '#186B93',
+			button_color = '#e3e8f3',
+			hover_color = '#d7e0ef',
+			active_color = '#d7e0ef',
+			highlight = '#00ccff'
+		):
+
+		# PROPERTIES
+		self.is_active = False
+		self.left_margin = 5
+		self.text_color = text_color
+		self.button_color = button_color
+		self.hover_color = hover_color
+		self.active_color = active_color
+		self.highlight_color = highlight
+
+		# CONSTRUCTOR
+		super().__init__(text)
+
+		# SETTINGS
+		self.setFixedHeight(height)
+		self.setupStyle()
+
+	def setupStyle(self):
+		self.setStyleSheet(f'''
+			QPushButton {{
+				background-color: {self.button_color};
+				color: {self.text_color};
+				font: bold 10pt 'Microsoft New Tai Lue';
+				padding-left: 10px;
+				text-align: left;
+				border: none;
+			}}
+			QPushButton:hover {{
+				background-color: {self.hover_color};
+			}}
+			QPushButton:disabled {{
+				background-color: {self.active_color};
+			}}
+			QPushButton:pressed {{
+				background-color: {self.active_color};
+			}}
+		''')
+
+	def setActive(self, status : bool):
+		self.setDisabled(status)
+		self.is_active = status
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+		# Return default style
+		QPushButton.paintEvent(self, event)
+
+		# PAINT BUTTON IF ACTIVE
+		if self.is_active:
+
+			# Painter
+			qp = QPainter()
+			qp.begin(self)
+			qp.setRenderHint(QPainter.Antialiasing)
+			qp.setPen(Qt.NoPen)
+			
+			# PAINT LEFT BORDER IF ACTIVE
+			qr = self.rect()
+			qr.setWidth(self.left_margin)
+			qp.fillRect(qr, QBrush(QColor(self.highlight_color)))
+
+			qp.end()
+
+
+class CreateChartButton(QFrame):
+	
+	createRow = Signal(str)
+	def __init__(
+		self,
+		height = 40
+		):
+		super().__init__()
+
+		# PROPERTIES
+		self.is_active = True
+		self.placeholder = 'Novo Gráfico'
+
+		# SETTINGS
+		self.setFixedHeight(height)
+		self.setupUI()
+		self.setupStyle()
+
+		# SIGNALS
+		self.add_button.clicked.connect(self.emitSignal)
+
+	def emitSignal(self):
+		text = self.edit.text()
+		if len(text) == 0:
+			text = self.placeholder
+		
+		self.createRow.emit(text)
+
+	def setupUI(self):
+		self.main_layout = QHBoxLayout(self)
+		self.main_layout.setSpacing(0)
+		self.main_layout.setContentsMargins(0, 0, 0, 0)
+
+		# SYMBOL
+		self.label = QLabel('+')
+		self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		self.label.setFixedSize(20, self.height())
+		self.label.setObjectName('icon')
+
+		# LINE EDIT
+		self.edit = QLineEdit()
+		self.edit.setPlaceholderText(self.placeholder)
+		self.edit.setObjectName('name_edit')
+		self.edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+		# ADD BUTTON
+		self.add_button = QPushButton("Add")
+		self.add_button.setObjectName('add_button')
+		self.add_button.setFixedSize(self.height(), self.height())
+		
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.label)
+		self.main_layout.addWidget(self.edit)
+		self.main_layout.addWidget(self.add_button)
+
+
+	def setupStyle(self):
+		self.setStyleSheet('''
+			#icon {
+				background-color: #e3e8f3;
+				color: #186B93;
+				font: bold 13pt 'Microsoft New Tai Lue';
+				border: none;
+			}
+			#name_edit {
+				background-color: #e3e8f3;
+				color: #186B93;
+				font: bold 9pt 'Microsoft New Tai Lue';
+				border: none;
+			}
+			#add_button {
+				background-color: #d7e0ef;
+				color: #186B93;
+				font: bold 13pt 'Microsoft New Tai Lue';
+				border: none;
+			}
+			#add_button:hover {
+				background-color: #d7e0ef;
+			}
+			#add_button:pressed {
+				background-color: #d7e0ef;
+			}
+		''')
