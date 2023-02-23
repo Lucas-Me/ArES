@@ -240,6 +240,9 @@ class ModifiedData(AbstractData):
       
       self.representatividade = representatividade
 
+   def getRepresentatividade(self):
+      return self.representatividade
+
    def setup_frequency(self):
       dt = np.roll(self.dates, 1) - self.dates
       unique, counts = np.unique(dt, return_counts=True)

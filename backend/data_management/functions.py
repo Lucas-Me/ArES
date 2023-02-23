@@ -262,10 +262,6 @@ def workbook_raw(files: list, wb : xlsxwriter.workbook):
 		dates = [date.item() for date in date_array]
 		ws.merge_range(0, 0, row0 - 1, 0, "Datas", header_fmt)
 
-		# number of cols and rows
-		nrows = date_array.shape[0] + row0
-		ncols = 1 + len(indices) * 2
-
 		# writing date columns
 		ws.write_column(row0, 0, dates, cell_dateformat)
 
@@ -320,7 +316,7 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 	# formats
 	header_fmt = wb.add_format(dict(bg_color = "#bcced8", border = 1, align = "center", valign = "center", border_color = '#a6a6a6', font_size= 8))
 	dados_fmt = wb.add_format(dict(num_format = "0.00", align = "right", border = 1, border_color = '#a6a6a6', font_size= 8))
-	flags_fmt = wb.add_format(dict(align = "left", border = 1, border_color = '#a6a6a6', font_size= 8))
+	repr_fmt = wb.add_format(dict(num_format = "0.00%", align = "left", border = 1, border_color = '#a6a6a6', font_size= 8))
 	
 	cell_dateformat = wb.add_format(dict(
 			num_format = "dd/mm/yyyy hh:mm",
@@ -349,7 +345,7 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 			stations[station_name[i]] = index_list
 
 			# create worksheet
-			ws = wb.add_worksheet(freq_)
+			ws = wb.add_worksheet(f'Grupo {i + 1}')
 			ws.hide_gridlines(2)
 
 			# ROW 1 -> EMPRESAS
@@ -363,10 +359,6 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 			date_array = files[indices[0]].getDates()
 			dates = [date.item() for date in date_array]
 			ws.merge_range(0, 0, row0 - 1, 0, "Datas", header_fmt)
-
-			# number of cols and rows
-			nrows = date_array.shape[0] + row0
-			ncols = 1 + len(indices) * 2
 
 			# writing date columns
 			ws.write_column(row0, 0, dates, cell_dateformat)
@@ -392,21 +384,23 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 
 						# Value and Flag header
 						ws.write(3, current_col, f"Valor [{unit}]", header_fmt)
-						ws.write(3, current_col + 1, 'Flag', header_fmt)
+						ws.write(3, current_col + 1, 'Representatividade', header_fmt)
 						
 						# getting values and flags arrays
 						values = object_.getValues()
-						flags = object_.getFlags()
-						isvalid = ~np.isnan(values) # any value that isn't NaN
+						representatividade = object_.getRepresentatividade()
+						is_value_valid = ~np.isnan(values) # any value that isn't NaN
+						is_repr_valid = ~np.isnan(representatividade)
 
 						# loop thorugh values and flags
 						for i in range(values.shape[0]):
-							if isvalid[i]:
-								ws.write(row0 + i, current_col, values[i], dados_fmt)
-							else:
-								ws.write(row0 + i, current_col, '', flags_fmt)
+							repr = representatividade[i]
+							if is_value_valid[i]: ws.write(row0 + i, current_col, values[i], dados_fmt)
 
-							ws.write(row0 + i, current_col + 1, flags[i], flags_fmt)
+							if not is_repr_valid[i]:
+								repr = 0
+
+							ws.write(row0 + i, current_col + 1, repr, repr_fmt)
 						
 						current_col += 2
 
