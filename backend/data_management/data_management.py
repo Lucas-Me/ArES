@@ -108,8 +108,8 @@ class AbstractData(object):
       self.metadata = kwargs.get('metadata', {}) # holds info about parameter name, station, enterprise etc.
 
       # VALUES 
-      self.values = kwargs.get('values', [])
-      self.dates = kwargs.get('dates', [])
+      self.setValues(kwargs.get('values', []))
+      self.setDates(kwargs.get('dates', []))
 
       # SETTINGS
       self.setupAlias()
@@ -126,8 +126,7 @@ class AbstractData(object):
       self.metadata['signature'] = f"{self.metadata['signature'][:3]} - {self.metadata['alias']}" 
 
    def setValues(self, values):
-      if not isinstance(values, np.ndarray):
-         values = np.array(values)
+      values = np.array(values, dtype=float)
 
       self.values = values
 
@@ -135,8 +134,7 @@ class AbstractData(object):
       return self.values
 
    def setDates(self, dates):
-      if not isinstance(dates, np.ndarray):
-         dates = np.array(dates)
+      dates = np.array(dates, dtype = np.datetime64)
 
       self.dates = dates
 
@@ -157,7 +155,7 @@ class RawData(AbstractData):
    def filterByFlags(self, flags_regex):
       r = re.compile(flags_regex)
       vmatch = np.vectorize(lambda x:bool(r.match(x)))
-      matchs = vmatch(self.flags) # array of booleans, True if condition is met
+      matchs = vmatch(self.flags) # array of booleans, True if condition was met
       #
       filtered_values = np.where(matchs, self.values, np.nan)
       #
