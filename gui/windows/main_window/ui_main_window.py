@@ -3,7 +3,7 @@ from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.menu.widget import Menu
-from gui.pages.ui_pages import StackedPages
+from gui.widgets.pages import StackedPages
 
 
 # MAIN WINDOW

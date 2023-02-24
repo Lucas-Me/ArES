@@ -59,11 +59,13 @@ class Menu(QFrame):
 		self.btn_process.setObjectName('methods')
 		
 		# GRÁFICOS LABEL
-		self.charts_label = QLabel('Gráficos')
-		self.charts_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-		self.charts_label.setFixedHeight(40)
-		self.charts_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.charts_label.setObjectName('charts_label')
+		self.charts_label = TopLevelButton(
+			text_color='#d9e2f1',
+			text = 'Gráficos',
+			active_color = "#0d7bbd",
+			icon_name = 'chart_icon.svg')
+		self.charts_label.setDisabled(True)
+		self.charts_label.setObjectName('label')
 		
 		# LIST OF CHARTS
 		self.charts_list = ChartList(width = self.width())		
@@ -97,11 +99,5 @@ class Menu(QFrame):
 		self.setStyleSheet('''
 			QFrame {
 				background-color: #36475f;
-			}
-			#charts_label {
-				background-color: #186B93;
-				color: #d7e0ef;
-				font: bold 13pt 'Microsoft New Tai Lue';
-				border: none;
 			}
 		''')

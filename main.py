@@ -142,8 +142,8 @@ class MainWindow(QMainWindow):
 
     @Slot(list)
     def updateDataHandles(self, processed_data : list[object]):
-        screen = self.ui.pages.visualization_page
-        screen.updateDataHandles(processed_data)
+        target = self.ui.pages
+        target.updateDataHandles(processed_data)
 
     def connnectionErrorDialog(self):
         '''

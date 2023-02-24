@@ -3,9 +3,7 @@ from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.color_triangle import QtColorTriangle
-
-# IMPORT CUSTOM FUNCTIONS
-from backend.misc.functions import get_imagepath
+from gui.windows.dialog.legend.color_table import ColorTable
 
 class UI_LegendDialog(object):
 
@@ -46,6 +44,7 @@ class UI_LegendDialog(object):
 		self.labels = QComboBox()
 		self.labels.setFixedSize(w / 2, 25)
 		self.labels.setEditable(True)
+		self.labels.setObjectName('labels')
 
 		# color
 		self.color_view = QFrame()
@@ -76,13 +75,12 @@ class UI_LegendDialog(object):
 		# ///////////////////////////////////////
 
 		# COLOR TABLE
-		self.table = QFrame()
-		self.table.setObjectName('table')
+		self.table = ColorTable()
+		self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
 		# COLOR SELECTOR
 		self.color_selector = QtColorTriangle()
 		self.color_selector.set_color(QColor(255, 255, 255))
-		self.color_selector.setMinimumWidth(w / 3)
 
 		# SETTING UP MAIN LAYOUT
 		# ///////////////////////////
@@ -126,19 +124,13 @@ class UI_LegendDialog(object):
 				color: #8f8f8f;
 				border-color: #8f8f8f;
 			}}
-			#name{{
-				background-color: transparent;
+			#lables {{
 				font: bold 13pt {font_family};
 				color: {text_color};
-				border: none;
 			}}
 			#header{{
 				background-color: transparent;
 				border-bottom: 1px solid #c7c7c7;
-			}}
-			#table{{
-				background-color: transparent;
-				border: none;
 			}}
 		''')
 

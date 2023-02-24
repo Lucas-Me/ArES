@@ -8,6 +8,10 @@ from gui.widgets.processing_screen import ProcessingScreen
 from gui.widgets.dashboard import Dashboard
 
 class StackedPages(QStackedWidget):
+    '''
+    Classe criada para gerenciar as páginas do software, incluindo as páginas dedicadas somente
+    aos gráficos.
+    '''
     
     def __init__(self, parent) -> None:
         super().__init__(parent)
@@ -15,6 +19,7 @@ class StackedPages(QStackedWidget):
         # PROPERTIES
         self.chart_pages = [] # QWidgets
         self.chart_items = [] # ListWidgetItems
+        self.data_handles = [] # List of ModifiedData Objects (data after processing)
 
         # SETUP UI
         # CREATE PAGE 1
@@ -31,12 +36,32 @@ class StackedPages(QStackedWidget):
         self.addWidget(self.data_page)
         self.addWidget(self.process_page)
 
+    def getDataHandles(self):
+        return self.data_handles
+    
+    def getHandle(self, index):
+        return self.data_handles[index]
+
+    def updateDataHandles(self, handles : list):
+        self.data_handles = handles
+
+        # updating dashboard options
+        n = len(self.chart_pages)
+        for i in range(n):
+            widget = self.chart_pages[i]
+            widget.updateItems()
 
     def createChartPage(self, item : QListWidgetItem):
+        # creating dashboard
         dashboard = Dashboard(parent = self)
+
+        # Storing and inserting it on screen
         self.chart_pages.append(dashboard)
         self.chart_items.append(item)
         self.addWidget(dashboard)
+
+        # update dashboard items
+        dashboard.updateItems()
         
         return dashboard
 

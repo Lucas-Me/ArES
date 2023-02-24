@@ -34,12 +34,11 @@ class LegendDialog(QDialog):
 
 		# SIGNALS AND SLOTS
 		self.ui.color_selector.color_changed.connect(self.updateColor)
-		# self.ui.save_button.clicked.connect(self.saveContents)
+		self.ui.table.colorSelected.connect(self.updateColor)
 		self.ui.save_button.clicked.connect(self.close)
 		self.ui.cancel_button.clicked.connect(self.close)
 
 		# LOAD CONTENTS
-		# self.loadContents()
 	
 	def showWindow(self):
 		self.adjustPosition()
@@ -52,6 +51,7 @@ class LegendDialog(QDialog):
 		index = style.index(';')
 		new_style = f'background-color: {self.color.name()}' + style[index:]
 		self.ui.color_view.setStyleSheet(new_style)
+		self.ui.color_selector.set_color(color)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		painter = QPainter(self)

@@ -134,9 +134,9 @@ class ChartButton(QPushButton):
 			height = 40,
 			text = '',
 			text_color = '#36475f',
-			button_color = '#d7e0ef',
-			hover_color = '#30415a',
-			active_color = '#d7e0ef',
+			button_color = '#ffffff',
+			hover_color = '#edf0f5',
+			active_color = '#d9e2f1',
 			highlight = '#00ccff'
 		):
 
@@ -162,8 +162,8 @@ class ChartButton(QPushButton):
 			QPushButton {{
 				background-color: {self.button_color};
 				color: {self.text_color};
-				font: bold 10pt 'Microsoft New Tai Lue';
-				padding-left: 10px;
+				font: normal 11pt 'Microsoft New Tai Lue';
+				padding-left: 15px;
 				text-align: left;
 				border: none;
 			}}
@@ -262,27 +262,27 @@ class CreateChartButton(QFrame):
 	def setupStyle(self):
 		self.setStyleSheet('''
 			#icon {
-				background-color: #d7e0ef;
-				color: #36475f;
-				font: bold 10pt 'Microsoft New Tai Lue';
+				background-color: #067fbd;
+				color: #d9e2f1;
+				font: bold 14pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#name_edit {
-				background-color: #d7e0ef;
-				color: #36475f;
+				background-color: #067fbd;
+				color: #d9e2f1;
 				font: bold 10pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#add_button {
-				background-color: #ffffff;
-				color: #36475f;
+				background-color: #0c92e6;
+				color: #d9e2f1;
 				font: bold 9pt 'Microsoft New Tai Lue';
 				border: none;
 			}
 			#add_button:hover {
-				background-color: #186B93;
+				background-color: #067fbd;
 			}
 			#add_button:pressed {
-				background-color: #186B93;
+				background-color: #067fbd;
 			}
 		''')

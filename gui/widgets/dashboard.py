@@ -2,7 +2,7 @@
 from qt_core import *
 
 # IMPORT CUSTOM UI
-from gui.ui_widgets.ui_dashboard import UI_Dashboard
+from gui.pages.ui_dashboard import UI_Dashboard
 
 # IMPORT CUSTOM WIDGETS
 from backend.plot.charts import TimeSeriesCanvas
