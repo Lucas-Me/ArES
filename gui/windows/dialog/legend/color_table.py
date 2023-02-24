@@ -1,8 +1,8 @@
 # IMPORT QT MODULE
 from qt_core import *
 
-# IMPORT BUILT-IN MODULES
-from random import randint
+# IMPORT MODULES
+import matplotlib.cm as mcm
 
 class ColorTable(QWidget):
 	'''A table in which each cell is a color'''
@@ -22,11 +22,18 @@ class ColorTable(QWidget):
 		self.main_layout = QGridLayout(self)
 		self.main_layout.setSpacing(5)
 		self.main_layout.setContentsMargins(5, 5, 5, 5)
-
+	
 		# ADDING A FRAME FOR EACH CELL
+		cmap = mcm.get_cmap('gist_rainbow')
+		ncells = self.nrows * self.ncols
 		for row in range(self.nrows):
 			for col in range(self.ncols):
-				color = QColor(randint(0, 255), randint(0, 255), randint(0, 255))
+				# creating RGB
+				max_ = 255
+				prop = (self.ncols * row + col) / ncells
+				color = QColor(*map(lambda x: x*max_, cmap(prop)))
+
+				# creating QColor and Widget
 				widget = ColorCell(color)
 
 				# signal

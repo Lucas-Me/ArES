@@ -34,10 +34,12 @@ class Dashboard(QWidget):
 		self.right_menu.formatterChanged.connect(self.updateDateTicks)
 		self.right_menu.labelDateChanged.connect(self.updateDateLabels)
 		self.right_menu.legendChanged.connect(self.updateLegendProperties)
-		self.canvas.legendClicked.connect(self.editLegend)
+		self.canvas.artistClicked.connect(self.editArtist)
 
-	def editLegend(self):
-		dialog = LegendDialog(parent = self.parent)
+	@Slot(str)
+	def editArtist(self, artist_label : str):
+		dialog = LegendDialog(parent = self.parent, canvas = self.canvas)
+		dialog.loadContents(artist_label)
 		dialog.show()
 
 	@Slot(list)

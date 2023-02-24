@@ -7,15 +7,14 @@ from qt_core import *
 # IMPORT MODULES
 import os
 import numpy as np
-import datetime
 
 # IMPORT PLOT RELATED MODULES
 import matplotlib.dates as mdates
 import matplotlib.cm as cm
 import matplotlib as mpl
+import matplotlib.patches as mpt
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.legend import Legend
 from matplotlib.backend_bases import PickEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.backends.qt_compat import (
@@ -46,9 +45,9 @@ mpl.rcParams.update({'axes.axisbelow': False,
     'axes.labelcolor': default_color,
     'axes.labelpad' : 8, 
     'axes.titlepad' : 12,
-    'axes.spines.right': False,
-    'axes.spines.left': False,
-    'axes.spines.top': False,
+    # 'axes.spines.right': False,
+    # 'axes.spines.left': False,
+    # 'axes.spines.top': False,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
     'patch.edgecolor': 'none',
@@ -133,7 +132,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 class AbstractCanvas(FigureCanvasQTAgg):
     
-    legendClicked = Signal()
+    artistClicked = Signal(str)
     def __init__(self, width = 16, height = 7, dpi = 100):
 
         # iniciando
@@ -192,15 +191,27 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.legend.remove()
         
         # get axis artists
-        handles, labels = self.ax.get_legend_handles_labels()
+        handles = list(self.handles.values())
+        labels = [self.labels[k] for k in self.handles.keys()]
 
         # creating new legend
         self.legend = self.fig.legend(handles, labels, **args)
-        self.legend.set_picker(True)
 
         # save options
         self.params['legend-ncol'] = args['ncol']
         self.params['legend-fontsize'] = args['prop']['size']
+
+    def updateColor(self, artist_id, color):
+        '''Updates the color of a given artist'''
+        artist = self.handles[artist_id]
+        if isinstance(artist, mpl.container.BarContainer):
+            for patch in artist.patches:
+                patch.set_facecolor(color)
+        else:
+            artist.set_color(color)
+
+        # update color propertie
+        self.colors[artist_id] = color
 
     def resetChart(self):
         # limpa os elementos do eixo
@@ -306,8 +317,11 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
-        if dblclick and isinstance(event.artist, Legend):
-            self.legendClicked.emit()
+        if dblclick:
+            artist = event.artist
+            label = artist.get_label()
+
+            self.artistClicked.emit(label)
 
 class TimeSeriesCanvas(AbstractCanvas):
 
@@ -377,17 +391,18 @@ class TimeSeriesCanvas(AbstractCanvas):
 
         # Plot properties
         kwargs = {
-            'label' : self.labels.get(id_, series.metadata['alias']),
+            'label' : id_,
             'color' : self.colors.get(id_, None)
         }
 
         # ploting
         hl, = self.ax.plot(dates, values, **kwargs)
+        hl.set_picker(True)
 
         # storing artist, color and labels
         self.handles[id_] = hl
         self.colors[id_] = hl.get_color()
-        self.labels[id_] = hl.get_label()
+        self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
 
         # adjusting axis
         max_y = np.nanmax(values)
@@ -451,7 +466,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # Plot properties
             kwargs = {
-                'label' : self.labels.get(id_, series.metadata['alias']),
+                'label' : id_,
                 'facecolor' : self.colors.get(id_, next(prop_iter)['color']),
                 'align' : 'center',
                 'width' : delta_t / n
@@ -459,10 +474,15 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             hl = self.ax.bar(position_dates, values, **kwargs)
 
+            # set picker
+            for artist in hl.get_children():
+                artist.set_picker(True)
+                artist.set_label(id_)
+
             # storing artist, color and labels
             self.handles[id_] = hl
             self.colors[id_] = hl.get_children()[0].get_facecolor()
-            self.labels[id_] = hl.get_label()
+            self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
 
         # adjusting axis
         self.setVerticalTicks(

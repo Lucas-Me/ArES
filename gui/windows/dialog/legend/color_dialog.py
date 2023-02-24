@@ -15,14 +15,16 @@ class LegendDialog(QDialog):
 
 	profileSaved = Signal(Profile)
 
-	def __init__(self, *args, **kwargs):
-		super().__init__(parent = kwargs.pop('parent', None))
+	def __init__(self, canvas, parent = None, *args, **kwargs):
+		super().__init__(parent = parent)
 
 		# PROPERTIES
 		self.margins = 20
+		self.canvas = canvas
+		self.dragPos = QPoint()
 
 		# SETTINGS
-		self.setModal(True)
+		# self.setModal(True)
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground, True)
 		self.setAttribute(Qt.WA_DeleteOnClose, True)
@@ -33,23 +35,40 @@ class LegendDialog(QDialog):
 		self.ui.setup_ui(self)
 
 		# SIGNALS AND SLOTS
-		self.ui.color_selector.color_changed.connect(self.updateColor)
-		self.ui.table.colorSelected.connect(self.updateColor)
+		self.ui.color_selector.color_changed.connect(self.changeArtistColor)
+		self.ui.table.colorSelected.connect(self.changeArtistColor)
 		self.ui.save_button.clicked.connect(self.close)
 		self.ui.cancel_button.clicked.connect(self.close)
 
-		# LOAD CONTENTS
-	
+	@Slot(QColor)
+	def changeArtistColor(self, color : QColor):
+		self.canvas.updateColor(self.artist_id, color.name())
+
+		# draw new canvas
+		self.canvas.draw()
+
+		# update dialog
+		self.updateColor(color)
+
+	def loadContents(self, artist_label):
+		# storing original values
+		self.artist_id = artist_label
+		self.origLabel = self.canvas.labels[self.artist_id]
+		self.origColor = self.canvas.colors[self.artist_id]
+
+		# updating window properties
+		line_edit = self.ui.line_edit
+		line_edit.setText(self.origLabel)
+		self.updateColor(QColor(*map(lambda x: x*255, self.origColor)))
+
 	def showWindow(self):
 		self.adjustPosition()
 		self.show()
 
-	@Slot(QColor)
 	def updateColor(self, color : QColor):
-		self.color = color
 		style = self.ui.color_view.styleSheet()
 		index = style.index(';')
-		new_style = f'background-color: {self.color.name()}' + style[index:]
+		new_style = f'background-color: {color.name()}' + style[index:]
 		self.ui.color_view.setStyleSheet(new_style)
 		self.ui.color_selector.set_color(color)
 
@@ -67,7 +86,6 @@ class LegendDialog(QDialog):
 			self.width(),
 			self.height()
 		)
-		self.adjustPosition()
 
 	def adjustPosition(self) -> None:
 		if self.parent() is None:
@@ -82,3 +100,19 @@ class LegendDialog(QDialog):
 		topleft.setY((rect.height() - h) / 2)
 
 		self.setGeometry(QRect(topleft, QSize(w, h)))
+
+	def mousePressEvent(self, event):          
+		self.dragPos = event.globalPos()
+		self.move_event = True
+		
+	def mouseMoveEvent(self, event):                          
+		if event.buttons() == Qt.LeftButton:
+			self.move(self.pos() + event.globalPos() - self.dragPos)
+			self.dragPos = event.globalPos()
+			event.accept()
+
+	def close(self) -> bool:
+		self.canvas.updateLegend()
+		self.canvas.draw()
+
+		return super().close()

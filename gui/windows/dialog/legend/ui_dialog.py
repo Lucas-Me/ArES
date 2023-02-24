@@ -5,6 +5,9 @@ from qt_core import *
 from gui.widgets.color_triangle import QtColorTriangle
 from gui.windows.dialog.legend.color_table import ColorTable
 
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import get_imagepath
+
 class UI_LegendDialog(object):
 
 	def setup_ui(self, parent : QDialog):
@@ -41,10 +44,13 @@ class UI_LegendDialog(object):
 		self.header_layout.setSpacing(0)
 
 		# LABELS
-		self.labels = QComboBox()
-		self.labels.setFixedSize(w / 2, 25)
-		self.labels.setEditable(True)
-		self.labels.setObjectName('labels')
+		self.line_edit = QLineEdit()
+		self.line_edit.setFixedSize(w / 2, 25)
+		self.line_edit.setObjectName('labels')
+		self.line_edit.setClearButtonEnabled(True)
+		image = QPixmap(get_imagepath('pencil.svg', 'gui/images/icons'))
+		image.scaled(QSize(25, 25), Qt.AspectRatioMode.KeepAspectRatio)
+		self.line_edit.addAction(image, QLineEdit.LeadingPosition)
 
 		# color
 		self.color_view = QFrame()
@@ -61,12 +67,12 @@ class UI_LegendDialog(object):
 		self.cancel_button.setObjectName('cancel')
 
 		# add to header layout
-		self.header_layout.addWidget(self.labels)
+		self.header_layout.addWidget(self.line_edit)
 		self.header_layout.addWidget(self.color_view)
 		self.header_layout.addWidget(self.save_button)
 		self.header_layout.addWidget(self.cancel_button)
 		#
-		self.header_layout.setAlignment(self.labels, Qt.AlignmentFlag.AlignLeft)
+		self.header_layout.setAlignment(self.line_edit, Qt.AlignmentFlag.AlignLeft)
 		self.header_layout.setAlignment(self.color_view, Qt.AlignmentFlag.AlignRight)
 		self.header_layout.setAlignment(self.save_button, Qt.AlignmentFlag.AlignRight)
 		self.header_layout.setAlignment(self.cancel_button, Qt.AlignmentFlag.AlignRight)
