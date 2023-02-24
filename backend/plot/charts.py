@@ -36,7 +36,8 @@ color_list = [CB91_Blue, CB91_Pink, CB91_Green, CB91_Amber,
               CB91_Purple, CB91_Violet]
 
 default_color = 'black'
-mpl.rcParams.update({'axes.axisbelow': False,
+mpl.rcParams.update({
+    'axes.axisbelow': False,
     'axes.edgecolor': 'gray',
     'axes.facecolor': 'None',
     'axes.grid': True,
@@ -47,7 +48,7 @@ mpl.rcParams.update({'axes.axisbelow': False,
     'axes.titlepad' : 12,
     # 'axes.spines.right': False,
     # 'axes.spines.left': False,
-    # 'axes.spines.top': False,
+    # 'axes.spines.top': True,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
     'patch.edgecolor': 'none',
