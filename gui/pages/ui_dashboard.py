@@ -14,15 +14,12 @@ class UI_Dashboard(object):
 			parent.setObjectName(u'dashboard')
 
 		# CENTRAL LAYOUT
-		self.main_layout = QVBoxLayout(parent)
-		self.main_layout.setContentsMargins(30, 30, 30, 30)
+		self.main_layout = QGridLayout(parent)
+		self.main_layout.setContentsMargins(0, 0, 30, 0)
 		self.main_layout.setSpacing(10)
 
 		# CANVAS AND MENU
 		# ////////////////////////////////////////////////////////////////
-		self.canvas_layout = QHBoxLayout()
-		self.canvas_layout.setContentsMargins(0, 0, 0, 0)
-		self.canvas_layout.setSpacing(0)
 
 		# CANVAS FRAME
 		self.canvas_frame = QFrame()
@@ -33,12 +30,7 @@ class UI_Dashboard(object):
 		self.frame_layout.addWidget(parent.canvas)
 
 		# RIGHT MENU
-		parent.right_menu.setObjectName('right_menu')
-		parent.right_menu.setFixedWidth(350)
-
-		# add to layout
-		self.canvas_layout.addWidget(self.canvas_frame)
-		self.canvas_layout.addWidget(parent.right_menu)
+		parent.right_menu.setFixedWidth(200)
 
 		# BOTTOM TOOLBAR
 		# //////////////////////////////////////////////////////////////
@@ -68,13 +60,14 @@ class UI_Dashboard(object):
 		self.toggle_menu.setObjectName('toggle_menu')
 
 		# add to layout
-		self.toolbar_layout.addWidget(self.navigation_toolbar)
 		self.toolbar_layout.addWidget(self.toggle_menu)
+		self.toolbar_layout.addWidget(self.navigation_toolbar)
 
 		# ADD TO MAIN LAYOUT
 		# /////////////////////////////////////////////////////////////
-		self.main_layout.addLayout(self.canvas_layout)
-		self.main_layout.addWidget(self.toolbar_frame, alignment= Qt.AlignmentFlag.AlignHCenter)
+		self.main_layout.addWidget(self.canvas_frame, 0, 1)
+		self.main_layout.addWidget(parent.right_menu, 0, 0, 2, 1)
+		self.main_layout.addWidget(self.toolbar_frame, 1, 1, 1, 1, alignment= Qt.AlignmentFlag.AlignHCenter)
 		
 		# STYlE
 		# /////////////////////////////////////////////////////////////
@@ -94,7 +87,7 @@ class UI_Dashboard(object):
 				border: 1px solid #dcdcdc;
 				border-radius: 10px;
 			}}
-			#toggle_menu, #right_menu{{
+			#toggle_menu {{
 				border: none;
 				background-color: transparent;
 			}}

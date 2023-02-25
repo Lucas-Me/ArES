@@ -6,11 +6,11 @@ from gui.pages.ui_dashboard import UI_Dashboard
 
 # IMPORT CUSTOM WIDGETS
 from backend.plot.charts import TimeSeriesCanvas
-from gui.widgets.chart_properties.chart_properties import ChartProperties
+from gui.widgets.chart_menu.chart_properties import TimeSeriesMenu
 from gui.windows.dialog.legend.color_dialog import LegendDialog
 
 # Data Manager Page Class
-class Dashboard(QWidget):
+class TimeSeriesDashboard(QWidget):
 
 	def __init__(self, parent):
 		super().__init__()
@@ -18,7 +18,7 @@ class Dashboard(QWidget):
 		# PROPERTIES
 		self.parent = parent
 		self.canvas = TimeSeriesCanvas()
-		self.right_menu = ChartProperties()
+		self.right_menu = TimeSeriesMenu()
 		self.bar_rows = []
 
 		# setting UI
@@ -26,15 +26,7 @@ class Dashboard(QWidget):
 		self.ui.setup_ui(self)
 		
 		# SIGNALS AND SLOTS
-		self.ui.toggle_menu.clicked.connect(self.toggle_menu)
-		self.right_menu.buttonClicked.connect(self.updateChartElement)
-		self.right_menu.lineEdited.connect(self.updateLabel)
-		self.right_menu.spinboxChanged.connect(self.updateVerticalAxisTicks)
-		self.right_menu.locatorChanged.connect(self.updateDateTicks)
-		self.right_menu.formatterChanged.connect(self.updateDateTicks)
-		self.right_menu.labelDateChanged.connect(self.updateDateLabels)
-		self.right_menu.legendChanged.connect(self.updateLegendProperties)
-		self.canvas.artistClicked.connect(self.editArtist)
+
 
 	@Slot(str)
 	def editArtist(self, artist_label : str):
@@ -141,9 +133,9 @@ class Dashboard(QWidget):
 		# getting parent handles
 		handles = self.parent.getDataHandles()
 		
-		# reset tree widget options
-		for i in range(2):
-			self.right_menu.resetTopLevelItem(i, handles)
+		# # reset tree widget options
+		# for i in range(2):
+		# 	self.right_menu.resetTopLevelItem(i, handles)
 
 		# reseta o grafico
 		self.canvas.resetChart()

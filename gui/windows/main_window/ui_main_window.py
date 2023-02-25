@@ -13,7 +13,7 @@ class UI_MainWindow(object):
             parent.setObjectName("MainWindow")
 
         # SET INITIAL PARAMETERS
-        parent.resize(1200, 720)
+        parent.resize(1280, 720)
         parent.setMinimumSize(960, 540)
         
         # SET INITAL COLORS
