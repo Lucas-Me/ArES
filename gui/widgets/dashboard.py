@@ -81,14 +81,13 @@ class Dashboard(QWidget):
 		# getting parent handles
 		handles = self.parent.getDataHandles()
 		
-		# # reset tree widget options
-		# for i in range(2):
-		# 	self.right_menu.resetTopLevelItem(i, handles)
+		# reset tree widget options
+		self.chart_menu.resetSeriesObjects(handles)
 
 		# reseta o grafico
 		self.canvas.resetChart()
 
-		# reset private propertie
+		# reset private properties
 		self.bar_rows.clear()
 
 	def toggleMenu(self):

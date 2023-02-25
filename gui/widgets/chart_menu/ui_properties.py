@@ -6,6 +6,7 @@ from gui.widgets.chart_menu.title_level import TitleTopLevel
 from gui.widgets.chart_menu.legend_level import LegendTopLevel
 from gui.widgets.chart_menu.numeric_axis_level import NumericalAxisTopLevel
 from gui.widgets.chart_menu.date_axis_level import DateAxisTopLevel
+from gui.widgets.chart_menu.parameter_level import SeriesTopLevel
 
 class UI_AbstractMenu(object):
     
@@ -59,9 +60,13 @@ class UI_AbstractMenu(object):
 
 		# BUTTONS
 		self.xaxis_level = DateAxisTopLevel(height = parent.item_height)
+		self.line_plot_level = SeriesTopLevel(text = 'Gráfico de linha', height = parent.item_height)
+		self.bar_plot_level = SeriesTopLevel(text = 'Gráfico de barra', height = parent.item_height)
 
 		# ADD TO MAIN LAYOUT
 		self.main_layout.addWidget(self.xaxis_level)
+		self.main_layout.addWidget(self.line_plot_level)
+		self.main_layout.addWidget(self.bar_plot_level)
 		self.main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding))
 
 

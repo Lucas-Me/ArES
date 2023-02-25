@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="30.999998"
-   height="30.999998"
-   viewBox="0 0 8.2020828 8.2020828"
+   width="14.999999"
+   height="14.999996"
+   viewBox="0 0 3.9687497 3.968749"
    version="1.1"
    id="svg17111"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="icon_checkbox_checked.svg"
+   sodipodi:docname="listview_unchecked.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,8 +25,8 @@
      inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="11.930303"
-     inkscape:cx="-13.578867"
-     inkscape:cy="12.656845"
+     inkscape:cx="-10.728981"
+     inkscape:cy="3.9395479"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -48,17 +48,13 @@
      inkscape:label="Camada 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-91.682223,-58.446341)">
+     transform="translate(-90.938391,-60.754046)">
     <rect
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#6c8194;stroke-width:0.26499999;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       id="rect541-5-2"
-       width="7.9375"
-       height="7.9375"
-       x="91.814514"
-       y="58.578632" />
-    <path
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#6c8194;stroke-width:0.79375;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="m 92.643736,62.974516 2.51354,2.315105 3.70417,-5.55625"
-       id="path26154" />
+       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#36475f;stroke-width:0.53966;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect17913-4"
+       width="3.4290898"
+       height="3.4290891"
+       x="91.208221"
+       y="61.023876" />
   </g>
 </svg>

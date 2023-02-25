@@ -77,3 +77,15 @@ class TimeSeriesMenu(AbstractChartMenu):
 
 		# draw
 		self.parent().canvas.draw()
+
+	def resetSeriesObjects(self, handles):
+		# getting list
+		listview = self.ui.line_plot_level.list_view
+
+		# cleaning list
+		listview.removeItems()
+
+		# adding elements to list
+		for i in range(len(handles)):
+			listview.addItem(handles[i].metadata['alias'])
+			
