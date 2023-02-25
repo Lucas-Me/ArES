@@ -18,7 +18,7 @@ class TimeSeriesDashboard(QWidget):
 		# PROPERTIES
 		self.parent = parent
 		self.canvas = TimeSeriesCanvas()
-		self.right_menu = TimeSeriesMenu()
+		self.chart_menu= TimeSeriesMenu(self)
 		self.bar_rows = []
 
 		# setting UI
@@ -26,7 +26,11 @@ class TimeSeriesDashboard(QWidget):
 		self.ui.setup_ui(self)
 		
 		# SIGNALS AND SLOTS
+		self.ui.toggle_menu.clicked.connect(self.toggleMenu)
 
+	def toggleMenu(self):
+		status = self.chart_menu.isHidden()
+		self.chart_menu.setHidden(not status)
 
 	@Slot(str)
 	def editArtist(self, artist_label : str):
@@ -69,24 +73,6 @@ class TimeSeriesDashboard(QWidget):
 		# draw
 		self.canvas.draw()
 	
-	@Slot(list)
-	def updateLabel(self, options):
-		# unpacking args
-		kwargs = {
-			'label' : options[0],
-			'fontweight' : 'bold' if options[1] else 'normal',
-			'fontsize' : options[2]
-		}
-
-		if options[-1] == 'xlabel':
-			self.canvas.setLabel(axis = 'x', **kwargs)
-
-		elif options[-1] == 'ylabel':
-			self.canvas.setLabel(axis = 'y', **kwargs)
-		
-		else: #title
-			self.canvas.setTitle(**kwargs)
-
 	@Slot(list)
 	def updateChartElement(self, options):
 		# getting args

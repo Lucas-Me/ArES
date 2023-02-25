@@ -14,7 +14,7 @@ class UI_AbstractMenu(object):
 			parent.setObjectName('chart_menu')
 
 		# MAIN LAYOUT
-		self.right_border_width = 1
+		self.right_border_width = 2
 		self.main_layout = QVBoxLayout(parent)
 		self.main_layout.setContentsMargins(0, 0, self.right_border_width, 0)
 		self.main_layout.setSpacing(0)

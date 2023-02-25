@@ -6,6 +6,7 @@ from gui.widgets.chart_menu.buttons import TopLevelButton
 
 class TitleTopLevel(QWidget):
 
+	labelEdited = Signal(list)
 	def __init__(self, height):
 		super().__init__()
 
@@ -22,6 +23,9 @@ class TitleTopLevel(QWidget):
 
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
+		self.figure_title.labelEdited.connect(self.labelEdited.emit)
+		self.xaxis_label.labelEdited.connect(self.labelEdited.emit)
+		self.yaxis_label.labelEdited.connect(self.labelEdited.emit)
 
 	def toggle(self):
 		hidden = self.top_level.getStatus()
@@ -39,9 +43,9 @@ class TitleTopLevel(QWidget):
 		if not self.objectName():
 			self.setObjectName("title_top_level")
 
-		self.main_layout = QGridLayout(self)
+		self.main_layout = QVBoxLayout(self)
 		self.main_layout.setContentsMargins(0, 0, 0, 0)
-		self.main_layout.setHorizontalSpacing()
+		self.main_layout.setSpacing(0)
 
 		# OBJECTS
 		self.top_level = TopLevelButton(text = "Título", height = self.item_height)
@@ -92,7 +96,7 @@ class LabelEdit(QWidget):
 
 	def setupUI(self):
 		self.main_layout = QHBoxLayout(self)
-		self.main_layout.setContentsMargins(self.left_margin, 5, 5, 5)
+		self.main_layout.setContentsMargins(self.left_margin, 3, 3, 3)
 		self.main_layout.setSpacing(5)
 		self.setObjectName('item')
 
@@ -139,10 +143,11 @@ class LabelEdit(QWidget):
 		painter = QPainter()
 		painter.begin(self)
 		
-		brush = QBrush(QColor('#36475f'))
-		
-		rect = QRect(self.rect())
-		rect.setWidth(1)
+		dx = 2
+		x = (self.left_margin - dx) // 2
+		y = 0
+		dy = self.height()
+		painter.fillRect(x, y, dx, dy, QColor('#36475f'))
 
-		painter.fillRect(rect, brush)
+		painter.end()
 		

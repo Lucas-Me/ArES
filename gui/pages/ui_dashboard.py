@@ -30,7 +30,7 @@ class UI_Dashboard(object):
 		self.frame_layout.addWidget(parent.canvas)
 
 		# RIGHT MENU
-		parent.right_menu.setFixedWidth(200)
+		parent.chart_menu.setFixedWidth(200)
 
 		# BOTTOM TOOLBAR
 		# //////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ class UI_Dashboard(object):
 		# ADD TO MAIN LAYOUT
 		# /////////////////////////////////////////////////////////////
 		self.main_layout.addWidget(self.canvas_frame, 0, 1)
-		self.main_layout.addWidget(parent.right_menu, 0, 0, 2, 1)
+		self.main_layout.addWidget(parent.chart_menu, 0, 0, 2, 1)
 		self.main_layout.addWidget(self.toolbar_frame, 1, 1, 1, 1, alignment= Qt.AlignmentFlag.AlignHCenter)
 		
 		# STYlE

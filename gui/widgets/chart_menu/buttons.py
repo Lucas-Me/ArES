@@ -18,6 +18,7 @@ class TopLevelButton(QPushButton):
 		):
 
 		# PROPERTIES
+		self.text = text
 		self.is_active = True
 		self.text_padding = padding_left
 		self.right_margin = right_margin
@@ -25,9 +26,10 @@ class TopLevelButton(QPushButton):
 		self.button_color = button_color
 		self.hover_color = hover_color
 		self.pressed_color = pressed_color
+		self.font = QFont('Microsoft New Tai Lue', pointSize=12)
 
 		# CONSTRUCTOR
-		super().__init__(text)
+		super().__init__()
 
 		# SETTINGS
 		self.setFixedHeight(height)
@@ -37,10 +39,6 @@ class TopLevelButton(QPushButton):
 		self.setStyleSheet(f'''
 			QPushButton {{
 				background-color: {self.button_color};
-				color: {self.text_color};
-				font: normal 12pt 'Microsoft New Tai Lue';
-				padding-left: {self.text_padding};
-				text-align: left;
 				border: none;
 			}}
 			QPushButton:hover {{
@@ -80,15 +78,28 @@ class TopLevelButton(QPushButton):
 	def paintEvent(self, event: QPaintEvent) -> None:
 		# Return default style
 		QPushButton.paintEvent(self, event)
-		
+
+		# INIT PAINTER
+		qp = QPainter()
+		qp.begin(self)
+		qp.setRenderHint(QPainter.Antialiasing)
+
+		# draw text
+		self.font.setBold(self.is_active)
+		color = QColor(self.text_color)
+		qp.setPen(QPen(color))
+		qp.setFont(self.font)
+
+		x = self.text_padding
+		y = (self.height() - 12) // 2 + 12
+		qp.drawText(x, y, self.text)
+
+		# DRAW THE ACTIVE SYMBOL	
 		if self.is_active:
 			
 			# Painter
-			qp = QPainter()
-			qp.begin(self)
-			qp.setRenderHint(QPainter.Antialiasing)
 			qp.setPen(Qt.NoPen)
-			qp.setBrush(QColor(self.text_color))
+			qp.setBrush(color)
 			
 			# get triangle vertices
 			points = self.setGeometry()
@@ -96,5 +107,5 @@ class TopLevelButton(QPushButton):
 			# draw triangle
 			qp.drawConvexPolygon(points)
 
-			qp.end()
+		qp.end()
 
