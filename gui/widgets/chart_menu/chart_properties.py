@@ -4,12 +4,10 @@ from qt_core import *
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.chart_menu.ui_properties import UI_AbstractMenu
 
-# IMPORT CUSTOM FUNCTIONS
-from backend.misc.functions import get_imagepath
 
 class AbstractChartMenu(QFrame):
     
-	def __init__(self, parent = None):
+	def __init__(self, parent : QWidget):
 		super().__init__(parent = parent)
 		
 		# PROPERTIES
@@ -21,7 +19,16 @@ class AbstractChartMenu(QFrame):
 
 		# SIGNALS AND SLOTS
 		self.ui.title_level.labelEdited.connect(self.updateLabel)
+		self.ui.legend_level.propertyChanged.connect(self.updateLegendProperties)
 
+	@Slot(dict)
+	def updateLegendProperties(self, kwargs):
+		self.parent().canvas.updateLegend(**kwargs)
+
+		# draw
+		self.parent().canvas.draw()
+
+	@Slot(list)
 	def updateLabel(self, options):
 		# unpacking args
 		kwargs = {

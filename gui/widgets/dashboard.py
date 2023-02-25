@@ -37,14 +37,7 @@ class TimeSeriesDashboard(QWidget):
 		dialog = LegendDialog(parent = self.parent, canvas = self.canvas)
 		dialog.loadContents(artist_label)
 		dialog.show()
-
-	@Slot(list)
-	def updateLegendProperties(self, options):
-		self.canvas.updateLegend(**{options[0] : options[1]})
-
-		# draw
-		self.canvas.draw()
-
+		
 	@Slot(dict)
 	def updateDateLabels(self, kwargs):
 		self.canvas.setHorizontalLabels(**kwargs)

@@ -3,7 +3,8 @@ from qt_core import *
 
 # IMPORT CUSTOMW WIDGETS
 from gui.widgets.chart_menu.buttons import TopLevelButton
-from gui.widgets.chart_menu.title_edit import TitleTopLevel
+from gui.widgets.chart_menu.title_level import TitleTopLevel
+from gui.widgets.chart_menu.legend_level import LegendTopLevel
 
 class UI_AbstractMenu(object):
     
@@ -27,13 +28,13 @@ class UI_AbstractMenu(object):
 
 		# BUTTONS
 		self.title_level = TitleTopLevel(height = parent.item_height)
-		self.legend_button = TopLevelButton(text = "Legenda", height = parent.item_height)
+		self.legend_level = LegendTopLevel(height = parent.item_height)
 		self.vaxis_button = TopLevelButton(text = "Eixo Vertical", height = parent.item_height)
 
 		# ADD TO MAIN LAYOUT
 		self.main_layout.addWidget(self.top_label)
 		self.main_layout.addWidget(self.title_level)
-		self.main_layout.addWidget(self.legend_button)
+		self.main_layout.addWidget(self.legend_level)
 		self.main_layout.addWidget(self.vaxis_button)
 		self.main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding))
 
