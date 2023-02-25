@@ -60,3 +60,20 @@ class TimeSeriesMenu(AbstractChartMenu):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+
+		# SETUP UI
+		self.ui.setupTimeSeries(self)
+
+		# SIGNALS AND SLOTS
+		self.ui.xaxis_level.propertyChanged.connect(self.updateDateTicks)
+
+	@Slot(dict)
+	def updateDateTicks(self, kwargs):
+		if 'locator' in kwargs or 'formatter' in kwargs: # update frequency and date format
+			self.parent().canvas.setHorizontalTicks(**kwargs)
+			
+		else: # update fontsize or label rotation
+			self.parent().canvas.setTickParams(axis = 'x', **kwargs)
+
+		# draw
+		self.parent().canvas.draw()

@@ -5,7 +5,7 @@ from qt_core import *
 from gui.widgets.data_manager_qwidget import DataManager
 from gui.widgets.login_screen import LoginScreen
 from gui.widgets.processing_screen import ProcessingScreen
-from gui.widgets.dashboard import TimeSeriesDashboard
+from gui.widgets.dashboard import Dashboard
 
 class StackedPages(QStackedWidget):
     '''
@@ -53,7 +53,7 @@ class StackedPages(QStackedWidget):
 
     def createChartPage(self, item : QListWidgetItem):
         # creating dashboard
-        dashboard = TimeSeriesDashboard(parent = self)
+        dashboard = Dashboard(parent = self)
 
         # Storing and inserting it on screen
         self.chart_pages.append(dashboard)

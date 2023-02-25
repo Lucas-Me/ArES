@@ -30,7 +30,7 @@ class UI_Dashboard(object):
 		self.frame_layout.addWidget(parent.canvas)
 
 		# RIGHT MENU
-		parent.chart_menu.setFixedWidth(200)
+		parent.chart_menu.setFixedWidth(250)
 
 		# BOTTOM TOOLBAR
 		# //////////////////////////////////////////////////////////////

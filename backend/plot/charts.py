@@ -169,6 +169,14 @@ class AbstractCanvas(FigureCanvasQTAgg):
             'yticks-size' : self.ax.get_yticks().shape[0],
             'yticks-fontsize' : 12,
             'yticks-fontweight' : 10,
+            'yticks-rotation' : 0,
+            
+            # Rótulos do eixo X
+            'xticks-min' : self.ax.get_xlim()[0],
+            'xticks-max' : self.ax.get_xlim()[1],
+            'xticks-rotation' : 0,
+            'xticks-fontsize' : 12,
+            'xticks-fontweight' : 10,
 
             #legenda
             'legend-ncol' : 1,
@@ -275,13 +283,16 @@ class AbstractCanvas(FigureCanvasQTAgg):
     def setTickParams(self, axis = 'y', **kwargs):
         kwargs = {
             'labelsize' : kwargs.pop('fontsize', self.params[f'{axis}ticks-fontsize']),
+            'labelrotation' : kwargs.pop('rotation', self.params[f'{axis}ticks-rotation']),
         }
         
-        # changing fontsize or fontweight
+        # changing fontsize or rotation
         self.ax.tick_params(axis=axis, which='major', **kwargs)
 
         # updating private variables
         self.params[f'{axis}ticks-fontsize'] = kwargs['labelsize']
+        self.params[f'{axis}ticks-rotation'] = kwargs['labelrotation']
+
 
     def setVerticalTicks(self, **kwargs):
         '''
@@ -343,25 +354,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             'xticks-max' : self.ax.get_xlim()[1],
             'xticks-locator': self.ax.xaxis.get_major_locator(),
             'xticks-formatter' : self.ax.xaxis.get_major_formatter(),
-            'xticks-rotation' : 0,
-            'xticks-fontsize' : 12,
-            'xticks-fontweight' : 10
         })
-
-    def setHorizontalLabels(self, **kwargs):
-        args = dict(
-            labelrotation = kwargs.pop('rotation', self.params['xticks-rotation']),
-            labelsize = kwargs.pop('fontsize', self.params['xticks-fontsize']),
-        )
-
-        # label properties
-        self.ax.tick_params(axis='x', which='major', **args)
-        # for label in self.ax.get_xticklabels(which='major'):
-        #     label.set(rotation=rotation, fontsize = fontsize, fontweight = fontweight)
-
-        # update private params
-        self.params['xticks-rotation'] = args['labelrotation']
-        self.params['xticks-fontsize'] = args['labelsize']
         
     def setHorizontalTicks(self, **kwargs):
         locator = kwargs.pop('locator', self.params['xticks-locator'])
@@ -380,7 +373,6 @@ class TimeSeriesCanvas(AbstractCanvas):
 
         # rotulos do eixo X
         self.setHorizontalTicks()
-        self.setHorizontalLabels()
     
     def plot(self, series : object):
         # getting properties

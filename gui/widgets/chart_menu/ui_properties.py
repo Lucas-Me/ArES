@@ -2,10 +2,10 @@
 from qt_core import *
 
 # IMPORT CUSTOMW WIDGETS
-from gui.widgets.chart_menu.buttons import TopLevelButton
 from gui.widgets.chart_menu.title_level import TitleTopLevel
 from gui.widgets.chart_menu.legend_level import LegendTopLevel
 from gui.widgets.chart_menu.numeric_axis_level import NumericalAxisTopLevel
+from gui.widgets.chart_menu.date_axis_level import DateAxisTopLevel
 
 class UI_AbstractMenu(object):
     
@@ -37,7 +37,6 @@ class UI_AbstractMenu(object):
 		self.main_layout.addWidget(self.title_level)
 		self.main_layout.addWidget(self.legend_level)
 		self.main_layout.addWidget(self.yaxis_level)
-		self.main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding))
 
 		# SETUP STYLE
 		self.setup_style(parent)
@@ -56,4 +55,13 @@ class UI_AbstractMenu(object):
 			}}
 		''')
 
-		
+	def setupTimeSeries(self, parent):
+
+		# BUTTONS
+		self.xaxis_level = DateAxisTopLevel(height = parent.item_height)
+
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.xaxis_level)
+		self.main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding))
+
+

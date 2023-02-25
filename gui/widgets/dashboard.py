@@ -10,7 +10,7 @@ from gui.widgets.chart_menu.chart_properties import TimeSeriesMenu
 from gui.windows.dialog.legend.color_dialog import LegendDialog
 
 # Data Manager Page Class
-class TimeSeriesDashboard(QWidget):
+class Dashboard(QWidget):
 
 	def __init__(self, parent):
 		super().__init__()
@@ -27,26 +27,13 @@ class TimeSeriesDashboard(QWidget):
 		
 		# SIGNALS AND SLOTS
 		self.ui.toggle_menu.clicked.connect(self.toggleMenu)
+		self.canvas.artistClicked.connect(self.editArtist)
 
 	@Slot(str)
 	def editArtist(self, artist_label : str):
-		dialog = LegendDialog(parent = self.parent, canvas = self.canvas)
+		dialog = LegendDialog(parent = self, canvas = self.canvas)
 		dialog.loadContents(artist_label)
 		dialog.show()
-
-	@Slot(dict)
-	def updateDateLabels(self, kwargs):
-		self.canvas.setHorizontalLabels(**kwargs)
-
-		# draw
-		self.canvas.draw()
-
-	@Slot(dict)
-	def updateDateTicks(self, kwargs):
-		self.canvas.setHorizontalTicks(**kwargs)
-
-		# draw
-		self.canvas.draw()
 
 	@Slot(list)
 	def updateChartElement(self, options):
