@@ -28,16 +28,12 @@ class TimeSeriesDashboard(QWidget):
 		# SIGNALS AND SLOTS
 		self.ui.toggle_menu.clicked.connect(self.toggleMenu)
 
-	def toggleMenu(self):
-		status = self.chart_menu.isHidden()
-		self.chart_menu.setHidden(not status)
-
 	@Slot(str)
 	def editArtist(self, artist_label : str):
 		dialog = LegendDialog(parent = self.parent, canvas = self.canvas)
 		dialog.loadContents(artist_label)
 		dialog.show()
-		
+
 	@Slot(dict)
 	def updateDateLabels(self, kwargs):
 		self.canvas.setHorizontalLabels(**kwargs)
@@ -52,20 +48,6 @@ class TimeSeriesDashboard(QWidget):
 		# draw
 		self.canvas.draw()
 
-	@Slot(list)
-	def updateVerticalAxisTicks(self, options):
-		# unpacking values
-		kwargs = {options[1] : options[0]}
-
-		# updating
-		if options[1] == 'fontsize':
-			self.canvas.setTickParams(axis = 'y', **kwargs)
-		else:
-			self.canvas.setVerticalTicks(**kwargs)
-		
-		# draw
-		self.canvas.draw()
-	
 	@Slot(list)
 	def updateChartElement(self, options):
 		# getting args
@@ -122,14 +104,9 @@ class TimeSeriesDashboard(QWidget):
 		# reset private propertie
 		self.bar_rows.clear()
 
-	def toggle_menu(self):
-		# check
-		status = self.right_menu.isHidden()
-		if status:
-			self.right_menu.show()
-		else:
-			self.right_menu.hide()
-
+	def toggleMenu(self):
+		status = self.chart_menu.isHidden()
+		self.chart_menu.setHidden(not status)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''

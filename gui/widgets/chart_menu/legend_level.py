@@ -15,6 +15,7 @@ class LegendTopLevel(QWidget):
 
 		# SETUP UI
 		self.setupUI()
+		self.toggle()
 
 		# SETTINGS
 		self.setMinimumHeight(self.item_height)

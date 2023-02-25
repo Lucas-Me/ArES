@@ -20,6 +20,18 @@ class AbstractChartMenu(QFrame):
 		# SIGNALS AND SLOTS
 		self.ui.title_level.labelEdited.connect(self.updateLabel)
 		self.ui.legend_level.propertyChanged.connect(self.updateLegendProperties)
+		self.ui.yaxis_level.propertyChanged.connect(self.updateVerticalAxisTicks)
+
+	@Slot(dict)
+	def updateVerticalAxisTicks(self, kwargs : dict):
+		# updating
+		if 'fontsize' in kwargs:
+			self.parent().canvas.setTickParams(axis = 'y', **kwargs)
+		else:
+			self.parent().canvas.setVerticalTicks(**kwargs)
+		
+		# draw
+		self.parent().canvas.draw()
 
 	@Slot(dict)
 	def updateLegendProperties(self, kwargs):
