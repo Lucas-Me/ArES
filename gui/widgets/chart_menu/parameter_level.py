@@ -112,6 +112,7 @@ class SeriesModel(QAbstractListModel):
 
 class SeriesListView(QListView):
 
+	rowClicked = Signal(int, bool)
 	def __init__(self):
 		super().__init__()
 
@@ -147,9 +148,14 @@ class SeriesListView(QListView):
 
 	def toggleSeries(self, parent: QModelIndex):
 		row = parent.row()
-		current_status = self.getStatus(row)
-		self.updateStatus(parent.row(), not current_status)
+		new_status = not self.getStatus(row)
+
+		# updatin row
+		self.updateStatus(parent.row(), new_status)
 		self.update(parent)
+
+		# emit signal
+		self.rowClicked.emit(row, new_status)
 
 	def addItem(self, name):
 		self.model.insertRow(name = name)

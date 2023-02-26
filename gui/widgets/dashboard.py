@@ -36,48 +36,6 @@ class Dashboard(QWidget):
 		dialog.loadContents(artist_label)
 		dialog.show()
 
-	@Slot(list)
-	def updateChartElement(self, options):
-		# getting args
-		top_level_row = options[0]
-		child_row = options[1]
-		status = options[2]
-
-		# subproducts
-		base = 0
-		plot_idx = top_level_row - base
-		series = self.parent.getHandle(child_row)
-
-		# either add or remove artist
-		if status: 
-
-			# check if artist is already present in other format
-			tree = self.right_menu
-			item = tree.topLevelItem(top_level_row + (-1) ** plot_idx).child(child_row)
-			widget = tree.itemWidget(item, 0)
-			if widget.button.isChecked():
-				widget.button.setChecked(False) # it will remove the artists by itself
-			
-			# Plot new artist
-			if plot_idx == 0:
-				self.canvas.plot(series)
-
-			else:
-				self.bar_rows.append(child_row)
-				self.plotBars()
-
-		else: # remove artist
-			if plot_idx == 1:
-				del self.bar_rows[self.bar_rows.index(child_row)]
-				self.plotBars()
-
-			self.canvas.removePlot(id_ = series.metadata['signature'])
-
-	def plotBars(self):
-		list_objects = [self.parent.getHandle(index) for index in self.bar_rows]
-		if len(list_objects) > 0:
-			self.canvas.barPlot(list_objects)
-
 	def updateItems(self):
 		# getting parent handles
 		handles = self.parent.getDataHandles()
