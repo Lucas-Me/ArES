@@ -152,7 +152,6 @@ class SeriesListView(QListView):
 
 		# updatin row
 		self.setStatus(parent.row(), new_status)
-		self.update(parent)
 
 		# emit signal
 		self.rowClicked.emit(row, new_status)
@@ -187,6 +186,8 @@ class SeriesListView(QListView):
 			return None
 		else:
 			self.model.selected[index] = status
+
+		self.update(self.model.index(index, 0))
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		super().paintEvent(event)

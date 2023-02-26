@@ -504,3 +504,87 @@ class TimeSeriesCanvas(AbstractCanvas):
 
         # draw
         self.draw()
+
+
+class OverpassingCanvas(AbstractCanvas):
+
+    def __int__(self, *args, **kwargs):
+        super.__init__(*args, **kwargs)
+
+    def barPlot(self, series_list : list[object]):
+        n = len(series_list)
+        prop_iter = iter(mpl.rcParams['axes.prop_cycle'])
+
+        # largura de cada barra sera definida a partir da menor frequencia dentre os dados
+        frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
+        freq = np.min(frequencies)
+        ref_time = series_list[0].getDates()[0]
+
+        # total width
+        total_width = 0.8
+        t1 = ref_time.astype('datetime64[m]') + freq
+        t1 = mdates.date2num(t1)
+        t0 = mdates.date2num(ref_time)
+        delta_t = (t1 - t0) * total_width
+        
+        # preparing maximum and minimum values
+        max_y = [1] * n + [self.params['yticks-max']]
+        min_y = [0] * n + [self.params['yticks-min']]
+
+        # loop through each series
+        for i in range(n):
+            # getting series
+            series = series_list[i]
+
+            # remove if already in plot
+            self.removePlot(series.metadata['signature'])
+
+            # getting properties
+            values = series.getValues()
+            dates = series.getDates()
+
+            # maximum and minimum
+            max_y[i] = np.nanmax(values)
+            min_y[i] = np.nanmin(values)
+
+            # transform
+            dates_num = mdates.date2num(dates)
+            
+            # getting position of left corner
+            offset = delta_t * (2 * i - n) / (2 * n)
+            position_dates = mdates.num2date(dates_num + offset)
+
+            # object metadata
+            id_ = series.metadata['signature']
+
+            # Plot properties
+            kwargs = {
+                'label' : id_,
+                'facecolor' : self.colors.get(id_, next(prop_iter)['color']),
+                'align' : 'center',
+                'width' : delta_t / n
+            }
+
+            hl = self.ax.bar(position_dates, values, **kwargs)
+
+            # set picker
+            for artist in hl.get_children():
+                artist.set_picker(True)
+                artist.set_label(id_)
+
+            # storing artist, color and labels
+            self.handles[id_] = hl
+            self.colors[id_] = hl.get_children()[0].get_facecolor()
+            self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
+
+        # adjusting axis
+        self.setVerticalTicks(
+            max = np.nanmax(max_y),
+            min = np.nanmin(min_y)
+        )
+        
+        # updating legend
+        self.updateLegend()
+
+        # draw
+        self.draw()
