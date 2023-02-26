@@ -151,7 +151,7 @@ class SeriesListView(QListView):
 		new_status = not self.getStatus(row)
 
 		# updatin row
-		self.updateStatus(parent.row(), new_status)
+		self.setStatus(parent.row(), new_status)
 		self.update(parent)
 
 		# emit signal
@@ -161,7 +161,10 @@ class SeriesListView(QListView):
 		self.model.insertRow(name = name)
 		
 	def removeItems(self):
-		self.model.removeRows(self.model.persistentIndexList())
+		self.selectAll()
+		models = self.selectedIndexes()
+		self.model.removeRows(models)
+		self.clearSelection()
 
 	def getIndex(self, *args, **kwargs):
 		target = self.model.data_object
@@ -179,7 +182,7 @@ class SeriesListView(QListView):
 		else:
 			return self.model.selected[index]
 
-	def updateStatus(self, index, status : bool):
+	def setStatus(self, index, status : bool):
 		if index >= self.model.rowCount():
 			return None
 		else:

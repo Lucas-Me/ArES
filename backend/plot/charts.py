@@ -8,11 +8,12 @@ from qt_core import *
 import os
 import numpy as np
 
+# IMPORT CUSTOM MODULES
+from backend.plot.collections import CustomLineCollection
+
 # IMPORT PLOT RELATED MODULES
 import matplotlib.dates as mdates
-import matplotlib.cm as cm
 import matplotlib as mpl
-import matplotlib.patches as mpt
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import PickEvent
@@ -411,6 +412,21 @@ class TimeSeriesCanvas(AbstractCanvas):
         # draw
         self.draw()
 
+    def getLineCollection(self, x, y, width, color, bottom = 0) -> CustomLineCollection:
+        '''Collection of vetical lines to replace bars'''
+        # sets of y to plot versus vs. x
+        ys = [np.array([bottom, top]) for top in y]
+        xs = [np.array([value, value]) for value in x]
+        segs = [np.column_stack([xs[i], ys[i]]) for i in range(y.shape[0])]
+
+        line_segments = CustomLineCollection(segs,
+                               linewidths=width,
+                               linestyles='solid',
+                               color = color,
+                               ax = self.ax)
+        
+        return line_segments
+
     def barPlot(self, series_list : list[object]):
         n = len(series_list)
         prop_iter = iter(mpl.rcParams['axes.prop_cycle'])
@@ -452,29 +468,27 @@ class TimeSeriesCanvas(AbstractCanvas):
             
             # getting position of left corner
             offset = delta_t * (2 * i - n) / (2 * n)
-            position_dates = mdates.num2date(dates_num + offset)
 
             # object metadata
             id_ = series.metadata['signature']
 
             # Plot properties
             kwargs = {
-                'label' : id_,
-                'facecolor' : self.colors.get(id_, next(prop_iter)['color']),
-                'align' : 'center',
+                'color' : self.colors.get(id_, next(prop_iter)['color']),
                 'width' : delta_t / n
             }
 
-            hl = self.ax.bar(position_dates, values, **kwargs)
+            # LINE COLLECTION
+            lc = self.getLineCollection(dates_num + offset, values, **kwargs)
+            self.ax.add_collection(lc)
 
             # set picker
-            for artist in hl.get_children():
-                artist.set_picker(True)
-                artist.set_label(id_)
+            lc.set_label(id_)
+            lc.set_picker(True)
 
             # storing artist, color and labels
-            self.handles[id_] = hl
-            self.colors[id_] = hl.get_children()[0].get_facecolor()
+            self.handles[id_] = lc
+            self.colors[id_] = lc.get_color()
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
 
         # adjusting axis
@@ -483,6 +497,8 @@ class TimeSeriesCanvas(AbstractCanvas):
             min = np.nanmin(min_y)
         )
         
+        self.ax.set_xlim(dates.min(), dates.max())
+
         # updating legend
         self.updateLegend()
 
