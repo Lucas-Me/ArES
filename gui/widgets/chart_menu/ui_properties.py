@@ -67,6 +67,8 @@ class UI_AbstractMenu(object):
 		self.main_layout.addWidget(self.xaxis_level)
 		self.main_layout.addWidget(self.line_plot_level)
 		self.main_layout.addWidget(self.bar_plot_level)
-		self.main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding))
+
+		# ALIGNMENT
+		self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
 

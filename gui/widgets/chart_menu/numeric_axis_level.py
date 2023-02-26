@@ -18,10 +18,6 @@ class NumericalAxisTopLevel(QWidget):
 		self.setupUI()
 		self.toggle()
 
-		# SETTINGS
-		self.setMinimumHeight(self.item_height)
-		self.setMaximumHeight(self.item_height * 5)
-
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
 		self.vmin.valueChanged.connect(
@@ -49,6 +45,11 @@ class NumericalAxisTopLevel(QWidget):
 		self.vmin.setHidden(hidden)
 		self.total_ticks.setHidden(hidden)
 		self.font_size.setHidden(hidden)
+
+		if active:
+			self.setFixedHeight(self.item_height * 5)
+		else:
+			self.setFixedHeight(self.item_height)
 	
 	def setupUI(self):
 		if not self.objectName():

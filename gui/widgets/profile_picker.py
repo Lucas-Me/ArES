@@ -93,7 +93,6 @@ class ListView(QListView):
 		self.model = ProfileModel()
 		self.setModel(self.model)
 		self.setSelectionMode(QListView.SelectionMode.ContiguousSelection)
-		self.show()
 		
 		# STYLE
 		self.setStyleSheet(f"font: 500 13pt 'Microsoft New Tai Lue'; color: #1c1c1c;background-color: transparent; border: none;")

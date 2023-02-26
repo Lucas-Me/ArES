@@ -17,10 +17,6 @@ class LegendTopLevel(QWidget):
 		self.setupUI()
 		self.toggle()
 
-		# SETTINGS
-		self.setMinimumHeight(self.item_height)
-		self.setMaximumHeight(self.item_height * 3)
-
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
 		self.column_count.valueChanged.connect(
@@ -41,7 +37,13 @@ class LegendTopLevel(QWidget):
 		# show/hide widgets
 		self.column_count.setHidden(hidden)
 		self.font_size.setHidden(hidden)
-	
+
+		# size policty
+		if active:
+			self.setFixedHeight(self.item_height * 3)
+		else:
+			self.setFixedHeight(self.item_height)
+
 	def setupUI(self):
 		if not self.objectName():
 			self.setObjectName("legend_top_level")

@@ -17,10 +17,6 @@ class TitleTopLevel(QWidget):
 		self.setupUI()
 		self.toggle()
 
-		# SETTINGS
-		self.setMinimumHeight(self.item_height)
-		self.setMaximumHeight(self.item_height * 4)
-
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
 		self.figure_title.labelEdited.connect(self.labelEdited.emit)
@@ -38,6 +34,12 @@ class TitleTopLevel(QWidget):
 		self.figure_title.setHidden(hidden)
 		self.xaxis_label.setHidden(hidden)
 		self.yaxis_label.setHidden(hidden)
+
+		# size policty
+		if active:
+			self.setFixedHeight(self.item_height * 4)
+		else:
+			self.setFixedHeight(self.item_height)
 	
 	def setupUI(self):
 		if not self.objectName():

@@ -17,8 +17,9 @@ class Dashboard(QWidget):
 
 		# PROPERTIES
 		self.parent = parent
+		
 		self.canvas = TimeSeriesCanvas()
-		self.chart_menu= TimeSeriesMenu(self)
+		self.chart_menu = TimeSeriesMenu(self)
 		self.bar_rows = []
 
 		# setting UI

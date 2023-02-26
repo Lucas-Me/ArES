@@ -22,7 +22,7 @@ class SeriesTopLevel(QWidget):
 		self.toggle()
 
 		# SETTINGS
-		self.setMinimumHeight(self.item_height)
+		self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
 
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
@@ -36,6 +36,12 @@ class SeriesTopLevel(QWidget):
 
 		# SHOW/HIDDEN widgets
 		self.list_view.setHidden(hidden)
+
+		# size policty
+		if active:
+			self.setMaximumHeight(self.item_height * 100)
+		else:
+			self.setMaximumHeight(self.item_height)
 
 	def setupUI(self):
 		if not self.objectName():
@@ -115,20 +121,24 @@ class SeriesListView(QListView):
 
 		# SETTINGS
 		self.setModel(self.model)
+		self.setItemDelegate(CustomItemDelegate(self))
 		self.setSelectionMode(QListView.SelectionMode.NoSelection)
-		self.show()
 		self.setMinimumHeight(0)
 		
 		# STYLE
 		self.setStyleSheet(f'''
 			QListView {{
 				font: normal 10pt 'Microsoft New Tai Lue';
-				color: #1c1c1c;
+				color: #36475f;
 				background-color: transparent;
 				border: none;			
 			}}
 			QListView::item{{
-				 padding-left: {self.left_margin}px;
+				background-color: transparent;
+				padding-left: {self.left_margin}px;
+			}}
+			QListView::item:hover{{
+				background-color: #d9e2f1;
 			}}
 		''')
 
@@ -183,3 +193,11 @@ class SeriesListView(QListView):
 
 		painter.end()
 		
+class CustomItemDelegate(QStyledItemDelegate):
+
+	def __init__(self, parent):
+		super().__init__(parent=parent)
+
+
+	def sizeHint(self, option: QStyleOptionViewItem, index: QModelIndex) -> QSize:
+		return QSize(self.parent().width(), 30)

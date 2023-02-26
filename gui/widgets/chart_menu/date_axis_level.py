@@ -20,10 +20,6 @@ class DateAxisTopLevel(QWidget):
 		self.setupUI()
 		self.toggle()
 
-		# SETTINGS
-		self.setMinimumHeight(self.item_height)
-		self.setMaximumHeight(self.item_height * 5)
-
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
 		self.date_formatter.formatterChanged.connect(self.propertyChanged.emit)
@@ -47,6 +43,12 @@ class DateAxisTopLevel(QWidget):
 		self.date_locator.setHidden(hidden)
 		self.font_size.setHidden(hidden)
 		self.rotation.setHidden(hidden)
+
+		# size policty
+		if active:
+			self.setFixedHeight(self.item_height * 5)
+		else:
+			self.setFixedHeight(self.item_height)
 
 	def setupUI(self):
 		if not self.objectName():
