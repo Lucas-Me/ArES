@@ -147,6 +147,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.labels = {} # store labels
         self.handles = {} # store artists
         self.legend = self.fig.legend([], [])
+        # Plota linha horizontal em y = 0
+        self.hline = self.ax.axhline(y = 0, xmin = self.ax.get_xlim()[0], xmax = self.ax.get_xlim()[1], color = 'k')
+
 
         # PROPRIEDADES DO GRAFICO
         self.params = {
@@ -190,7 +193,6 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # SIGNALS AND SLOTS
         self.mpl_connect('pick_event', self.on_pick)
-        
 
     def updateLegend(self, **kwargs):
         args = dict(
@@ -239,6 +241,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.setTitle()
         self.setLabel(axis = 'x')
         self.setLabel(axis = 'y')
+
+        # Plota linha horizontal em y = 0
+        self.hline = self.ax.axhline(y = 0, color = 'grey')
 
         # Rotulos do eixo Y
         self.setVerticalTicks()
@@ -318,7 +323,35 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params['yticks-min'] = min_y
         self.params['yticks-max'] = max_y
         self.params['yticks-size'] = size
-            
+    
+    def plothline(self, y, id_ = 'Faixa Horizontal'):
+        '''Plot a infinite hline with constant y value'''
+
+        # remove if already exists
+        self.removePlot(id_)
+
+        # Plot properties
+        kwargs = {
+            'y' : y,
+            'label' : id_,
+            'color' : self.colors.get(id_, 'red')
+        }
+        
+        # plotting
+        lin = self.ax.axhline(**kwargs)
+        lin.set_picker(True)
+
+        # storing variables
+        self.handles[id_] = lin
+        self.labels[id_] = kwargs['label']
+        self.colors[id_] = kwargs['color']
+
+        # update legend
+        self.updateLegend()
+    
+        # draw
+        self.draw()
+
     def removePlot(self, id_):
         if id_ not in self.handles:
             return None
@@ -338,6 +371,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         if dblclick:
             artist = event.artist
             label = artist.get_label()
+            print(label)
 
             self.artistClicked.emit(label)
 

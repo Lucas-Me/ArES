@@ -60,7 +60,7 @@ class UI_AbstractMenu(object):
 
 		# BUTTONS
 		self.xaxis_level = DateAxisTopLevel(height = parent.item_height)
-		self.line_plot_level = SeriesTopLevel(text = 'Gráfico de linha', height = parent.item_height)
+		self.line_plot_level = SeriesTopLevel(text = 'Gráfico de linha', height = parent.item_height, hline=True)
 		self.bar_plot_level = SeriesTopLevel(text = 'Gráfico de barra', height = parent.item_height)
 
 		# ADD TO MAIN LAYOUT

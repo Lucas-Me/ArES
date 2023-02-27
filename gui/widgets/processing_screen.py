@@ -257,7 +257,6 @@ class Worker(QObject):
 		self.functions = {"Média móvel":stats.media_movel, "Média aritmética":stats.media,
 				"Média geométrica" : stats.media_geometrica, "Média harmônica" : stats.media_harmonica,
 				"Máxima" : stats.maxima}
-		self.frequencies = {"Data" : np.timedelta64(1,'D'), "Mês e ano": np.timedelta64(1,'M'), "Ano" : np.timedelta64(1,'Y')}
 
 
 	def start(self):
@@ -316,10 +315,9 @@ class Worker(QObject):
 			data_object = data_object.apply(**kwargs)
 
 		data_object.metadata['methods'] = methods
-		key = methods[-1][1] if len(methods) > 0 else ''
 		
 		# get frequency of dataset
-		data_object.metadata['frequency'] = self.frequencies.get(key, get_frequency(data_object.getDates()))
+		data_object.metadata['frequency'] = get_frequency(data_object.getDates())
 
 		return data_object
 

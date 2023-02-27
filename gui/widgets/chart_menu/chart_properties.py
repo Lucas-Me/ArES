@@ -63,6 +63,7 @@ class TimeSeriesMenu(AbstractChartMenu):
 
 		# PROPERTIES
 		self.bar_rows = []
+		self.hline_id = 'Faixa Horizontal'
 
 		# SETUP UI
 		self.ui.setupTimeSeries(self)
@@ -71,6 +72,28 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.ui.xaxis_level.propertyChanged.connect(self.updateDateTicks)
 		self.ui.line_plot_level.list_view.rowClicked.connect(self.updateLineElement)
 		self.ui.bar_plot_level.list_view.rowClicked.connect(self.updateBarElement)
+		self.ui.line_plot_level.hline_frame.stateChanged.connect(self.toggleHLine)
+		self.ui.line_plot_level.hline_frame.valueChanged.connect(self.updateHline)
+	
+	@Slot(bool)
+	def toggleHLine(self, status : bool):
+		if status:
+			y = self.ui.line_plot_level.hline_frame.spinbox.value()
+			self.parent().canvas.plothline(y, self.hline_id)
+		else:
+			self.parent().canvas.removePlot(self.hline_id)
+
+	@Slot(int)
+	def updateHline(self, value : int):
+		# properties
+		canvas = self.parent().canvas
+		line = canvas.handles[self.hline_id]
+
+		# set value
+		line.set_ydata([value, value])
+
+		# draw
+		canvas.draw()
 
 	@Slot(dict)
 	def updateDateTicks(self, kwargs):

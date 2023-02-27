@@ -9,7 +9,6 @@ class CustomLineCollection(LineCollection):
 		self.fig = self.ax.get_figure()
 		self.lw_data = kwargs.pop("linewidths", 1)
 		self.lw = 1
-		self.ppd = 72./self.fig.dpi
 		self.trans = self.ax.transData.transform
 
 		self._resize()
@@ -17,6 +16,7 @@ class CustomLineCollection(LineCollection):
 		self.fig.canvas.draw()
 	
 	def _resize(self, event=None):
+		self.ppd = 72./self.fig.dpi
 		lw =  ((self.trans((self.lw_data, 1)) - self.trans((0, 0))) * self.ppd)[0]
 		if lw != self.lw:
 			self.set_linewidth(lw)

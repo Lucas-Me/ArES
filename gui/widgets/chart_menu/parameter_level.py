@@ -10,12 +10,13 @@ from backend.misc.functions import get_imagepath
 class SeriesTopLevel(QWidget):
 
 	propertyChanged = Signal(dict)
-	def __init__(self, text, height):
+	def __init__(self, text, height, hline = False):
 		super().__init__()
 
 		# PROPERTIES
 		self.item_height = height
 		self.text = text
+		self.hline = hline
 
 		# SETUP UI
 		self.setupUI()
@@ -36,6 +37,8 @@ class SeriesTopLevel(QWidget):
 
 		# SHOW/HIDDEN widgets
 		self.list_view.setHidden(hidden)
+		if self.hline:
+			self.hline_frame.setHidden(hidden)
 
 		# size policty
 		if active:
@@ -53,14 +56,98 @@ class SeriesTopLevel(QWidget):
 
 		# OBJECTS
 		self.top_level = TopLevelButton(text = self.text, height = self.item_height)
-		
-		# DATE PROPERTIES
+		self.main_layout.addWidget(self.top_level)
+
+		# HORIZONTAL LINE OPTION
+		if self.hline:
+			self.hline_frame = HorizontalLineProperty(text = 'Faixa Horizontal', vmin = 0, vmax = 10000, height = self.item_height)
+			self.main_layout.addWidget(self.hline_frame)
+
+		# PARAMETERS LIST
 		self.list_view = SeriesListView()
 
 		# add to layout
-		self.main_layout.addWidget(self.top_level)
 		self.main_layout.addWidget(self.list_view)
 
+
+class HorizontalLineProperty(QFrame):
+	
+	valueChanged = Signal(int)
+	stateChanged = Signal(bool)
+	def __init__(self, text, vmin, vmax, height):
+		super().__init__()
+		
+		# SETTINGS
+		# self.setMinimumHeight(0)
+		self.setFixedHeight(height)
+
+		# PROPERTIES
+		self.label = QLabel(text)
+		self.spinbox = QSpinBox()
+		self.left_margin = 25
+
+		# SETTING WIDGETS
+		self.spinbox.setRange(vmin, vmax)
+
+		# SETUP UI
+		self.setupUI()
+		self.setupStyle()
+
+		# SIGNALS
+		self.spinbox.editingFinished.connect(self.emitValue)
+		self.checkbox.stateChanged.connect(self.stateChanged.emit)
+
+	def emitValue(self):
+		if self.checkbox.isChecked():
+			self.valueChanged.emit(self.spinbox.value())
+
+	def setupUI(self):
+		self.main_layout = QHBoxLayout(self)
+		self.main_layout.setContentsMargins(self.left_margin + 4, 3, 3, 3)
+		self.main_layout.setSpacing(5)
+		self.setObjectName('item')
+
+		# Checkbox
+		self.checkbox = QCheckBox()
+		self.checkbox.setObjectName('checkbox')
+
+		# TEXT
+		self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+		self.label.setObjectName('line')
+
+		# FONTSIZE
+		self.spinbox.setObjectName('combobox')
+
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.checkbox)
+		self.main_layout.addWidget(self.spinbox)
+		self.main_layout.addWidget(self.label)
+
+	def setupStyle(self):
+		self.setStyleSheet('''
+			#item{
+				background-color: transparent;
+			}
+			#spinbox, #line, #checkbox{
+				font: normal 10pt 'Microsoft New Tai Lue';
+				color: #36475f;
+			}
+		''')
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+		super().paintEvent(event)
+
+		painter = QPainter()
+		painter.begin(self)
+		
+		dx = 2
+		x = (self.left_margin - dx) // 2
+		y = 0
+		dy = self.height()
+		painter.fillRect(x, y, dx, dy, QColor('#36475f'))
+
+		painter.end()
+		
 
 class SeriesModel(QAbstractListModel):
 
