@@ -13,6 +13,7 @@ from backend.plot.collections import CustomLineCollection
 
 # IMPORT PLOT RELATED MODULES
 import matplotlib.dates as mdates
+import matplotlib.container as mcontainer
 import matplotlib.patches as mpatches
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -548,69 +549,98 @@ class OverpassingCanvas(AbstractCanvas):
     def __int__(self, *args, **kwargs):
         super.__init__(*args, **kwargs)
 
-    def barPlot(self, series_list : list[object]):
-        n = len(series_list)
-
-        # largura de cada barra sera definida a partir da menor frequencia dentre os dados
-        frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
-        freq = np.min(frequencies)
-        ref_time = series_list[0].getDates()[0]
-
-        # total width
-        total_width = 0.8
-        t1 = ref_time.astype('datetime64[m]') + freq
-        t1 = mdates.date2num(t1)
-        t0 = mdates.date2num(ref_time)
-        delta_t = (t1 - t0) * total_width
+        # Properties
+        self.hline_faixa = self.plothline(0)
+        self.values_series = {} # necessary in order to update the count
+        self.count = 0      
         
+        # containers
+        self.handles['overpassing'] = mcontainer.BarContainer(orientation='Vertical')
+        self.handles['first_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+        self.handles['second_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+
+    def resetChart(self):
+        super().resetChart()
+
+        # resetting variables
+        self.hline_faixa = self.plothline(0)
+        self.values_series.clear()
+        self.count = 0
+        
+        # containers
+        self.handles['overpassing'] = mcontainer.BarContainer(orientation='Vertical')
+        self.handles['first_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+        self.handles['second_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+
+
+    def barPlot(self, series: object):
+        # largura de cada barra
+        total_width = 0.8
+        
+        # getting properties
+        values = series.getValues()
+
+        sorted_array = values[np.argsort(values)]
         # preparing maximum and minimum values
-        max_y = [1] * n + [self.params['yticks-max']]
-        min_y = [0] * n + [self.params['yticks-min']]
+        max_y = [self.params['yticks-max'], np.nanmax(values)]
+        min_y = [self.params['yticks-min'], np.nanmin(values)]
+
+        # bar container elements
+        max_value = sorted_array[-1]
+        second_max = sorted_array[-2]
+        overpasses = np.count_nonzero(values > self.handles['Faixa Horizontal'].get_ydata()[0])
+        new_elements = [overpasses, max_value, second_max]
+
+        # bar containers
+        bar_containers = ['overpassing', 'first_maximum', 'second_maximum']
+        n = 3 
 
         # loop through each series
         for i in range(n):
-            # getting series
-            series = series_list[i]
 
-            # remove if already in plot
-            self.removePlot(series.metadata['signature'])
-
-            # getting properties
-            values = series.getValues()
-            dates = series.getDates()
-
-            # maximum and minimum
-            max_y[i] = np.nanmax(values)
-            min_y[i] = np.nanmin(values)
-
-            # transform
-            dates_num = mdates.date2num(dates)
-            
             # getting position of left corner
-            offset = delta_t * (2 * i - n) / (2 * n)
-            position_dates = mdates.num2date(dates_num + offset)
+            offset = total_width * (2 * i - n) / (2 * n)
 
-            # object metadata
-            id_ = series.metadata['signature']
+            # getting old rectangles
+            rectangles = self.handles[bar_containers[i]].get_children()
+            num_r = len(rectangles)
 
             # Plot properties
+            id_ = series.metadata['signature']
             kwargs = {
-                'facecolor' : self.colors.get(id_, None),
-                'label' : id_,
-                'align' : 'center',
-                'width' : delta_t / n
+                'xy' : [num_r + offset, 0],
+                'height' : new_elements[i],
+                'width' : total_width / n
             }
-            hl = self.ax.bar(position_dates, values, **kwargs)
+            
+            # creating new rect
+            this_rect = mpatches.Rectangle(**kwargs)
+            new_rectangles = rectangles + [this_rect]
+
+            # create new bar container
+            bc = mcontainer.BarContainer(
+                patches = new_rectangles,
+
+            )
 
             # set picker
-            for artist in hl.get_children():
+            for artist in bc.get_children():
                 artist.set_picker(True)
                 artist.set_label(id_)
+                artist.set_facecolor(self.colors.get(bar_containers[i], None))
+                artist.set_edgecolor('none')
 
-            # storing artist, color and labels
-            self.handles[id_] = hl
-            self.colors[id_] = hl.get_children()[0].get_facecolor()
+            # storing labels and values]
+            self.handles[bar_containers[i]] = bc
+            self.values_series[id_] = values
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
+            self.colors[bar_containers[i]] = artist.get_facecolor()
+            
+            # removing old artists
+            self.removePlot(bar_containers[i])
+
+            # adding new artist
+            self.ax.add_container(bc)
 
         # adjusting axis
         self.setVerticalTicks(
