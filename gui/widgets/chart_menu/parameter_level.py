@@ -102,7 +102,7 @@ class SeriesModel(QAbstractListModel):
 
 	def removeRows(self, parent : list[QModelIndex], **kwargs) -> bool:
 		n = len(parent)
-		for i in range(n):
+		for i in range(n - 1, -1, -1):
 			row = parent[i].row()
 			self.beginRemoveRows(parent[i], row, row)
 			del self.data_objects[row]
@@ -160,10 +160,9 @@ class SeriesListView(QListView):
 		self.model.insertRow(name = name)
 		
 	def removeItems(self):
-		self.selectAll()
-		models = self.selectedIndexes()
-		self.model.removeRows(models)
-		self.clearSelection()
+		n = self.model.rowCount()
+		modal_list = [self.model.index(row, 0) for row in range(n)] 
+		self.model.removeRows(modal_list)
 
 	def getIndex(self, *args, **kwargs):
 		target = self.model.data_object

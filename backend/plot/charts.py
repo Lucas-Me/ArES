@@ -13,6 +13,7 @@ from backend.plot.collections import CustomLineCollection
 
 # IMPORT PLOT RELATED MODULES
 import matplotlib.dates as mdates
+import matplotlib.patches as mpatches
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -200,9 +201,13 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # remove old legeend
         self.legend.remove()
         
-        # get axis artists
-        handles = list(self.handles.values())
-        labels = [self.labels[k] for k in self.handles.keys()]
+        # manuallly produces the artist for the legend
+        n = len(self.handles)
+        handles = [None] * n
+        labels = [''] * n
+        for i, k in enumerate(self.handles.keys()):
+            labels[i] = self.labels[k]
+            handles[i] = mpatches.Rectangle([0,0], 0, 0, facecolor = self.colors[k], edgecolor = 'none')
 
         # creating new legend
         self.legend = self.fig.legend(handles, labels, **args)
@@ -412,24 +417,22 @@ class TimeSeriesCanvas(AbstractCanvas):
         # draw
         self.draw()
 
-    def getLineCollection(self, x, y, width, color, bottom = 0) -> CustomLineCollection:
+    def getLineCollection(self, x, y, width, bottom = 0, **kwargs) -> CustomLineCollection:
         '''Collection of vetical lines to replace bars'''
         # sets of y to plot versus vs. x
-        ys = [np.array([bottom, top]) for top in y]
-        xs = [np.array([value, value]) for value in x]
+        ys = np.column_stack([np.full(x.shape, bottom), y])
+        xs = np.column_stack([x, x])
         segs = [np.column_stack([xs[i], ys[i]]) for i in range(y.shape[0])]
 
         line_segments = CustomLineCollection(segs,
                                linewidths=width,
                                linestyles='solid',
-                               color = color,
-                               ax = self.ax)
+                               ax = self.ax, **kwargs)
         
         return line_segments
 
     def barPlot(self, series_list : list[object]):
         n = len(series_list)
-        prop_iter = iter(mpl.rcParams['axes.prop_cycle'])
 
         # largura de cada barra sera definida a partir da menor frequencia dentre os dados
         frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
@@ -437,7 +440,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         ref_time = series_list[0].getDates()[0]
 
         # total width
-        total_width = 0.8
+        total_width = 0.9
         t1 = ref_time.astype('datetime64[m]') + freq
         t1 = mdates.date2num(t1)
         t0 = mdates.date2num(ref_time)
@@ -474,7 +477,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # Plot properties
             kwargs = {
-                'color' : self.colors.get(id_, next(prop_iter)['color']),
+                'color' : self.colors.get(id_, None),
                 'width' : delta_t / n
             }
 
@@ -488,7 +491,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # storing artist, color and labels
             self.handles[id_] = lc
-            self.colors[id_] = lc.get_color()
+            self.colors[id_] = lc.get_color()[0]
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
 
         # adjusting axis
@@ -513,7 +516,6 @@ class OverpassingCanvas(AbstractCanvas):
 
     def barPlot(self, series_list : list[object]):
         n = len(series_list)
-        prop_iter = iter(mpl.rcParams['axes.prop_cycle'])
 
         # largura de cada barra sera definida a partir da menor frequencia dentre os dados
         frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
@@ -559,12 +561,11 @@ class OverpassingCanvas(AbstractCanvas):
 
             # Plot properties
             kwargs = {
+                'facecolor' : self.colors.get(id_, None),
                 'label' : id_,
-                'facecolor' : self.colors.get(id_, next(prop_iter)['color']),
                 'align' : 'center',
                 'width' : delta_t / n
             }
-
             hl = self.ax.bar(position_dates, values, **kwargs)
 
             # set picker

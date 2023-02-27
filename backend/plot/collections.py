@@ -14,7 +14,7 @@ class CustomLineCollection(LineCollection):
 
 		self._resize()
 		self.cid = self.fig.canvas.mpl_connect('draw_event', self._resize)
-		self.ax.draw()
+		self.fig.canvas.draw()
 	
 	def _resize(self, event=None):
 		lw =  ((self.trans((self.lw_data, 1)) - self.trans((0, 0))) * self.ppd)[0]

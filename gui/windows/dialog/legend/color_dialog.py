@@ -1,3 +1,6 @@
+# IMPORT MODULES
+import numpy as np
+
 # IMPORT QT CORE
 from qt_core import *
 
@@ -72,8 +75,13 @@ class LegendDialog(QDialog):
 		self.origLabel = self.canvas.labels[self.artist_id]
 		self.origColor = self.canvas.colors[self.artist_id]
 		
-		if isinstance(self.origColor, tuple):
+		if isinstance(self.origColor, tuple) or isinstance(self.origColor, list):
 			self.origColor = QColor(*map(lambda x: x*255, self.origColor))
+
+		elif isinstance(self.origColor, np.ndarray):
+			transform = self.origColor*255
+			self.origColor = QColor(*transform)
+
 		else:
 			self.origColor = QColor(self.origColor)
 			

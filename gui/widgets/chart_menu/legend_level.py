@@ -20,10 +20,10 @@ class LegendTopLevel(QWidget):
 		# SIGNALS
 		self.top_level.clicked.connect(self.toggle)
 		self.column_count.valueChanged.connect(
-			lambda x: self.propertyChanged.emitValue({'ncol': x})
+			lambda x: self.propertyChanged.emit({'ncol': x})
 		)
 		self.font_size.valueChanged.connect(
-			lambda x: self.propertyChanged.emitValue({'fontsize': x})
+			lambda x: self.propertyChanged.emit({'fontsize': x})
 		)
 
 
