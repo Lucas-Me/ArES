@@ -168,13 +168,6 @@ class RawData(AbstractData):
    def setFlags(self, flags : np.ndarray):
       '''Handle flags'''
 
-      if isinstance(flags, list):
-         flags = np.array(flags, dtype = '<U2')
-
-      # if flag contains a None object, replace by an empty string
-      flags[flags == None] = ''
-      flags = flags.astype('<U2')
-
       # setup flags
       self.flags = flags
 

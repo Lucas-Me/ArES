@@ -54,6 +54,7 @@ mpl.rcParams.update({
     # 'axes.spines.top': True,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
+    'lines.linewidth' : .5,
     'patch.edgecolor': 'none',
     'patch.force_edgecolor': False,
     'text.color': default_color,
@@ -186,7 +187,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
             #legenda
             'legend-ncol' : 1,
-            'legend-fontsize': 10,
+            'legend-fontsize': 10
         }
 
         # CONSTRUCTOR

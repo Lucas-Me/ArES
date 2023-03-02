@@ -165,9 +165,10 @@ def reindex(old_dates, values, flags, new_dates):
 
 	# Se nao for um objeto numpy, converte para tal
 	if isinstance(old_dates, tuple):
-		old_dates = np.array(old_dates)
-		values = np.array(values)
-		flags = np.array(flags)
+		old_dates = np.array(old_dates, dtype= np.datetime64)
+		values = np.array(values, dtype = float)
+		flags = np.array(flags, dtype = '<U2')
+		flags[flags == 'No'] = ''
 
 	# SE OS NOVOS INDICES FOREM IDENTICOS AO ANTIGO, APENAS RETORNA OS ARRAY ORIGINAIS
 	if np.array_equal(old_dates, new_dates):
