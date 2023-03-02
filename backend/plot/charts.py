@@ -233,18 +233,20 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
     def resetChart(self):
         # limpa os elementos do eixo
-        self.ax.cla()
-        
-        # limpa os demais elementos
-        self.handles.clear()
+        for name, artist in self.handles.items():
+            if 'Faixa Horizontal' in name:
+                continue
 
+            # remove do plot
+            self.removePlot(artist)
+
+            # remove do dicionario
+            del self.handles[name]
+        
         # adiciona os titulos novamente
         self.setTitle()
         self.setLabel(axis = 'x')
         self.setLabel(axis = 'y')
-
-        # Plota linha horizontal em y = 0
-        self.hline = self.ax.axhline(y = 0, color = 'grey')
 
         # Rotulos do eixo Y
         self.setVerticalTicks()
