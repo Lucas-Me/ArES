@@ -312,6 +312,7 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 	# organizando os dados de acordo com seu tipo
 	freq = np.array([_object.metadata['frequency'] for _object in files])
 	unique = np.unique(freq)
+	print(unique)
 
 	# formats
 	header_fmt = wb.add_format(dict(bg_color = "#bcced8", border = 1, align = "center", valign = "center", border_color = '#a6a6a6', font_size= 8))
@@ -333,76 +334,77 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 		indices = np.extract(freq == freq_, np.arange(len(files)))
 		
 		# getting station name and enterprise
-		station_name = np.array([files[i].metadata['name'] for i in indices])
-		enterprise = np.array([files[i].metadata['enterprise'] for i in indices])
+		estacoes = np.array([files[i].metadata['name'] for i in indices])
+		empresas = np.array([files[i].metadata['enterprise'] for i in indices])
 
 		# sorting by station and enterprise
-		sorted_objects = {k:{} for k in enterprise}
+		sorted_objects = {k:{} for k in empresas}
+
+		# create worksheet
+		ws = wb.add_worksheet(f'Grupo {sheet_n + 1}')
+		ws.hide_gridlines(2)
+
 		for i in range(len(indices)):
-			stations = sorted_objects[enterprise[i]]
-			index_list = stations.get(station_name[i], [])
+			stations = sorted_objects[empresas[i]]
+			index_list = stations.get(estacoes[i], [])
 			index_list.append(indices[i])
-			stations[station_name[i]] = index_list
+			stations[estacoes[i]] = index_list
 
-			# create worksheet
-			ws = wb.add_worksheet(f'Grupo {i + 1}')
-			ws.hide_gridlines(2)
+		# ROW 1 -> EMPRESAS
+		# ROW 2 -> ESTACAO
+		# ROW 3 -> PARAMETRO
+		# ROW 4 -> VALOR & FLAG
+		# ROW >= 5 -> DADOS
+		row0 = 4
 
-			# ROW 1 -> EMPRESAS
-			# ROW 2 -> ESTACAO
-			# ROW 3 -> PARAMETRO
-			# ROW 4 -> VALOR & FLAG
-			# ROW >= 5 -> DADOS
-			row0 = 4
+		# inserting data column. Theoretically, same type objects share the same date array
+		date_array = files[indices[0]].getDates()
+		dates = [date.item() for date in date_array]
+		ws.merge_range(0, 0, row0 - 1, 0, "Datas", header_fmt)
 
-			# inserting data column. Theoretically, same type objects share the same date array
-			date_array = files[indices[0]].getDates()
-			dates = [date.item() for date in date_array]
-			ws.merge_range(0, 0, row0 - 1, 0, "Datas", header_fmt)
+		# writing date columns
+		ws.write_column(row0, 0, dates, cell_dateformat)
 
-			# writing date columns
-			ws.write_column(row0, 0, dates, cell_dateformat)
+		# loop through each enterprise
+		current_col = 1
+		for enterprise, stations in sorted_objects.items():
+			cols = 0
+			for station_name, parameters in stations.items():
+				size = len(parameters) * 2
+				cols += size
 
-			# loop through each enterprise
-			current_col = 1
-			for enterprise, stations in sorted_objects.items():
-				cols = 0
-				for station_name, parameters in stations.items():
-					size = len(parameters) * 2
-					cols += size
+				# station header
+				ws.merge_range(1, current_col, 1, current_col + size - 1, station_name, header_fmt)
 
-					# station header
-					ws.merge_range(1, current_col, 1, current_col + size - 1, station_name, header_fmt)
+				# loop through each parameter
+				for idx in parameters:
+					object_ = files[idx]
+					name, unit = find_unit(object_.metadata['parameter'], return_name= True)
 
-					# loop through each parameter
-					for idx in parameters:
-						object_ = files[idx]
-						name, unit = find_unit(object_.metadata['parameter'], return_name= True)
+					# parameter header
+					ws.merge_range(2, current_col, 2, current_col + 1, name, header_fmt)
 
-						# parameter header
-						ws.merge_range(2, current_col, 2, current_col + 1, name, header_fmt)
+					# Value and Flag header
+					ws.write(3, current_col, f"Valor [{unit}]", header_fmt)
+					ws.write(3, current_col + 1, 'Válidos (%)', header_fmt)
+					
+					# getting values and flags arrays
+					values = object_.getValues()
+					representatividade = object_.getRepresentatividade()
+					is_value_valid = ~np.isnan(values) # any value that isn't NaN
+					is_repr_valid = ~np.isnan(representatividade)
 
-						# Value and Flag header
-						ws.write(3, current_col, f"Valor [{unit}]", header_fmt)
-						ws.write(3, current_col + 1, 'Representatividade', header_fmt)
-						
-						# getting values and flags arrays
-						values = object_.getValues()
-						representatividade = object_.getRepresentatividade()
-						is_value_valid = ~np.isnan(values) # any value that isn't NaN
-						is_repr_valid = ~np.isnan(representatividade)
+					# loop thorugh values and flags
+					for i in range(values.shape[0]):
+						repr = representatividade[i]
+						if is_value_valid[i]: ws.write(row0 + i, current_col, values[i], dados_fmt)
 
-						# loop thorugh values and flags
-						for i in range(values.shape[0]):
-							repr = representatividade[i]
-							if is_value_valid[i]: ws.write(row0 + i, current_col, values[i], dados_fmt)
+						if not is_repr_valid[i]:
+							repr = 0
 
-							if not is_repr_valid[i]:
-								repr = 0
+						ws.write(row0 + i, current_col + 1, repr, repr_fmt)
+					
+					current_col += 2
 
-							ws.write(row0 + i, current_col + 1, repr, repr_fmt)
-						
-						current_col += 2
-
-				# writing enterprise header
-				ws.merge_range(0, current_col - cols, 0, current_col - 1, enterprise, header_fmt)
+			# writing enterprise header
+			ws.merge_range(0, current_col - cols, 0, current_col - 1, enterprise, header_fmt)
