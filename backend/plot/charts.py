@@ -10,6 +10,7 @@ import numpy as np
 
 # IMPORT CUSTOM MODULES
 from backend.plot.collections import CustomLineCollection
+import backend.misc.settings as settings
 
 # IMPORT PLOT RELATED MODULES
 import matplotlib.dates as mdates
@@ -196,6 +197,17 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # SIGNALS AND SLOTS
         self.mpl_connect('pick_event', self.on_pick)
 
+    def getThreshold(self, series : object):
+        methods = series.metadata['methods']
+        threshold = 0
+        if len(methods) > 0:
+            last_method = methods[-1][1]
+            threshold = settings.SETTINGS['representatividade'].get(
+                last_method, settings.SETTINGS['representatividade']['Horária']
+            )
+        
+        return threshold
+
     def updateLegend(self, **kwargs):
         args = dict(
             ncol = kwargs.pop('ncol', self.params['legend-ncol']),
@@ -238,10 +250,10 @@ class AbstractCanvas(FigureCanvasQTAgg):
             if 'Faixa Horizontal' in name:
                 continue
 
-            # remove do plot
-            self.removePlot(artist)
+            # deleting artist
+            artist.remove()
 
-            # remove do dicionario
+            # deleting private properties
             del self.handles[name]
         
         # adiciona os titulos novamente
@@ -375,7 +387,6 @@ class AbstractCanvas(FigureCanvasQTAgg):
         if dblclick:
             artist = event.artist
             label = artist.get_label()
-            print(label)
 
             self.artistClicked.emit(label)
 
@@ -418,9 +429,13 @@ class TimeSeriesCanvas(AbstractCanvas):
         # rotulos do eixo X
         self.setHorizontalTicks()
     
-    def plot(self, series : object):
+    def plot(self, series : object, threshold = 0):
+        # getting threshold
+        threshold = self.getThreshold(series)
+        print(threshold)
+
         # getting properties
-        values = series.getValues()
+        values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
         dates = series.getDates()
 
         # object metadata
@@ -478,7 +493,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         ref_time = series_list[0].getDates()[0]
 
         # total width
-        total_width = 0.9
+        total_width = 0.8
         t1 = ref_time.astype('datetime64[m]') + freq
         t1 = mdates.date2num(t1)
         t0 = mdates.date2num(ref_time)
@@ -497,7 +512,8 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.removePlot(series.metadata['signature'])
 
             # getting properties
-            values = series.getValues()
+            threshold = self.getThreshold(series)
+            values = series.maskByThreshold(threshold)  # mascara por quantitativo de dados validos
             dates = series.getDates()
 
             # maximum and minimum

@@ -18,6 +18,9 @@ from backend.data_management import stats
 from backend.misc.functions import get_frequency
 from backend.data_management.functions import export_to_xlsx
 
+# IMPORT CUSTOM VARIABLES
+import backend.misc.settings as settings
+
 # IMPORT DIALOGS
 from gui.windows.dialog.import_dialog import ImportDialog
 
@@ -289,8 +292,15 @@ class Worker(QObject):
 		for order in range(n): # if n == 0, will not enter loop anyway
 			calc = methods[order][0]
 			group = methods[order][1]
-			#
-			threshold = 0 # TESTE
+			
+			# Critério de representatividade a ser considerado antes de efetuar o cálculo
+			threshold = settings.SETTINGS['representatividade']['Horária']
+
+			# se alguma operacao ja tiver sido realizada antes. Dados nao sao mais brutos, tratamento é diferente 
+			if order > 0 and methods[order - 1][1] in settings.SETTINGS['representatividade']:
+				threshold = settings.SETTINGS['representatividade'][methods[order - 1][1]]
+
+			# Funcao respectiva ao cálculo selecionado
 			func = self.functions[calc]
 
 			# Applyng threshold

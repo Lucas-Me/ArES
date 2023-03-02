@@ -4,6 +4,9 @@ from qt_core import *
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.chart_menu.ui_properties import UI_AbstractMenu
 
+# IMPORT CUSTOM VARIABLES
+import backend.misc.settings as settings
+
 
 class AbstractChartMenu(QFrame):
     

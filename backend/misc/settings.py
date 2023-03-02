@@ -10,9 +10,9 @@
 
 SETTINGS = dict(
     representatividade = { # porcentagem mínima de dados válidos exigidos
-        'horária' : .75,
-        'diária' : .75, 
-        'mensal' : .75,
-        'anual' : .50,
+        'Horária' : .75,
+        'Data' : .75, 
+        'Mês e ano' : .75,
+        'Ano' : .50,
     }
 )
