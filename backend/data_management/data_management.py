@@ -195,7 +195,7 @@ class ModifiedData(AbstractData):
       '''
       new = self.copy()
       if kwargs.pop('groupby', False): # group if True
-         new = new.groupby(kwargs.pop('format_'))
+         new = new.groupby(kwargs.pop('format_'), kwargs.pop('anual', False))
          new.setMetadata(self.metadata)
          return new.apply(**kwargs) # func is still in here
 
@@ -211,7 +211,7 @@ class ModifiedData(AbstractData):
 
       return new
 
-   def groupby(self, format_ : str = "%Y-%m-%d"):
+   def groupby(self, format_ : str = "%Y-%m-%d", anual =  False):
       '''
       Agrupa os dados e retorna um novo tipo de objeto.
       -  format - > é o criterio de formatacao dos indices (datas), espera-se que apos a formatacao o array resultante tenham elementos repetidos
@@ -222,7 +222,9 @@ class ModifiedData(AbstractData):
       formatted_dates = np.array(formatted_dates, dtype ='datetime64')
       grouped = GroupedData(
          values = self.values,
-         criteria = formatted_dates
+         criteria = formatted_dates,
+         original_dates = self.dates,
+         anual = anual
       )
 
       return grouped
@@ -265,7 +267,10 @@ class GroupedData(object):
 
          # grouping values
          self.grouped_values = np.split(values, index)[:-1] # last group is empty
-         self.dates = dates
+         self.unique_dates = dates
+         self.anual = kwargs.pop('anual', False)
+         if self.anual:
+            self.grouped_dates = np.split(kwargs.pop('original_dates'), index)[:-1] # last group is empty
 
       def setMetadata(self, metadata):
          self.metadata = metadata
@@ -278,12 +283,36 @@ class GroupedData(object):
          values = np.fromiter(map(func, self.grouped_values), dtype = float)
          representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
 
+         # if not self.anual:
+         #    representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
+         # else:
+         #    representatividade = np.fromiter(map(self.calculateRepresentatividadeAnual, self.grouped_values, self.grouped_dates), dtype = float)
+
          return ModifiedData(
             values = values,
-            dates = self.dates,
+            dates = self.unique_dates,
             representatividade = representatividade,
             metadata = self.metadata
          )
 
       def calculateRepresentatividade(self, array):
          return np.count_nonzero(~np.isnan(array)) / array.shape[0]
+      
+      def calculateRepresentatividadeAnual(self, array : np.ndarray, dates : np.ndarray):
+         '''
+         Apenas para estações automáticas. Calcula o quantitativo de dados válidos
+         segundo o critério estabelecido pela GEAR, ou seja, agrupando cada ano em quadrimestres.
+         A representatividade final é o menor quantitativo de dados válidos dos três quadrimestres.
+         Ex:
+            Jan a Abril: 55% ; Maio a Agosto: 60%; Setembro a Dezembro: 90%;
+            No caso acima será eleito o menor percentual como representativo do ano inteiro (55%). 
+         '''
+         criterio = [(dates[i].item().month - 1) // 4 for i in range(dates.shape[0])]
+         index = np.unique(criterio, return_index =  True)[1]
+         index = np.append(index, len(criterio))[1:]
+
+         # separa e calcula para cada quadrimestre
+         valores = np.split(array, index)[:-1]
+         resultados = np.fromiter(map(self.calculateRepresentatividade, valores), dtype = float)
+
+         return np.min(resultados)

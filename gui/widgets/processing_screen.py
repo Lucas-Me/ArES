@@ -318,7 +318,8 @@ class Worker(QObject):
 				kwargs = dict(
 					func = func,
 					groupby = True,
-					format_ = self.formats[group]
+					format_ = self.formats[group],
+					anual = self.formats[group] == "%Y-01-01" and data_object.metadata['type'] == 'Automática'
 				)
 				# if it reached here, then there is a need to groupby first
 

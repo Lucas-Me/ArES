@@ -313,7 +313,6 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 	# organizando os dados de acordo com seu tipo
 	freq = np.array([_object.metadata['frequency'] for _object in files])
 	unique = np.unique(freq)
-	print(unique)
 
 	# formats
 	header_fmt = wb.add_format(dict(bg_color = "#bcced8", border = 1, align = "center", valign = "center", border_color = '#a6a6a6', font_size= 8))
