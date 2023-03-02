@@ -398,7 +398,10 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 					# loop thorugh values and flags
 					for i in range(values.shape[0]):
 						repr = representatividade[i]
-						if is_value_valid[i]: ws.write(row0 + i, current_col, values[i], dados_fmt)
+						if is_value_valid[i]:
+							ws.write(row0 + i, current_col, values[i], dados_fmt)
+						else:
+							ws.write(row0 + i, current_col, '', repr_fmt)
 
 						if not is_repr_valid[i]:
 							repr = 0
