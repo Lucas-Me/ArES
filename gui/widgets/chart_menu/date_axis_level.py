@@ -128,9 +128,11 @@ class DateLocatorProperty(QFrame):
 
 		# LOCATOR
 		self.date_locator.setObjectName('combobox')
+		self.date_locator.setCurrentIndex(2)
 
 		# FREQUENCY
 		self.frequency.setObjectName('spinbox')
+		self.frequency.setValue(2)
 
 		# ADD TO MAIN LAYOUT
 		self.main_layout.addWidget(self.line)

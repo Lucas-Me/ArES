@@ -58,6 +58,25 @@ class AbstractChartMenu(QFrame):
 		else:
 			canvas.setLabel(axis = options[-1][0], **kwargs)
 
+	def setupInitialValues(self):
+		# canvas settings
+		config = self.parent().canvas.getSettings()
+
+		# title
+		self.ui.title_level.figure_title.fontsize.setValue(config['title-fontsize'])
+		self.ui.title_level.xaxis_label.fontsize.setValue(config['xaxis-fontsize'])
+		self.ui.title_level.yaxis_label.fontsize.setValue(config['yaxis-fontsize'])
+
+		# legend
+		self.ui.legend_level.font_size.spinbox.setValue(config['legend-fontsize'])
+		self.ui.legend_level.column_count.spinbox.setValue(config['legend-ncol'])
+
+		# Y axis
+		self.ui.yaxis_level.vmax.spinbox.setValue(config['yticks-max'])
+		self.ui.yaxis_level.vmin.spinbox.setValue(config['yticks-min'])
+		self.ui.yaxis_level.total_ticks.spinbox.setValue(config['yticks-size'])
+		self.ui.yaxis_level.font_size.spinbox.setValue(config['yaxis-fontsize'])
+
 
 class TimeSeriesMenu(AbstractChartMenu):
 
@@ -78,6 +97,15 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.ui.line_plot_level.hline_frame.stateChanged.connect(self.toggleHLine)
 		self.ui.line_plot_level.hline_frame.valueChanged.connect(self.updateHline)
 	
+	def setupInitialValues(self):
+		super().setupInitialValues()
+
+		# get canvas settings
+		config = self.parent().canvas.getSettings()
+
+		# X axis
+		self.ui.xaxis_level.font_size.spinbox.setValue(config['xaxis-fontsize'])
+
 	@Slot(bool)
 	def toggleHLine(self, status : bool):
 		if status:
@@ -135,16 +163,20 @@ class TimeSeriesMenu(AbstractChartMenu):
 		# remove artist if necessary
 		if not add:
 			canvas.removePlot(id_ = series.metadata['signature'])
-			return None
 
-		# add artist, but first check if the same object is already ploted as bars
-		listview = self.ui.bar_plot_level.list_view
-		if listview.getStatus(row):
-			listview.setStatus(row, False)
-			self.updateBarElement(row, False)
+		else:
+			# add artist, but first check if the same object is already ploted as bars
+			listview = self.ui.bar_plot_level.list_view
+			if listview.getStatus(row):
+				listview.setStatus(row, False)
+				self.updateBarElement(row, False)
 
-		# plot new artists
-		canvas.plot(series)
+			# plot new artists
+			canvas.plot(series)
+
+		# scaling and drawing
+		canvas.autoscaleAxis()
+		canvas.draw()
 
 	@Slot(int, bool)
 	def updateBarElement(self, row : int, add: bool):
@@ -169,6 +201,10 @@ class TimeSeriesMenu(AbstractChartMenu):
 			
 		# plot new artists
 		self.plotBars()
+
+		# scaling and drawing
+		canvas.autoscaleAxis()
+		canvas.draw()
 
 	def plotBars(self):
 		if len(self.bar_rows) > 0:

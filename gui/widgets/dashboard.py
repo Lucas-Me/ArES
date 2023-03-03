@@ -26,9 +26,15 @@ class Dashboard(QWidget):
 		self.ui = UI_Dashboard()
 		self.ui.setup_ui(self)
 		
+		# setting up current values
+		self.setupChartProperties()
+		
 		# SIGNALS AND SLOTS
 		self.ui.toggle_menu.clicked.connect(self.toggleMenu)
 		self.canvas.artistClicked.connect(self.editArtist)
+
+	def setupChartProperties(self):
+		self.chart_menu.setupInitialValues()
 
 	@Slot(str)
 	def editArtist(self, artist_label : str):

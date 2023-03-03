@@ -68,6 +68,7 @@ mpl.rcParams.update({
     'ytick.left': False,
     'ytick.right': False,
     'font.family' : 'Calibri',
+    'font.size' : 15,
     'axes.prop_cycle' : plt.cycler(color = color_list),
 
     # legend
@@ -139,6 +140,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 class AbstractCanvas(FigureCanvasQTAgg):
     
     artistClicked = Signal(str)
+    valueChanged = Signal(tuple)
     def __init__(self, width = 16, height = 7, dpi = 100):
 
         # iniciando
@@ -149,7 +151,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.colors = {} # store colors
         self.labels = {} # store labels
         self.handles = {} # store artists
+        self.ylims = {} # stores bottom and top for each artist
         self.legend = self.fig.legend([], [])
+
         # Plota linha horizontal em y = 0
         self.hline = self.ax.axhline(y = 0, xmin = self.ax.get_xlim()[0], xmax = self.ax.get_xlim()[1], color = 'k')
 
@@ -175,20 +179,20 @@ class AbstractCanvas(FigureCanvasQTAgg):
             'yticks-min' : self.ax.get_ylim()[0],
             'yticks-max' : self.ax.get_ylim()[1],
             'yticks-size' : self.ax.get_yticks().shape[0],
-            'yticks-fontsize' : 12,
+            'yticks-fontsize' : mpl.rcParams['font.size'],
             'yticks-fontweight' : 10,
             'yticks-rotation' : 0,
             
             # Rótulos do eixo X
             'xticks-min' : self.ax.get_xlim()[0],
             'xticks-max' : self.ax.get_xlim()[1],
-            'xticks-rotation' : 0,
-            'xticks-fontsize' : 12,
+            'xticks-rotation' : self.ax.get_xticklabels()[0].get_rotation(),
+            'xticks-fontsize' : mpl.rcParams['font.size'],
             'xticks-fontweight' : 10,
 
             #legenda
-            'legend-ncol' : 1,
-            'legend-fontsize': 10
+            'legend-ncol' : 3,
+            'legend-fontsize': mpl.rcParams['font.size']
         }
 
         # CONSTRUCTOR
@@ -196,6 +200,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # SIGNALS AND SLOTS
         self.mpl_connect('pick_event', self.on_pick)
+
+    def getSettings(self):
+        return self.params
 
     def getThreshold(self, series : object):
         methods = series.metadata['methods']
@@ -255,14 +262,10 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
             # deleting private properties
             del self.handles[name]
+            del self.ylims[name]
         
-        # adiciona os titulos novamente
-        self.setTitle()
-        self.setLabel(axis = 'x')
-        self.setLabel(axis = 'y')
-
         # Rotulos do eixo Y
-        self.setVerticalTicks()
+        self.autoscaleAxis()
 
         # legenda
         self.updateLegend()
@@ -361,6 +364,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.handles[id_] = lin
         self.labels[id_] = kwargs['label']
         self.colors[id_] = kwargs['color']
+        self.ylims[id_] = (y, y)
 
         # update legend
         self.updateLegend()
@@ -377,10 +381,21 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # deleting private properties
         del self.handles[id_]
+        del self.ylims[id_]
 
         # update plot
         self.updateLegend()
-        self.draw()
+
+    def autoscaleAxis(self):
+        if len(self.ylims) == 0:
+            return None
+        
+        # estimando o valor maximo e minimo dos objetos no grafico
+        values = list(self.ylims.values())
+        new_bottom = np.nanmin(values)
+        new_top = np.nanmax(values)
+
+        self.setVerticalTicks(min = new_bottom, max = new_top)
 
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
@@ -432,7 +447,6 @@ class TimeSeriesCanvas(AbstractCanvas):
     def plot(self, series : object, threshold = 0):
         # getting threshold
         threshold = self.getThreshold(series)
-        print(threshold)
 
         # getting properties
         values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
@@ -455,20 +469,10 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.handles[id_] = hl
         self.colors[id_] = hl.get_color()
         self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
+        self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
-        # adjusting axis
-        max_y = np.nanmax(values)
-        min_y = np.nanmin(values)
-        self.setVerticalTicks(
-            max = np.nanmax([max_y, self.params['yticks-max']]),
-            min = np.nanmin([min_y, self.params['yticks-min']])
-        )
-        
         # updating legend
         self.updateLegend()
-
-        # draw
-        self.draw()
 
     def getLineCollection(self, x, y, width, bottom = 0, **kwargs) -> CustomLineCollection:
         '''Collection of vetical lines to replace bars'''
@@ -547,20 +551,13 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.handles[id_] = lc
             self.colors[id_] = lc.get_color()[0]
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
+            self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
-        # adjusting axis
-        self.setVerticalTicks(
-            max = np.nanmax(max_y),
-            min = np.nanmin(min_y)
-        )
-        
+        # scaling X axis
         self.ax.set_xlim(dates.min(), dates.max())
 
         # updating legend
         self.updateLegend()
-
-        # draw
-        self.draw()
 
 
 class OverpassingCanvas(AbstractCanvas):
