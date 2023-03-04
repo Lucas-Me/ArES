@@ -25,6 +25,11 @@ class AbstractChartMenu(QFrame):
 		self.ui.legend_level.location.locationChanged.connect(self.updateLegendLocation)
 		self.ui.yaxis_level.propertyChanged.connect(self.updateVerticalAxisTicks)
 		self.ui.yaxis_level.auto_adjust.clicked.connect(self.setAutoAdjustYaxis)
+		self.parent().canvas.yaxisAdjusted.connect(self.setVerticalThreshold)
+		
+	def setVerticalThreshold(self, vmin, vmax):
+		self.ui.yaxis_level.vmax.spinbox.setValue(vmax)
+		self.ui.yaxis_level.vmin.spinbox.setValue(vmin)
 
 	def setAutoAdjustYaxis(self, state : bool):
 		self.parent().canvas.autoadjust_yaxis = state
@@ -87,6 +92,11 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.ui.line_plot_level.hline_frame.valueChanged.connect(self.updateHline)
 		self.ui.xaxis_level.date_range.dateChanged.connect(self.updateDateLims)
 		self.ui.xaxis_level.auto_adjust.clicked.connect(self.setAutoAdjustXaxis)
+		self.parent().canvas.xaxisAdjusted.connect(self.setHorizontalThreshold)
+		
+	def setHorizontalThreshold(self, vmin, vmax):
+		self.ui.xaxis_level.date_range.vmin.setDate(QDate(vmin.item().date()))
+		self.ui.xaxis_level.date_range.vmax.setDate(QDate(vmax.item().date()))
 
 	@Slot(QDate, str)
 	def updateDateLims(self, date : QDate, which : str):
@@ -137,7 +147,6 @@ class TimeSeriesMenu(AbstractChartMenu):
 		canvas.ylims[id_] = lims
 
 		# draw
-		canvas.autoscaleAxis()
 		canvas.draw()
 
 	@Slot(dict)
@@ -188,8 +197,7 @@ class TimeSeriesMenu(AbstractChartMenu):
 			# plot new artists
 			canvas.plot(series)
 
-		# scaling and drawing
-		canvas.autoscaleAxis()
+		# drawing
 		canvas.draw()
 
 	@Slot(int, bool)
@@ -216,8 +224,7 @@ class TimeSeriesMenu(AbstractChartMenu):
 		# plot new artists
 		self.plotBars()
 
-		# scaling and drawing
-		canvas.autoscaleAxis()
+		# drawing
 		canvas.draw()
 
 	def plotBars(self):

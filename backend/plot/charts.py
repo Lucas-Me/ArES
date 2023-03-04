@@ -88,6 +88,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
     artistClicked = Signal(str)
     valueChanged = Signal(tuple)
     titleClicked = Signal(int)
+    xaxisAdjusted = Signal(object, object)
+    yaxisAdjusted = Signal(float, float)
     def __init__(self, width = 16, height = 7, dpi = 100):
 
         # iniciando
@@ -222,7 +224,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
             del self.ylims[name]
         
         # Rotulos do eixo Y
-        self.autoscaleAxis()
+        self.autoscaleAxisY()
 
         # legenda
         self.updateLegend()
@@ -326,7 +328,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # update legend
         self.updateLegend()
-        self.autoscaleAxis()
+        self.autoscaleAxisY()
 
         # draw
         self.draw()
@@ -356,7 +358,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params['xticks-min'] = vmin
         self.params['xticks-max'] = vmax
 
-    def autoscaleAxis(self):
+    def autoscaleAxisY(self):
         if not self.autoadjust_yaxis or len(self.ylims) == 0 :
             return None
         
@@ -369,6 +371,18 @@ class AbstractCanvas(FigureCanvasQTAgg):
             new_top += 10
 
         self.setVerticalTicks(min = new_bottom, max = new_top)
+        self.yaxisAdjusted.emit(new_bottom, new_top)
+
+    def autoscaleAxisX(self, vmin, vmax):
+        if self.autoadjust_xaxis:
+            if isinstance(vmin, float):
+                vmin = mdates.num2date(vmin)
+                vmax = mdates.num2date(vmax)
+            
+            self.setHorizontalLims(min = vmin, max = vmax)
+
+            # emit signal
+            self.xaxisAdjusted.emit(vmin, vmax)
 
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
@@ -471,10 +485,8 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
         # scaling axis
-        if self.autoadjust_xaxis:
-            self.setHorizontalLims(dates.min(), dates.max())
-
-        self.autoscaleAxis()
+        self.autoscaleAxisX(dates.min(), dates.max())
+        self.autoscaleAxisY()
 
         # updating legend
         self.updateLegend()
@@ -559,15 +571,14 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
             self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
-        if self.autoadjust_xaxis:
-            # scaling X axis
-            t_final = mdates.date2num(series_list[0].getDates()[-1])
-            xmin = t0 - delta_t / 2
-            xmax = t_final + delta_t /2
-    
-            self.setHorizontalLims(xmin, xmax)
-
-        self.autoscaleAxis()
+        # scaling X axis
+        t_final = mdates.date2num(series_list[0].getDates()[-1])
+        xmin = t0 - delta_t / 2
+        xmax = t_final + delta_t /2
+        self.autoscaleAxisX(xmin, xmax)
+        
+        # scaling Y axis
+        self.autoscaleAxisY()
 
         # updating legend
         self.updateLegend()
