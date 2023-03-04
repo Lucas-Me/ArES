@@ -109,10 +109,15 @@ class DateLocatorProperty(QFrame):
 
 		# SIGNALS
 		self.date_locator.currentTextChanged.connect(self.emitValues)
-		self.frequency.editingFinished.connect(self.emitValues)
+		self.frequency.valueChanged.connect(self.emitValues)
 
 	def emitValues(self):
-		item = self.locators[self.date_locator.currentText()](interval = self.frequency.value())
+		text = self.date_locator.currentText()
+		item = self.locators[text]
+		if text == 'Ano':
+			item = item(base = self.frequency.value(), month = 1, day = 1)
+		else:
+			item = item(interval = self.frequency.value())
 		self.locatorChanged.emit({'locator' :  item})
 
 	def setupUI(self):

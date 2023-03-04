@@ -26,7 +26,6 @@ class LegendTopLevel(QWidget):
 			lambda x: self.propertyChanged.emit({'fontsize': x})
 		)
 
-
 	def toggle(self):
 		hidden = self.top_level.getStatus()
 		active = not hidden
@@ -37,10 +36,11 @@ class LegendTopLevel(QWidget):
 		# show/hide widgets
 		self.column_count.setHidden(hidden)
 		self.font_size.setHidden(hidden)
+		self.location.setHidden(hidden)
 
 		# size policty
 		if active:
-			self.setFixedHeight(self.item_height * 3)
+			self.setFixedHeight(self.item_height * 4)
 		else:
 			self.setFixedHeight(self.item_height)
 
@@ -61,10 +61,14 @@ class LegendTopLevel(QWidget):
 		# FONT SIZE
 		self.font_size = LegendProperty(text = "Tamanho da fonte", height = self.item_height, vmin = 1, vmax = 50)
 
+		# LOCATION
+		self.location = LegendLocation(text = 'Posição', height = self.item_height)	
+
 		# add to layout
 		self.main_layout.addWidget(self.top_level)
 		self.main_layout.addWidget(self.column_count)
 		self.main_layout.addWidget(self.font_size)
+		self.main_layout.addWidget(self.location)
 
 
 class LegendProperty(QWidget):
@@ -136,3 +140,89 @@ class LegendProperty(QWidget):
 
 		painter.end()
 		
+
+class LegendLocation(QWidget):
+	
+	locationChanged = Signal(str)
+	def __init__(self, text, height):
+		super().__init__()
+
+		# PROPERTIES
+		self.left_margin = 25
+		self.label = QLabel(text)
+		self.combobox = QComboBox()
+		self.options = [ # varia de 1 a 9
+			'Superior direito',
+			'Superior esquerdo',
+			'Inferior esquerdo',
+			'Inferior direito',
+			'Direito',
+			'Centro esquerdo',
+			'Centro direito',
+			'Inferior centro',
+			'Superior centro'
+		]
+		self.location_string = [
+			'upper right', 'upper left', 'lower left', 'lower right', 'right',
+			'center left', 'center right', 'lower center', 'upper center', 'center'
+		]
+
+		# SETTING WIDGETS
+		self.setFixedHeight(height)
+		self.combobox.addItems(self.options)
+
+		# SETUP UI
+		self.setupUI()
+		self.setupStyle()
+
+		# SIGNALS
+		self.combobox.currentIndexChanged.connect(
+			lambda x: self.locationChanged.emit(self.location_string[x])
+		)
+
+	def emitValue(self):
+		value = self.spinbox.value()
+		self.valueChanged.emit(value)
+
+	def setupUI(self):
+		self.main_layout = QHBoxLayout(self)
+		self.main_layout.setContentsMargins(self.left_margin, 3, 3, 3)
+		self.main_layout.setSpacing(5)
+		self.setObjectName('item')
+
+		# TEXT
+		self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		self.label.setObjectName('text')
+
+		# OPTIONS
+		self.combobox.setObjectName('combobox')
+		self.combobox.setCurrentIndex(8)
+
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.label)
+		self.main_layout.addWidget(self.combobox)
+
+	def setupStyle(self):
+		self.setStyleSheet(f'''
+			#item{{
+				background-color: transparent;
+				border: none;
+			}}
+			#text, #combobox{{
+				font: normal 10pt 'Microsoft New Tai Lue';
+			}}
+		''')
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+		super().paintEvent(event)
+
+		painter = QPainter()
+		painter.begin(self)
+		
+		dx = 2
+		x = (self.left_margin - dx) // 2
+		y = 0
+		dy = self.height()
+		painter.fillRect(x, y, dx, dy, QColor('#36475f'))
+
+		painter.end()

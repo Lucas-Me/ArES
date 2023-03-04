@@ -22,6 +22,7 @@ class AbstractChartMenu(QFrame):
 
 		# SIGNALS AND SLOTS
 		self.ui.legend_level.propertyChanged.connect(self.updateLegendProperties)
+		self.ui.legend_level.location.locationChanged.connect(self.updateLegendLocation)
 		self.ui.yaxis_level.propertyChanged.connect(self.updateVerticalAxisTicks)
 
 	@Slot(dict)
@@ -33,6 +34,11 @@ class AbstractChartMenu(QFrame):
 			self.parent().canvas.setVerticalTicks(**kwargs)
 		
 		# draw
+		self.parent().canvas.draw()
+	
+	@Slot(str)
+	def updateLegendLocation(self, location_string):
+		self.parent().canvas.updateLegend(loc = location_string)
 		self.parent().canvas.draw()
 
 	@Slot(dict)
@@ -94,15 +100,18 @@ class TimeSeriesMenu(AbstractChartMenu):
 			self.parent().canvas.removePlot(self.hline_id)
 
 	@Slot(int)
-	def updateHline(self, value : int):
+	def updateHline(self, value : int, id_ = 'Faixa Horizontal'):
 		# properties
 		canvas = self.parent().canvas
-		line = canvas.handles[self.hline_id]
+		line = canvas.handles[id_]
 
 		# set value
-		line.set_ydata([value, value])
+		lims = [value, value]
+		line.set_ydata(lims)
+		canvas.ylims[id_] = lims
 
 		# draw
+		canvas.autoscaleAxis()
 		canvas.draw()
 
 	@Slot(dict)

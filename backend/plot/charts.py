@@ -156,8 +156,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.legend = self.fig.legend([], [])
 
         # Plota linha horizontal em y = 0
-        self.hline = self.ax.axhline(y = 0, xmin = self.ax.get_xlim()[0], xmax = self.ax.get_xlim()[1], color = 'k')
-
+        self.hline = self.ax.axhline(y = 0, color = 'k', linewidth = 3)
 
         # PROPRIEDADES DO GRAFICO
         self.params = {
@@ -193,7 +192,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
             #legenda
             'legend-ncol' : 3,
-            'legend-fontsize': mpl.rcParams['font.size']
+            'legend-fontsize': mpl.rcParams['font.size'],
+            'legend-loc' : mpl.rcParams['legend.loc']
         }
 
         # CONSTRUCTOR
@@ -220,6 +220,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
     def updateLegend(self, **kwargs):
         args = dict(
             ncol = kwargs.pop('ncol', self.params['legend-ncol']),
+            loc = kwargs.pop('loc', self.params['legend-loc']),
             prop = {'size' : kwargs.pop('fontsize', self.params['legend-fontsize'])}
         )
 
@@ -255,7 +256,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
     def resetChart(self):
         # limpa os elementos do eixo
-        for name, artist in self.handles.items():
+        items = list(self.handles.items())
+        for name, artist in items:
             if 'Faixa Horizontal' in name:
                 continue
 
@@ -355,7 +357,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
         kwargs = {
             'y' : y,
             'label' : id_,
-            'color' : self.colors.get(id_, 'red')
+            'color' : self.colors.get(id_, 'red'),
+            'linewidth' : 3
         }
         
         # plotting
@@ -364,13 +367,14 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # storing variables
         self.handles[id_] = lin
-        self.labels[id_] = kwargs['label']
-        self.colors[id_] = kwargs['color']
-        self.ylims[id_] = (y, y)
+        self.labels[id_] = lin.get_label()
+        self.colors[id_] = lin.get_color()
+        self.ylims[id_] = lin.get_ydata()
 
         # update legend
         self.updateLegend()
-    
+        self.autoscaleAxis()
+
         # draw
         self.draw()
 
@@ -396,6 +400,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         values = list(self.ylims.values())
         new_bottom = np.nanmin(values)
         new_top = np.nanmax(values)
+
+        if new_top == new_bottom:
+            new_top += 10
 
         self.setVerticalTicks(min = new_bottom, max = new_top)
 
@@ -425,6 +432,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
             is_valid = sum(is_outside_lims) == 1
             if is_valid:
                 self.titleClicked.emit(is_outside_lims.index(True))
+        
 
 class TimeSeriesCanvas(AbstractCanvas):
 
@@ -492,6 +500,10 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
         self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
+        # scaling axis
+        self.ax.set_xlim(dates.min(), dates.max())
+        self.autoscaleAxis()
+
         # updating legend
         self.updateLegend()
 
@@ -523,6 +535,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         t1 = mdates.date2num(t1)
         t0 = mdates.date2num(ref_time)
         delta_t = (t1 - t0) * total_width
+        width = delta_t / n
         
         # preparing maximum and minimum values
         max_y = [1] * n + [self.params['yticks-max']]
@@ -549,7 +562,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             dates_num = mdates.date2num(dates)
             
             # getting position of left corner
-            offset = delta_t * (2 * i - n) / (2 * n)
+            offset = width * (2 * i - n + 1) / 2 
 
             # object metadata
             id_ = series.metadata['signature']
@@ -557,7 +570,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             # Plot properties
             kwargs = {
                 'color' : self.colors.get(id_, None),
-                'width' : delta_t / n
+                'width' : width
             }
 
             # LINE COLLECTION
@@ -575,7 +588,12 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
         # scaling X axis
-        self.ax.set_xlim(dates.min(), dates.max())
+        t_final = mdates.date2num(series_list[0].getDates()[-1])
+        xmin = t0 - delta_t / 2
+        xmax = t_final + delta_t /2
+
+        self.ax.set_xlim(xmin, xmax)
+        self.autoscaleAxis()
 
         # updating legend
         self.updateLegend()
