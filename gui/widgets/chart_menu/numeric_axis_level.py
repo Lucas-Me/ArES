@@ -45,9 +45,10 @@ class NumericalAxisTopLevel(QWidget):
 		self.vmin.setHidden(hidden)
 		self.total_ticks.setHidden(hidden)
 		self.font_size.setHidden(hidden)
+		self.auto_adjust.setHidden(hidden)
 
 		if active:
-			self.setFixedHeight(self.item_height * 5)
+			self.setFixedHeight(self.item_height * 6)
 		else:
 			self.setFixedHeight(self.item_height)
 	
@@ -71,6 +72,9 @@ class NumericalAxisTopLevel(QWidget):
 
 		# FONT SIZE
 		self.font_size = AxisProperty(text = "Tamanho da fonte", height = self.item_height, spinbox=QSpinBox())
+		
+		# Auto ADJUST LIMS
+		self.auto_adjust = AutoAdjustWidget(text = 'Auto-ajuste', height= self.item_height)
 
 		# add to layout
 		self.main_layout.addWidget(self.top_level)
@@ -78,11 +82,13 @@ class NumericalAxisTopLevel(QWidget):
 		self.main_layout.addWidget(self.vmin)
 		self.main_layout.addWidget(self.total_ticks)
 		self.main_layout.addWidget(self.font_size)
+		self.main_layout.addWidget(self.auto_adjust)
 
 
 class AutoAdjustWidget(QWidget):
 	
-	def __init__(self, height, text, spinbox : QSpinBox):
+	clicked = Signal(bool)
+	def __init__(self, height, text):
 		super().__init__()
 
 		# settings
@@ -90,7 +96,6 @@ class AutoAdjustWidget(QWidget):
 
 		# PROPERTIES
 		self.text = text
-		self.spinbox = spinbox
 		self.left_margin = 25
 
 		# SETUP UI
@@ -98,10 +103,7 @@ class AutoAdjustWidget(QWidget):
 		self.setupStyle()
 
 		# SIGNALS AND SLOTS
-		self.spinbox.editingFinished.connect(self.emitValue)
-
-	def emitValue(self):
-		self.valueChanged.emit(self.spinbox.value())
+		self.checkbox.stateChanged.connect(self.clicked.emit)
 
 	def setupUI(self):
 		self.main_layout = QHBoxLayout(self)
@@ -114,23 +116,22 @@ class AutoAdjustWidget(QWidget):
 		self.line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 		self.line.setObjectName('line')
 
-		# FONTSIZE
-		if isinstance(self.spinbox, QSpinBox):
-			self.spinbox.setRange(1, 50)
-		else:
-			self.spinbox.setRange(-100000, 100000)
-		self.spinbox.setObjectName('spinbox')
+		# checkbox
+		self.checkbox = QCheckBox()
+		self.checkbox.setChecked(True)
+		self.checkbox.setFixedSize(24, 24)
+		self.checkbox.setObjectName('checkbox')
 
 		# ADD TO MAIN LAYOUT
 		self.main_layout.addWidget(self.line)
-		self.main_layout.addWidget(self.spinbox)
+		self.main_layout.addWidget(self.checkbox)
 
 	def setupStyle(self):
 		self.setStyleSheet('''
 			#item{
 				background-color: transparent;
 			}
-			#line, #spinbox{
+			#line, #checkbox{
 				font: normal 10pt 'Microsoft New Tai Lue';
 			}
 		''')

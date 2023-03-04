@@ -43,8 +43,10 @@ class SeriesTopLevel(QWidget):
 		# size policty
 		if active:
 			self.setMaximumHeight(self.item_height * 100)
+			self.setMinimumHeight(self.item_height * 3)
 		else:
 			self.setMaximumHeight(self.item_height)
+			self.setMinimumHeight(self.item_height)
 
 	def setupUI(self):
 		if not self.objectName():

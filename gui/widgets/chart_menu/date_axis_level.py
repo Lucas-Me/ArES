@@ -43,10 +43,12 @@ class DateAxisTopLevel(QWidget):
 		self.date_locator.setHidden(hidden)
 		self.font_size.setHidden(hidden)
 		self.rotation.setHidden(hidden)
+		self.auto_adjust.setHidden(hidden)
+		self.date_range.setHidden(hidden)
 
 		# size policty
 		if active:
-			self.setFixedHeight(self.item_height * 5)
+			self.setFixedHeight(self.item_height * 8)
 		else:
 			self.setFixedHeight(self.item_height)
 
@@ -71,12 +73,102 @@ class DateAxisTopLevel(QWidget):
 		# ROTATION
 		self.rotation = DateLabelProperty(text = 'Rotação (°)', height = self.item_height, vmin=0, vmax = 90)
 
+		# min and max dates
+		self.date_range = DateRangeProperty(height = 2* self.item_height)
+
+		# auto adjust
+		self.auto_adjust = AutoAdjustWidget(text= 'Auto-ajuste', height = self.item_height)
+
 		# add to layout
 		self.main_layout.addWidget(self.top_level)
 		self.main_layout.addWidget(self.date_locator)
 		self.main_layout.addWidget(self.date_formatter)
 		self.main_layout.addWidget(self.font_size)
 		self.main_layout.addWidget(self.rotation)
+		self.main_layout.addWidget(self.date_range)
+		self.main_layout.addWidget(self.auto_adjust)
+
+
+class DateRangeProperty(QWidget):
+
+	dateChanged = Signal(QDate, str)
+	def __init__(self, height):
+		super().__init__()
+
+		# settings
+		self.setFixedHeight(height)
+
+		# PROPERTIES
+		self.left_margin = 25
+
+		# SETUP UI
+		self.setupUI()
+		self.setupStyle()
+
+		# SIGNALS AND SLOTS
+		self.vmin.editingFinished.connect(
+			lambda: (self.vmin.date(), 'min')
+		)
+		self.vmax.editingFinished.connect(
+			lambda: self.dateChanged.emit(self.vmax.date(), 'max')
+		)
+
+	def setupUI(self):
+		self.main_layout = QGridLayout(self)
+		self.main_layout.setContentsMargins(self.left_margin, 3, 3, 3)
+		self.main_layout.setSpacing(5)
+		self.setObjectName('item')
+
+		# TEXT
+		self.line_min = QLabel('Mínimo')
+		self.line_min.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
+		self.line_min.setObjectName('line1')
+
+		self.line_max = QLabel('Máximo')
+		self.line_max.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
+		self.line_max.setObjectName('line2')
+
+		# date_edits
+		self.vmin = QDateEdit(parent = self)
+		self.vmin.setObjectName('vmin')
+		#
+		self.vmax = QDateEdit(parent = self)
+		self.vmax.setObjectName('vmax')
+
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.line_max, 0, 0)
+		self.main_layout.addWidget(self.line_min, 1, 0)
+		self.main_layout.addWidget(self.vmax, 0, 1)
+		self.main_layout.addWidget(self.vmin, 1, 1)
+
+	def setupStyle(self):
+		self.setStyleSheet('''
+			#item{
+				background-color: transparent;
+			}
+			#line1, #line2{
+				font: normal 10pt 'Microsoft New Tai Lue';
+			}
+			#vmin, #vmax{
+				background-color: transparent;
+				border: none;
+				font: bold 12pt 'Microsoft New Tai Lue';
+			}
+		''')
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+		super().paintEvent(event)
+
+		painter = QPainter()
+		painter.begin(self)
+		
+		dx = 2
+		x = (self.left_margin - dx) // 2
+		y = 0
+		dy = self.height()
+		painter.fillRect(x, y, dx, dy, QColor('#36475f'))
+
+		painter.end()
 
 
 class DateLocatorProperty(QFrame):
@@ -168,6 +260,69 @@ class DateLocatorProperty(QFrame):
 
 		painter.end()
 
+class AutoAdjustWidget(QWidget):
+	
+	clicked = Signal(bool)
+	def __init__(self, height, text):
+		super().__init__()
+
+		# settings
+		self.setFixedHeight(height)
+
+		# PROPERTIES
+		self.text = text
+		self.left_margin = 25
+
+		# SETUP UI
+		self.setupUI()
+		self.setupStyle()
+
+		# SIGNALS AND SLOTS
+		self.checkbox.stateChanged.connect(self.clicked.emit)
+
+	def setupUI(self):
+		self.main_layout = QHBoxLayout(self)
+		self.main_layout.setContentsMargins(self.left_margin, 3, 3, 3)
+		self.main_layout.setSpacing(5)
+		self.setObjectName('item')
+
+		# TEXT
+		self.line = QLabel(self.text)
+		self.line.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		self.line.setObjectName('line')
+
+		# checkbox
+		self.checkbox = QCheckBox()
+		self.checkbox.setChecked(True)
+		self.checkbox.setObjectName('checkbox')
+
+		# ADD TO MAIN LAYOUT
+		self.main_layout.addWidget(self.line)
+		self.main_layout.addWidget(self.checkbox)
+
+	def setupStyle(self):
+		self.setStyleSheet('''
+			#item{
+				background-color: transparent;
+			}
+			#line, #checkbox{
+				font: normal 10pt 'Microsoft New Tai Lue';
+			}
+		''')
+
+	def paintEvent(self, event: QPaintEvent) -> None:
+		super().paintEvent(event)
+
+		painter = QPainter()
+		painter.begin(self)
+		
+		dx = 2
+		x = (self.left_margin - dx) // 2
+		y = 0
+		dy = self.height()
+		painter.fillRect(x, y, dx, dy, QColor('#36475f'))
+
+		painter.end()
 
 class DateFormatterProperty(QFrame):
     

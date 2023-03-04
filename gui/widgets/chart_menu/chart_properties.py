@@ -24,6 +24,10 @@ class AbstractChartMenu(QFrame):
 		self.ui.legend_level.propertyChanged.connect(self.updateLegendProperties)
 		self.ui.legend_level.location.locationChanged.connect(self.updateLegendLocation)
 		self.ui.yaxis_level.propertyChanged.connect(self.updateVerticalAxisTicks)
+		self.ui.yaxis_level.auto_adjust.clicked.connect(self.setAutoAdjustYaxis)
+
+	def setAutoAdjustYaxis(self, state : bool):
+		self.parent().canvas.autoadjust_yaxis = state
 
 	@Slot(dict)
 	def updateVerticalAxisTicks(self, kwargs : dict):
@@ -81,7 +85,22 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.ui.bar_plot_level.list_view.rowClicked.connect(self.updateBarElement)
 		self.ui.line_plot_level.hline_frame.stateChanged.connect(self.toggleHLine)
 		self.ui.line_plot_level.hline_frame.valueChanged.connect(self.updateHline)
+		self.ui.xaxis_level.date_range.dateChanged.connect(self.updateDateLims)
+		self.ui.xaxis_level.auto_adjust.clicked.connect(self.setAutoAdjustXaxis)
+
+	@Slot(QDate, str)
+	def updateDateLims(self, date : QDate, which : str):
+		canvas = self.parent().canvas
+		kwargs = {which: date.toPython()}
+		canvas.setHorizontalLims(**kwargs)
+
+		# draw
+		canvas.draw()
 	
+	@Slot(bool)
+	def setAutoAdjustXaxis(self, state : bool):
+		self.parent().canvas.autoadjust_xaxis = state
+
 	def setupInitialValues(self):
 		super().setupInitialValues()
 
@@ -90,6 +109,13 @@ class TimeSeriesMenu(AbstractChartMenu):
 
 		# X axis
 		self.ui.xaxis_level.font_size.spinbox.setValue(config['xaxis-fontsize'])
+
+		# dates
+		vmin, vmax = self.parent().canvas.getXLims()
+
+		self.ui.xaxis_level.date_range.vmin.setDate(QDate(vmin))
+		self.ui.xaxis_level.date_range.vmax.setDate(QDate(vmax))
+
 
 	@Slot(bool)
 	def toggleHLine(self, status : bool):

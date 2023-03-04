@@ -1,5 +1,5 @@
 '''
-CONTEM AS CLASSES RESPONSAVEIS PELA VISUALIZACAO EM GRAFICO NA QUINTA PAGINA DO SOFTWARE
+CONTEM AS CLASSES RESPONSAVEIS PELA VISUALIZACAO EM GRAFICO.
 '''
 # IMPORT QT CORE
 from qt_core import *
@@ -100,6 +100,10 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.handles = {} # store artists
         self.ylims = {} # stores bottom and top for each artist
         self.legend = self.fig.legend([], [])
+
+        # autoadjust axis options
+        self.autoadjust_yaxis = True
+        self.autoadjust_xaxis = True
     
         # SET LOCATOR AT Y AXIS
         self.ax.yaxis.set_major_locator(mticker.MaxNLocator(nbins = self.ax.get_yticks().shape[0]))
@@ -353,7 +357,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params['xticks-max'] = vmax
 
     def autoscaleAxis(self):
-        if len(self.ylims) == 0:
+        if not self.autoadjust_yaxis or len(self.ylims) == 0 :
             return None
         
         # estimando o valor maximo e minimo dos objetos no grafico
@@ -415,6 +419,12 @@ class TimeSeriesCanvas(AbstractCanvas):
             'xticks-formatter' : self.ax.xaxis.get_major_formatter(),
         })
         
+    def getXLims(self):
+        vmin = mdates.num2date(self.params['xticks-min'])
+        vmax = mdates.num2date(self.params['xticks-max'])
+
+        return (vmin, vmax)
+
     def setHorizontalTicks(self, **kwargs):
         locator = kwargs.pop('locator', self.params['xticks-locator'])
         formatter = kwargs.pop('formatter', self.params['xticks-formatter'])
@@ -461,7 +471,9 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
         # scaling axis
-        self.setHorizontalLims(dates.min(), dates.max())
+        if self.autoadjust_xaxis:
+            self.setHorizontalLims(dates.min(), dates.max())
+
         self.autoscaleAxis()
 
         # updating legend
@@ -547,12 +559,14 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
             self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
-        # scaling X axis
-        t_final = mdates.date2num(series_list[0].getDates()[-1])
-        xmin = t0 - delta_t / 2
-        xmax = t_final + delta_t /2
+        if self.autoadjust_xaxis:
+            # scaling X axis
+            t_final = mdates.date2num(series_list[0].getDates()[-1])
+            xmin = t0 - delta_t / 2
+            xmax = t_final + delta_t /2
+    
+            self.setHorizontalLims(xmin, xmax)
 
-        self.setHorizontalLims(xmin, xmax)
         self.autoscaleAxis()
 
         # updating legend
