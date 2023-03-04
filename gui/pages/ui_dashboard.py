@@ -3,7 +3,7 @@ from qt_core import *
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.py_push_button import IconButton
-from backend.plot.charts import NavigationToolbar
+from backend.plot.toolbar import NavigationToolbar
 
 # Data Manager Page UI Class
 class UI_Dashboard(object):

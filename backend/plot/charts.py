@@ -5,7 +5,6 @@ CONTEM AS CLASSES RESPONSAVEIS PELA VISUALIZACAO EM GRAFICO NA QUINTA PAGINA DO 
 from qt_core import *
 
 # IMPORT MODULES
-import os
 import numpy as np
 
 # IMPORT CUSTOM MODULES
@@ -16,15 +15,12 @@ import backend.misc.settings as settings
 import matplotlib.dates as mdates
 import matplotlib.container as mcontainer
 import matplotlib.patches as mpatches
+import matplotlib.ticker as mticker
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import PickEvent
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
-from matplotlib.backends.qt_compat import (
-    QtWidgets, __version__,
-    _enum,  _getSaveFileName
-)
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 # DEFAULT MATPLOTLIB OPTIONS
 # ///////////////////////////////////////////////////////////////////////
@@ -87,56 +83,6 @@ mpl.rcParams.update({
 # CLASSES
 # ///////////////////////////////////////////////////////////////////////
 
-class NavigationToolbar(NavigationToolbar2QT):
-
-    def __init__(self, canvas, parent):
-        # only display the buttons we need
-        NavigationToolbar2QT.toolitems = (
-            ('Home', 'Reiniciar visão original', 'home', 'home'),
-            ('Back', 'Voltar a operação anterior', 'back', 'back'),
-            ('Forward', 'Avançar para a operação seguinte', 'forward', 'forward'),
-            (None, None, None, None),
-            ('Pan', 'Navegue com o clique esquerdo, dê zoom com o direito.', 'move', 'pan'),
-            ('Zoom', 'Dê zoom para o retangulo', 'zoom_to_rect', 'zoom'),
-            # ('Subplots', 'Configure subplots', 'subplots', 'configure_subplots'), (None, None, None, None),
-            ('Save', 'Salvar a figura', 'filesave', 'save_figure')
-        )
-        super().__init__(canvas, parent)
-
-    # sobrescreve a função "save_figure"
-    def save_figure(self, *args):
-        filetypes = self.canvas.get_supported_filetypes_grouped()
-        sorted_filetypes = sorted(filetypes.items())
-        default_filetype = self.canvas.get_default_filetype()
-
-        startpath = os.path.expanduser(mpl.rcParams['savefig.directory'])
-        start = os.path.join(startpath, self.canvas.get_default_filename())
-        filters = []
-        selectedFilter = None
-        for name, exts in sorted_filetypes:
-            exts_list = " ".join(['*.%s' % ext for ext in exts])
-            filter_ = '%s (%s)' % (name, exts_list)
-            if default_filetype in exts:
-                selectedFilter = filter_
-            filters.append(filter_)
-        filters = ';;'.join(filters)
-
-        fname, filter_ = _getSaveFileName(
-            self.canvas.parent(), "Choose a filename to save to", start,
-            filters, selectedFilter)
-        if fname:
-            # Save dir for next time, unless empty str (i.e., use cwd).
-            if startpath != "":
-                mpl.rcParams['savefig.directory'] = os.path.dirname(fname)
-            try:
-                self.canvas.figure.savefig(fname, dpi = 300, bbox_inches="tight")
-            except Exception as e:
-                QtWidgets.QMessageBox.critical(
-                    self, "Erro ao salvar o arquivo", str(e),
-                    _enum("QtWidgets.QMessageBox.StandardButton").Ok,
-                    _enum("QtWidgets.QMessageBox.StandardButton").NoButton)
-
-
 class AbstractCanvas(FigureCanvasQTAgg):
     
     artistClicked = Signal(str)
@@ -154,6 +100,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.handles = {} # store artists
         self.ylims = {} # stores bottom and top for each artist
         self.legend = self.fig.legend([], [])
+    
+        # SET LOCATOR AT Y AXIS
+        self.ax.yaxis.set_major_locator(mticker.MaxNLocator(nbins = self.ax.get_yticks().shape[0]))
 
         # Plota linha horizontal em y = 0
         self.hline = self.ax.axhline(y = 0, color = 'k', linewidth = 3)
@@ -337,7 +286,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         size = kwargs.pop('size', self.params['yticks-size'])
         
         # update axis ticks
-        self.ax.set_yticks(np.linspace(min_y, max_y, size))
+        self.ax.yaxis.get_major_locator().set_params(nbins = size)
         
         # updating limits
         self.ax.set_ylim(min_y, max_y)
