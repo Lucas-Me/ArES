@@ -51,7 +51,7 @@ mpl.rcParams.update({
     # 'axes.spines.top': True,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
-    'lines.linewidth' : .5,
+    'lines.linewidth' : .75,
     'patch.edgecolor': 'none',
     'patch.force_edgecolor': False,
     'text.color': default_color,
@@ -373,17 +373,6 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.setVerticalTicks(min = new_bottom, max = new_top)
         self.yaxisAdjusted.emit(new_bottom, new_top)
 
-    def autoscaleAxisX(self, vmin, vmax):
-        if self.autoadjust_xaxis:
-            if isinstance(vmin, float):
-                vmin = mdates.num2date(vmin)
-                vmax = mdates.num2date(vmax)
-            
-            self.setHorizontalLims(min = vmin, max = vmax)
-
-            # emit signal
-            self.xaxisAdjusted.emit(vmin, vmax)
-
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
         if dblclick:
@@ -439,6 +428,17 @@ class TimeSeriesCanvas(AbstractCanvas):
 
         return (vmin, vmax)
 
+    def autoscaleAxisX(self, vmin, vmax):
+        if self.autoadjust_xaxis:
+            if isinstance(vmin, float):
+                vmin = mdates.num2date(vmin)
+                vmax = mdates.num2date(vmax)
+            
+            self.setHorizontalLims(min = vmin, max = vmax)
+
+            # emit signal
+            self.xaxisAdjusted.emit(vmin, vmax)
+
     def setHorizontalTicks(self, **kwargs):
         locator = kwargs.pop('locator', self.params['xticks-locator'])
         formatter = kwargs.pop('formatter', self.params['xticks-formatter'])
@@ -485,7 +485,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
         # scaling axis
-        self.autoscaleAxisX(dates.min(), dates.max())
+        self.autoscaleAxisX(dates.min().item(), dates.max().item())
         self.autoscaleAxisY()
 
         # updating legend
@@ -569,7 +569,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.handles[id_] = lc
             self.colors[id_] = lc.get_color()[0]
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
-            self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
+            self.ylims[id_] = (0, np.nanmax(values))
 
         # scaling X axis
         t_final = mdates.date2num(series_list[0].getDates()[-1])

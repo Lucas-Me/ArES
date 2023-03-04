@@ -1,11 +1,9 @@
 # IMPORT QT MODULES
 from qt_core import *
+import datetime
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.chart_menu.ui_properties import UI_AbstractMenu
-
-# IMPORT CUSTOM VARIABLES
-import backend.misc.settings as settings
 
 
 class AbstractChartMenu(QFrame):
@@ -95,8 +93,12 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.parent().canvas.xaxisAdjusted.connect(self.setHorizontalThreshold)
 		
 	def setHorizontalThreshold(self, vmin, vmax):
-		self.ui.xaxis_level.date_range.vmin.setDate(QDate(vmin.item().date()))
-		self.ui.xaxis_level.date_range.vmax.setDate(QDate(vmax.item().date()))
+		if isinstance(vmin, datetime.datetime):
+			vmin = vmin.date()
+			vmax = vmax.date()
+
+		self.ui.xaxis_level.date_range.vmin.setDate(QDate(vmin))
+		self.ui.xaxis_level.date_range.vmax.setDate(QDate(vmax))
 
 	@Slot(QDate, str)
 	def updateDateLims(self, date : QDate, which : str):

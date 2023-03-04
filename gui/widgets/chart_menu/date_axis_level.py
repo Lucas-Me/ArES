@@ -107,7 +107,7 @@ class DateRangeProperty(QWidget):
 
 		# SIGNALS AND SLOTS
 		self.vmin.editingFinished.connect(
-			lambda: (self.vmin.date(), 'min')
+			lambda: self.dateChanged.emit(self.vmin.date(), 'min')
 		)
 		self.vmax.editingFinished.connect(
 			lambda: self.dateChanged.emit(self.vmax.date(), 'max')
