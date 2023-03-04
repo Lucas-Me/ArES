@@ -141,6 +141,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
     
     artistClicked = Signal(str)
     valueChanged = Signal(tuple)
+    titleClicked = Signal(int)
     def __init__(self, width = 16, height = 7, dpi = 100):
 
         # iniciando
@@ -200,6 +201,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # SIGNALS AND SLOTS
         self.mpl_connect('pick_event', self.on_pick)
+        self.mpl_connect('button_press_event', self.on_click)
 
     def getSettings(self):
         return self.params
@@ -404,6 +406,25 @@ class AbstractCanvas(FigureCanvasQTAgg):
             label = artist.get_label()
 
             self.artistClicked.emit(label)
+
+    def on_click(self, event):
+        if event.dblclick and event.inaxes is None:
+            # get mouse properties
+            width, height = self.get_width_height()
+            x = event.x / width
+            y = event.y / height
+
+            # get figure properties
+            left = self.fig.subplotpars.left
+            right = self.fig.subplotpars.right
+            top = self.fig.subplotpars.top
+            bottom = self.fig.subplotpars.bottom
+            
+            # get position of click event
+            is_outside_lims  = (x < left, x > right, y < bottom, y > top)
+            is_valid = sum(is_outside_lims) == 1
+            if is_valid:
+                self.titleClicked.emit(is_outside_lims.index(True))
 
 class TimeSeriesCanvas(AbstractCanvas):
 

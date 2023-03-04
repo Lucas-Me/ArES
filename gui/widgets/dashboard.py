@@ -8,6 +8,8 @@ from gui.pages.ui_dashboard import UI_Dashboard
 from backend.plot.charts import TimeSeriesCanvas
 from gui.widgets.chart_menu.chart_properties import TimeSeriesMenu
 from gui.windows.dialog.legend.color_dialog import LegendDialog
+from gui.windows.dialog.figure_title.title_dialog import TitleEditDialog
+
 
 # Data Manager Page Class
 class Dashboard(QWidget):
@@ -32,6 +34,24 @@ class Dashboard(QWidget):
 		# SIGNALS AND SLOTS
 		self.ui.toggle_menu.clicked.connect(self.toggleMenu)
 		self.canvas.artistClicked.connect(self.editArtist)
+		self.canvas.titleClicked.connect(self.editTitle)
+
+	@Slot(int)
+	def editTitle(self, position):
+		'''Cria uma janela para que o usuario edite o titulo do eixo X, Y ou da Figura.'''
+		 
+		# position is {0: left, 1: right, 2: bottom, 3 : top}
+		which = ['yaxis', 'yaxis-right', 'xaxis','title']
+		display = ['Eixo Vertical', 'Eixo Vertical Secundário', 'Eixo Horizontal', 'Título']
+
+		if position != 1:
+			dialog = TitleEditDialog(
+				parent = self,
+				canvas = self.canvas,
+				display = display[position],
+				which = which[position]
+			)
+			dialog.show()
 
 	def setupChartProperties(self):
 		self.chart_menu.setupInitialValues()

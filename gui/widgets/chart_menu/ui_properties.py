@@ -2,7 +2,6 @@
 from qt_core import *
 
 # IMPORT CUSTOMW WIDGETS
-from gui.widgets.chart_menu.title_level import TitleTopLevel
 from gui.widgets.chart_menu.legend_level import LegendTopLevel
 from gui.widgets.chart_menu.numeric_axis_level import NumericalAxisTopLevel
 from gui.widgets.chart_menu.date_axis_level import DateAxisTopLevel
@@ -29,13 +28,11 @@ class UI_AbstractMenu(object):
 		self.top_label.setObjectName('top_label')
 
 		# BUTTONS
-		self.title_level = TitleTopLevel(height = parent.item_height)
 		self.legend_level = LegendTopLevel(height = parent.item_height)
 		self.yaxis_level = NumericalAxisTopLevel(title = "Eixo Vertical", height = parent.item_height)
 
 		# ADD TO MAIN LAYOUT
 		self.main_layout.addWidget(self.top_label)
-		self.main_layout.addWidget(self.title_level)
 		self.main_layout.addWidget(self.legend_level)
 		self.main_layout.addWidget(self.yaxis_level)
 

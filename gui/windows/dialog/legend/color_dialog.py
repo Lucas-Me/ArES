@@ -10,13 +10,8 @@ from gui.windows.dialog.legend.ui_dialog import UI_LegendDialog
 # IMPORT CUSTOM FUNCTIONS
 from backend.misc.functions import drawShadow
 
-# IMPORT CUSTOM MODULES
-from backend.data_management.methods import Profile
-
 
 class LegendDialog(QDialog):
-
-	profileSaved = Signal(Profile)
 
 	def __init__(self, canvas, parent = None):
 		super().__init__(parent = parent)

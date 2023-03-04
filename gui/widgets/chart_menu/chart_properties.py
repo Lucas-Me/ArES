@@ -21,7 +21,6 @@ class AbstractChartMenu(QFrame):
 		self.ui.setupUI(self)
 
 		# SIGNALS AND SLOTS
-		self.ui.title_level.labelEdited.connect(self.updateLabel)
 		self.ui.legend_level.propertyChanged.connect(self.updateLegendProperties)
 		self.ui.yaxis_level.propertyChanged.connect(self.updateVerticalAxisTicks)
 
@@ -43,29 +42,9 @@ class AbstractChartMenu(QFrame):
 		# draw
 		self.parent().canvas.draw()
 
-	@Slot(list)
-	def updateLabel(self, options):
-		# unpacking args
-		kwargs = {
-			'label' : options[0],
-			'fontweight' : 'bold' if options[1] else 'normal',
-			'fontsize' : options[2]
-		}
-
-		canvas = self.parent().canvas
-		if options[-1] == 'title':
-			canvas.setTitle(**kwargs)
-		else:
-			canvas.setLabel(axis = options[-1][0], **kwargs)
-
 	def setupInitialValues(self):
 		# canvas settings
 		config = self.parent().canvas.getSettings()
-
-		# title
-		self.ui.title_level.figure_title.fontsize.setValue(config['title-fontsize'])
-		self.ui.title_level.xaxis_label.fontsize.setValue(config['xaxis-fontsize'])
-		self.ui.title_level.yaxis_label.fontsize.setValue(config['yaxis-fontsize'])
 
 		# legend
 		self.ui.legend_level.font_size.spinbox.setValue(config['legend-fontsize'])
