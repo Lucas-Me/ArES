@@ -108,4 +108,3 @@ class TopLevelButton(QPushButton):
 			qp.drawConvexPolygon(points)
 
 		qp.end()
-

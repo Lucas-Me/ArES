@@ -54,3 +54,12 @@ class NavigationToolbar(NavigationToolbar2QT):
                     self, "Erro ao salvar o arquivo", str(e),
                     _enum("QtWidgets.QMessageBox.StandardButton").Ok,
                     _enum("QtWidgets.QMessageBox.StandardButton").NoButton)
+
+    def home(self, *args, **kwargs):
+        super().home(*args, **kwargs)
+
+        # eixo y
+        self.canvas.setVerticalTicks()
+
+        # eixo x
+        self.canvas.setHorizontalTicks()

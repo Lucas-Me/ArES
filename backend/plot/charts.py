@@ -341,6 +341,17 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # update plot
         self.updateLegend()
 
+    def setHorizontalLims(self, **kwargs):
+        vmin = kwargs.pop('min', self.params['xticks-min'])
+        vmax = kwargs.pop('max', self.params['xticks-max'])
+
+        # updating locator and fomatter
+        self.ax.set_xlim(vmin, vmax)
+
+        # update private params
+        self.params['xticks-min'] = vmin
+        self.params['xticks-max'] = vmax
+
     def autoscaleAxis(self):
         if len(self.ylims) == 0:
             return None
@@ -381,7 +392,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
             is_valid = sum(is_outside_lims) == 1
             if is_valid:
                 self.titleClicked.emit(is_outside_lims.index(True))
-        
+    
 
 class TimeSeriesCanvas(AbstractCanvas):
 
@@ -450,7 +461,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
 
         # scaling axis
-        self.ax.set_xlim(dates.min(), dates.max())
+        self.setHorizontalLims(dates.min(), dates.max())
         self.autoscaleAxis()
 
         # updating legend
@@ -541,7 +552,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         xmin = t0 - delta_t / 2
         xmax = t_final + delta_t /2
 
-        self.ax.set_xlim(xmin, xmax)
+        self.setHorizontalLims(xmin, xmax)
         self.autoscaleAxis()
 
         # updating legend
