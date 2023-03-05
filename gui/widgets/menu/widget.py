@@ -4,6 +4,7 @@ from qt_core import *
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.menu.buttons import TopLevelButton
 from gui.widgets.menu.chart_list_widget import ChartList
+from gui.windows.settings.window import SettingsWindow
 
 class Menu(QFrame):
     
@@ -21,7 +22,12 @@ class Menu(QFrame):
 
 		# Signals
 		self.charts_list.rowClicked.connect(self.establishSignal)
+		self.btn_settings.clicked.connect(self.openSettings)
 
+	def openSettings(self):
+		dialog = SettingsWindow(parent = self.parent)
+		dialog.show()
+		
 	def establishSignal(self, item : QListWidgetItem):
 		self.parent.change_page(
 			page = item,
@@ -76,13 +82,6 @@ class Menu(QFrame):
 		# AJUSTES (SETTINGS) BUTTON
 		self.btn_settings = TopLevelButton(text = "Ajustes", icon_name = 'icon_settings.svg')
 		self.btn_settings.setObjectName('settings')
-
-		# label version
-		self.left_menu_label_version = QLabel("v1.3.0")
-		self.left_menu_label_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.left_menu_label_version.setMinimumHeight(30)
-		self.left_menu_label_version.setMaximumHeight(30)
-
 
 		# ADD TO MAIN LAYOUT
 		# ////////////////////////////////////
