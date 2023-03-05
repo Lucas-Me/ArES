@@ -32,5 +32,6 @@ SETTINGS = dict(
         'font_size' : 15,
         'dpi' : 200
     },
+    perfis = {}, # Perfis do usuário
     version = '1.3.0'
 )

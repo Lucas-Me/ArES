@@ -194,13 +194,14 @@ class UI_ProcessScreen(object):
                 border: 1px solid #cccccc;
             }}
             #total_label, #date_label{{
-                background-color: #ffffff;
-                font: 500 14pt '{font}';
-                color: {font_color};
-                border: 1px solid #cccccc;
+                background-color: #36475f;
+                font: bold 15pt '{font}';
+                color: #ffffff;
+                border: 1px solid #2a394f;
                 border-radius: {border_radius}px;
                 text-align: left;
                 padding-left: 10px;
+                padding-right: 10px;
             }}
             #settings_label {{
                 font: 500 14pt '{font}';

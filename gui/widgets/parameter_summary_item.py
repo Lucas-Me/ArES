@@ -5,7 +5,7 @@ from qt_core import *
 from gui.ui_widgets.ui_summary_item import UI_ParameterSummaryItem
 
 # IMPORT CUSTOM MODULES
-from gui.widgets.profile_picker import Profile
+from backend.data_management.methods import Profile
 
 # Paramater Selection Widget Class
 class ParameterSummaryItem(QFrame):

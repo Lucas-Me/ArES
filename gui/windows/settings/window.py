@@ -21,6 +21,7 @@ class SettingsWindow(QDialog):
 
 		# PROPERTIES
 		self.margins = 20
+		self.dragPos = QPoint()
 
 		# WINDOW SETTINGS
 		self.setFixedSize(400 + self.margins, 350 + self.margins)
@@ -49,12 +50,28 @@ class SettingsWindow(QDialog):
 
 	def save_json(self):
 		'''Salva as configurações em um arquivo JSON'''
+
+		# update profile files
+		self.updateProfileField()
+
+		# seeking directory
 		userhome_directory = os.path.expanduser("~")
 		ArES_dir = os.path.join(userhome_directory, '.ArES')
 		fname = os.path.join(ArES_dir, 'config.json')
+
+		# saving
 		with open(fname, 'w', encoding='utf-8') as f:
 			json.dump(settings.SETTINGS, f, ensure_ascii=False, indent=4)
-		
+	
+	def updateProfileField(self):
+		listview = self.parent().ui.pages.process_page.ui.profile_picker.list
+		profiles = {}
+		for i in range(listview.model.rowCount()):
+			profile = listview.getProfile(i)
+			profiles[profile.getName()] = [profile.getColor().name(), profile.getMethods()]
+	
+		settings.SETTINGS['perfis'] = profiles
+
 	def applyChanges(self):
 		self.updateSQL()
 		self.udpateCriteria()
@@ -215,3 +232,13 @@ class SettingsWindow(QDialog):
 
 		rect = QRect(topleft, QSize(w, h))
 		self.setGeometry(rect)
+
+	def mousePressEvent(self, event):          
+		self.dragPos = event.globalPos()
+		self.move_event = True
+		
+	def mouseMoveEvent(self, event):                          
+		if event.buttons() == Qt.LeftButton:
+			self.move(self.pos() + event.globalPos() - self.dragPos)
+			self.dragPos = event.globalPos()
+			event.accept()

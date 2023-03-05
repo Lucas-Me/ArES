@@ -11,7 +11,8 @@ from gui.pages.ui_processingscreen import UI_ProcessScreen
 from gui.windows.dialog.loading_dialog import LoadingDialog
 
 # IMPORT CUSTOM MODULES
-from gui.widgets.profile_picker import Profile
+from backend.data_management.methods import Profile
+import backend.misc.settings as settings
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
@@ -42,12 +43,31 @@ class ProcessingScreen(QWidget):
 		self.ui.setup_ui(self)
 		self.ui.setup_stylesheet(parent)
 
+		# SETTINGS
+		self.laodProfiles() # load pre-existing profile, from earlier sessions
+
 		# SIGNALS AND SLOTS
 		self.ui.profile_picker.list.removedProfile.connect(self.resetProfileBox)
 		self.ui.profile_picker.list.profileDoubleClicked.connect(self.showProfileEditor)
 		self.ui.next_button.clicked.connect(self.processTasks)
 		self.ui.export_raw.clicked.connect(lambda: self.export('raw'))
 		self.ui.export_modified.clicked.connect(lambda: self.export('modified'))
+
+	def laodProfiles(self):
+		profiles = settings.SETTINGS.get('perfis', {})
+		if len(profiles) == 0:
+			return None
+		
+		for k, v in profiles.items():
+			new_index = self.ui.profile_picker.list.model.rowCount()
+			new_profile = Profile(
+				color = QColor(v[0]),
+				name = k,
+				methods = v[1]
+			)
+			
+			# inserting new profile
+			self.ui.profile_picker.list.updateProfile(new_index, new_profile)
 
 	def exportStatus(self):
 		if len(self.processed_data) > 0:
