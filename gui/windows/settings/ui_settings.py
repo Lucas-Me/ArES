@@ -234,7 +234,7 @@ class UI_SettingsWindow(object):
 		self.layout_page2.setSpacing(5)
 
 		# representatividade
-		self.label_validos = QLabel("Representatividade")
+		self.label_validos = QLabel("Representatividade (%)")
 		self.label_validos.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_validos.setFixedHeight(text_height)
 		self.label_validos.setObjectName('top_level_representatividade')

@@ -43,17 +43,16 @@ class SettingsWindow(QDialog):
 			lambda: self.updatePage(index = 2, button = self.ui.btn_figure)
 			)
 
-	
 	def loadContents(self):
 		# BANCO DE DADOS
 		self.ui.database_edit.setText(settings.SETTINGS['conexao']['database'])
 		self.ui.server_edit.setText(settings.SETTINGS['conexao']['servidor'])
 
 		# CRITERIOS DE VALIDACAO
-		self.ui.spinbox_hourly.setValue(settings.SETTINGS['representatividade']['Horária'])
-		self.ui.spinbox_daily.setValue(settings.SETTINGS['representatividade']['Data'])
-		self.ui.spinbox_monthly.setValue(settings.SETTINGS['representatividade']['Mês e ano'])
-		self.ui.spinbox_yearly.setValue(settings.SETTINGS['representatividade']['Ano'])
+		self.ui.spinbox_hourly.setValue(settings.SETTINGS['representatividade']['Horária'] * 100)
+		self.ui.spinbox_daily.setValue(settings.SETTINGS['representatividade']['Data']  * 100 )
+		self.ui.spinbox_monthly.setValue(settings.SETTINGS['representatividade']['Mês e ano']  * 100)
+		self.ui.spinbox_yearly.setValue(settings.SETTINGS['representatividade']['Ano']  * 100)
 		self.ui.date_edit.setDate(QDate.fromString(settings.SETTINGS['semiautomatica']['data_referencia'], Qt.DateFormat.ISODate))
 		self.ui.spinbox_freq.setValue(settings.SETTINGS['semiautomatica']['frequencia'])
 
@@ -68,6 +67,74 @@ class SettingsWindow(QDialog):
 		families = np.unique(sorted([f.name for f in font_manager.fontManager.afmlist] + [f.name for f in font_manager.fontManager.ttflist]))
 		self.ui.font_families.addItems(families)
 		self.ui.font_families.setCurrentText(settings.SETTINGS['figura']['font_family'])
+
+	def updateSQL(self):
+		login_page = self.parent().ui.pages.login_page
+
+		# if already connected, do not apply and fix the field
+		if login_page.sql.get_status():
+			self.ui.database_edit.setText(settings.SETTINGS['conexao']['database'])
+			self.ui.server_edit.setText(settings.SETTINGS['conexao']['servidor'])
+			return None
+		
+		new_server = self.ui.server_edit.text()
+		new_db = self.ui.database_edit.text()
+
+		login_page.sql.configureHost(
+			host = new_server,
+			db = new_db
+		)
+
+		# test connection
+		login_page.updateHost()
+		login_page.testConnection()
+
+		# update global settings
+		settings.SETTINGS['conexao']['database'] = new_db
+		settings.SETTINGS['conexao']['servidor'] = new_server
+
+	def udpateCriteria(self):
+		# getting new values
+		hourly = self.ui.spinbox_hourly.value()
+		daily = self.ui.spinbox_daily.value()
+		monthly = self.ui.spinbox_monthly.value()
+		yearly = self.ui.spinbox_yearly.value()
+		ref_date = self.ui.date_edit.date().toPython().strftime('%Y-%m-%d')
+		frequency = self.ui.spinbox_freq.value()
+
+		# update global settings
+		settings.SETTINGS['representatividade']['Horária'] = hourly / 100
+		settings.SETTINGS['representatividade']['Data'] = daily / 100
+		settings.SETTINGS['representatividade']['Mês e ano'] = monthly / 100
+		settings.SETTINGS['representatividade']['Ano'] = yearly / 100
+		settings.SETTINGS['semiautomatica']['data_referencia'] = ref_date
+		settings.SETTINGS['semiautomatica']['frequencia'] = frequency
+
+	def updateFigure(self):
+		# getting values
+		left = self.ui.spinbox_left.value()
+		right = self.ui.spinbox_right.value()
+		bottom = self.ui.spinbox_bottom.value()
+		top = self.ui.spinbox_top.value()
+		fontsize = self.ui.font_size.value()
+		fontfamily = self.ui.font_families.currentText()
+
+		# update charts if open
+		for dashboard in self.parent().ui.pages.chart_pages:
+			dashboard.canvas.fig.subplots_adjust(
+				left = left,
+				bottom = bottom,
+				top = top,
+				right = right
+			)
+
+		# update global settings
+		settings.SETTINGS['figura']['left'] = left
+		settings.SETTINGS['figura']['right'] = right
+		settings.SETTINGS['figura']['bottom'] = bottom
+		settings.SETTINGS['figura']['top'] = top
+		settings.SETTINGS['figura']['font_size'] = fontsize
+		settings.SETTINGS['figura']['font_family'] = fontfamily
 
 	def show(self) -> None:
 		self.adjustPosition()
