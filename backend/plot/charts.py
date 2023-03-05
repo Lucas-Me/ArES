@@ -63,8 +63,8 @@ mpl.rcParams.update({
     'ytick.direction': 'out',
     'ytick.left': False,
     'ytick.right': False,
-    'font.family' : 'Calibri',
-    'font.size' : 15,
+    'font.family' : settings.SETTINGS['figura']['font_family'],
+    'font.size' : settings.SETTINGS['figura']['font_size'],
     'axes.prop_cycle' : plt.cycler(color = color_list),
 
     # legend
@@ -74,10 +74,10 @@ mpl.rcParams.update({
     'legend.shadow' : False,
 
     # subplot adjust
-    'figure.subplot.bottom' : 0.1,
-    'figure.subplot.left' : 0.1,
-    'figure.subplot.right' : 0.9,
-    'figure.subplot.top' : 0.9
+    'figure.subplot.bottom' : settings.SETTINGS['figura']['bottom'],
+    'figure.subplot.left' : settings.SETTINGS['figura']['left'],
+    'figure.subplot.right' : settings.SETTINGS['figura']['right'],
+    'figure.subplot.top' : settings.SETTINGS['figura']['top']
  })
 
 # CLASSES

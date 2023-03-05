@@ -8,6 +8,7 @@ import xlrd, xlsxwriter
 # IMPORT CUSTOM MODULES
 from backend.data_management.data_management import XlsStationData
 from backend.misc.functions import find_unit
+import backend.misc.settings as settings
 
 def xls_reader(file_path : str):
 	'''
@@ -122,7 +123,7 @@ def get_icon(icon_name, folder):
 
 	return os.path.join(icons_folder, icon_name).replace('\\', '/')
 
-def get_dateindex(tipo, freq:int, start_date, end_date, minutos = 0, reference = '2017-01-06') -> np.array:
+def get_dateindex(tipo, freq:int, start_date, end_date, minutos = 0) -> np.array:
 	''' Retorna um array de objetos datetime com o dias/horarios esperados para os registros
 	de dados de uma estacao de monitoramento, dado o seu tipo e periodo especificado.
 	Frequencia de operacao:
@@ -139,7 +140,7 @@ def get_dateindex(tipo, freq:int, start_date, end_date, minutos = 0, reference =
 	if not isinstance(start_date, np.datetime64):
 		start_date = np.datetime64(start_date)
 		end_date = np.datetime64(end_date)
-
+	
 	freq = np.timedelta64(freq, 'h')
 
 	if tipo == "Automática":
@@ -149,9 +150,10 @@ def get_dateindex(tipo, freq:int, start_date, end_date, minutos = 0, reference =
 		index = np.arange(start, end, freq, dtype = "datetime64")
 
 	else:
+		reference = settings.SETTINGS['semiautomatica']['data_referencia']
 		ref = np.datetime64(reference) # data que se tem certeza de que tem uma amostragem semi-automatica. Modificar dps.
 		index = np.arange(start_date, end_date, np.timedelta64(1, "D"), dtype = "datetime64")
-		diff = (index - ref) % freq
+		diff = (index - ref) % np.timedelta64(settings.SETTINGS['semiautomatica']['frequencia'], 'D')
 		index = index[np.equal(diff.astype('float'), 0)]
 
 	return index

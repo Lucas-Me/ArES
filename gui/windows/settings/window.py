@@ -1,5 +1,6 @@
 # IMPORT QT MODULES
 from qt_core import *
+import os, json
 
 # IMPORT UI
 from gui.windows.settings.ui_settings import UI_SettingsWindow
@@ -10,6 +11,7 @@ from backend.misc.functions import drawShadow
 # IMPORT CUSTOM VARIABLES
 import backend.misc.settings as settings
 from matplotlib import font_manager
+import matplotlib.pyplot as plt
 import numpy as np
 
 class SettingsWindow(QDialog):
@@ -42,8 +44,24 @@ class SettingsWindow(QDialog):
 		self.ui.btn_figure.clicked.connect(
 			lambda: self.updatePage(index = 2, button = self.ui.btn_figure)
 			)
+		self.ui.btn_apply.clicked.connect(self.applyChanges)
+		self.ui.btn_save.clicked.connect(self.save_json)
+
+	def save_json(self):
+		'''Salva as configurações em um arquivo JSON'''
+		userhome_directory = os.path.expanduser("~")
+		ArES_dir = os.path.join(userhome_directory, '.ArES')
+		fname = os.path.join(ArES_dir, 'config.json')
+		with open(fname, 'w', encoding='utf-8') as f:
+			json.dump(settings.SETTINGS, f, ensure_ascii=False, indent=4)
+		
+	def applyChanges(self):
+		self.updateSQL()
+		self.udpateCriteria()
+		self.updateFigure()
 
 	def loadContents(self):
+		print(settings.SETTINGS)
 		# BANCO DE DADOS
 		self.ui.database_edit.setText(settings.SETTINGS['conexao']['database'])
 		self.ui.server_edit.setText(settings.SETTINGS['conexao']['servidor'])
@@ -119,7 +137,17 @@ class SettingsWindow(QDialog):
 		fontsize = self.ui.font_size.value()
 		fontfamily = self.ui.font_families.currentText()
 
-		# update charts if open
+		# update matplotlib standard
+		plt.rcParams.update({
+			'font.family': fontfamily,
+			'font.size' : fontsize,
+			'figure.subplot.bottom' : bottom,
+			'figure.subplot.left' : left,
+			'figure.subplot.right' : right,
+			'figure.subplot.top' : top
+			})
+
+		#update charts if open
 		for dashboard in self.parent().ui.pages.chart_pages:
 			dashboard.canvas.fig.subplots_adjust(
 				left = left,
@@ -127,6 +155,15 @@ class SettingsWindow(QDialog):
 				top = top,
 				right = right
 			)
+
+			# atualizando os textos
+			dashboard.canvas.updateLegend()
+			dashboard.canvas.setTitle()
+			dashboard.canvas.setLabel('x')
+			dashboard.canvas.setLabel('y')
+			dashboard.canvas.setTickParams('y')
+			dashboard.canvas.setTickParams('x')
+			dashboard.canvas.draw_idle()
 
 		# update global settings
 		settings.SETTINGS['figura']['left'] = left
@@ -143,9 +180,9 @@ class SettingsWindow(QDialog):
 
 	def updatePage(self, index, button : QPushButton):
 		self.ui.stacked_widget.setCurrentIndex(index)
-		for button in self.findChildren(QPushButton):
-			if button.objectName() in ['connection', 'figure', 'criteria']:
-				button.setDisabled(False)
+		for push_button in self.findChildren(QPushButton):
+			if push_button.objectName() in ['connection', 'figure', 'criteria']:
+				push_button.setDisabled(False)
 
 		button.setDisabled(True)
 

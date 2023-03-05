@@ -50,7 +50,7 @@ class UI_SettingsWindow(object):
 		self.btn_figure.setFixedHeight(30)
 
 		# label version
-		self.left_menu_label_version = QLabel("v1.3.0")
+		self.left_menu_label_version = QLabel(parent.parent().version)
 		self.left_menu_label_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.left_menu_label_version.setFixedHeight(30)
 		self.left_menu_label_version.setObjectName('version')

@@ -31,5 +31,6 @@ SETTINGS = dict(
         'font_family': 'Calibri',
         'font_size' : 15,
         'dpi' : 200
-    }
+    },
+    version = '1.3.0'
 )
