@@ -66,6 +66,7 @@ class UI_LoginScreen(object):
         # REMEMBER ME BUTTON
         self.remember_me = QRadioButton("Lembrar-se")
         self.remember_me.setFixedSize(QSize(250, 20))
+        self.remember_me.hide() # POR ENQUANTO NAO FUNCIONA
 
         # spacer
         self.login_spacer = QSpacerItem(w // 2, 140, QSizePolicy.Minimum, QSizePolicy.Expanding)

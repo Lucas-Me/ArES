@@ -97,7 +97,7 @@ class PyDoubleDateEdit(QFrame):
 		this_dx = rect.width()
 		frame_dx = self.calendar_widget.w
 		this_x = bottomLeft.x() - rect.x()
-		bottomLeft.setX(this_x + .5 *(this_dx - frame_dx))
+		bottomLeft.setX(this_x + .5 *(this_dx - frame_dx) - 20)
 		self.calendar_widget.setGeometry(QRect(bottomLeft, QSize(self.calendar_widget.w, self.calendar_widget.h)))
 		self.calendar_widget.roundCorners(10)
 
