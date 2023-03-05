@@ -13,6 +13,7 @@ from gui.windows.dialog.loading_dialog import LoadingDialog
 # IMPORT CUSTOM MODULES
 from backend.data_management.methods import Profile
 import backend.misc.settings as settings
+from gui.windows.dialog.import_dialog import ImportDialog
 
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
@@ -198,6 +199,11 @@ class ProcessingScreen(QWidget):
 		self.worker.resultReady.connect(self.handleProcessedResults)
 		self.worker.resultReady.connect(lambda: dialog.closeWindow(True))
 		#
+		self.worker.error.connect(self.thread.quit)
+		self.worker.error.connect(self.worker.deleteLater)
+		self.worker.error.connect(lambda: dialog.closeWindow(False))
+		self.worker.error.connect(self.handleError)
+		#
 		self.thread.finished.connect(self.thread.deleteLater)
 
 		# Start the thread
@@ -209,9 +215,25 @@ class ProcessingScreen(QWidget):
 		self.exportStatus()
 		self.resultReady.emit(self.processed_data)
 
+	def handleError(self, error : object):
+		# print(type(error))
+		# print(error.args)
+		# print(error)
+
+		# opens a dialog warning the user about the error
+		dialog = ImportDialog(
+			title = 'Erro desconhecido',
+			message = 'Ocorreu um erro inesperado durante a execução das tarefas.',
+			description= '',
+			parent = self
+		)
+		dialog.ignore_button.hide()
+		dialog.show()
+
 	def getRegexString(self):
 		# GETTING FLAGS TO FILTER BY (# regex)
-		validos = '[V*]\w|^$' # any word that starts with V or any empty character
+		# validos = '[V*]\w|^$' # any word that starts with V or any empty character
+		validos = '[V*]\w|^$|[<*]|[>*]|[!*]' # any word that starts with V or any empty character or ! or < or > 
 		suspeitos = '[?*]\w' # any words that starts with ?
 		invalidos = '[I*]\w' # any word that start with I
 		#
@@ -267,6 +289,7 @@ class Worker(QObject):
 	'''
 
 	resultReady = Signal(list)
+	error = Signal(object)
 
 	def __init__(self, **kwargs) -> None:
 		super().__init__(kwargs.get('parent', None))
@@ -283,29 +306,33 @@ class Worker(QObject):
 
 
 	def start(self):
-		# Loop throught each item of "raw_data"
-		n = len(self.raw_data)
-		processed_data = [None] * n  # new empty array
+		try:
+			# Loop throught each item of "raw_data"
+			n = len(self.raw_data)
+			processed_data = [None] * n  # new empty array
 
-		for i in range(n):
-			# applying flag filter
-			filtered_data = self.raw_data[i].filterByFlags(self.regex) # returns a ModifedData object
+			for i in range(n):
+				# applying flag filter
+				filtered_data = self.raw_data[i].filterByFlags(self.regex) # returns a ModifedData object
 
-			# convert PPB to PPM if needed
-			filtered_data = self.convertPPB2PPM(filtered_data, self.convert)
+				# convert PPB to PPM if needed
+				filtered_data = self.convertPPB2PPM(filtered_data, self.convert)
 
-			# check if a profile was selected for a given object, and apply if needed.
-			final_data = self.runProfile(filtered_data, self.methods[i])
+				# check if a profile was selected for a given object, and apply if needed.
+				final_data = self.runProfile(filtered_data, self.methods[i])
 
-			# updating metadata
-			dcopy = filtered_data.metadata.copy()
-			del dcopy['frequency']
-			final_data.metadata.update(dcopy)
+				# updating metadata
+				dcopy = filtered_data.metadata.copy()
+				del dcopy['frequency']
+				final_data.metadata.update(dcopy)
 
-			# finalizing
-			processed_data[i] = final_data
+				# finalizing
+				processed_data[i] = final_data
 
-		self.resultReady.emit(processed_data)
+			self.resultReady.emit(processed_data)
+
+		except Exception as err:
+			self.error.emit(err)
 
 	def runProfile(self, data_object, methods):
 		n = len(methods)
