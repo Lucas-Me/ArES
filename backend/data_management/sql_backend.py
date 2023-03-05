@@ -6,7 +6,6 @@ from mysql.connector import Error, MySQLConnection
 from qt_core import *
 
 
-
 class SqlConnection(object):
 	'''
 	Classe responsavel pela conexão com o banco de dados em MySQL e criação de um

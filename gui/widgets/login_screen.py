@@ -11,6 +11,7 @@ from gui.windows.dialog.loading_dialog import LoadingDialog
 
 # IMPORT CUSTOM FUCTIONS
 from backend.misc.functions import get_imagepath
+import backend.misc.settings as settings
 
 
 # Data Manager Page Class
@@ -27,7 +28,10 @@ class LoginScreen(QWidget):
 		self.last_refresh = 'Nunca'
 
 		# SETUP CONNECTION
-		self.sql = SqlConnection("BP-J6XCZT3-INEA", 'banco_gear') # CONFIGURACOES 
+		self.sql = SqlConnection(
+			settings.SETTINGS['conexao']['servidor'],
+			settings.SETTINGS['conexao']['database']
+			) # CONFIGURACOES 
 
 		# SETUP UI
 		self.ui = UI_LoginScreen()
@@ -69,10 +73,6 @@ class LoginScreen(QWidget):
 		elif code == 2003:
 			pass
 			
-		else: # JUST FOR DEBUGGING
-			print("Nunca vi esse erro na minha vida ")
-			print(f'Erro {code}')
-
 		# reset the password field
 		self.ui.password.setText('')
 

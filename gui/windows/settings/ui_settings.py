@@ -240,44 +240,40 @@ class UI_SettingsWindow(object):
 		self.label_validos.setObjectName('top_level_representatividade')
 
 		# HORARIA
-		self.label_hourly = QLabel('horária')
+		self.label_hourly = QLabel('Horária')
 		self.label_hourly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_hourly.setFixedHeight(text_height)
 		#
 		self.spinbox_hourly = QSpinBox()
 		self.spinbox_hourly.setFixedSize(100, text_height)
 		self.spinbox_hourly.setRange(0, 100)
-		self.spinbox_hourly.setValue(75)
 
 		# DIARIA
-		self.label_daily = QLabel('diária')
+		self.label_daily = QLabel('Diária')
 		self.label_daily.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_daily.setFixedHeight(text_height)
 		#
 		self.spinbox_daily = QSpinBox()
 		self.spinbox_daily.setFixedSize(100, text_height)
 		self.spinbox_daily.setRange(0, 100)
-		self.spinbox_daily.setValue(75)
 
 		# MENSAL
-		self.label_monthly = QLabel('mensal')
+		self.label_monthly = QLabel('Mensal')
 		self.label_monthly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_monthly.setFixedHeight(text_height)
 		#
 		self.spinbox_monthly = QSpinBox()
 		self.spinbox_monthly.setFixedSize(100, text_height)
 		self.spinbox_monthly.setRange(0, 100)
-		self.spinbox_monthly.setValue(75)
 
 		# ANUAL
-		self.label_yearly = QLabel('anual')
+		self.label_yearly = QLabel('Anual')
 		self.label_yearly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_yearly.setFixedHeight(text_height)
 		#
 		self.spinbox_yearly = QSpinBox()
 		self.spinbox_yearly.setFixedSize(100, text_height)
 		self.spinbox_yearly.setRange(0, 100)
-		self.spinbox_yearly.setValue(50)
 
 		# SEMIAUTOMATICA
 		self.label_semi = QLabel("Amostragem semiautomática")
@@ -290,7 +286,7 @@ class UI_SettingsWindow(object):
 		self.label_date.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_date.setFixedHeight(text_height)
 		#
-		self.date_edit = QDateEdit(QDate.fromString('2017-01-06', Qt.DateFormat.ISODate))
+		self.date_edit = QDateEdit()
 		self.date_edit.setFixedSize(100, text_height)
 
 		# FREQUENCIA
@@ -301,7 +297,6 @@ class UI_SettingsWindow(object):
 		self.spinbox_freq = QSpinBox()
 		self.spinbox_freq.setFixedSize(100, text_height)
 		self.spinbox_freq.setRange(1, 30)
-		self.spinbox_freq.setValue(6)
 
 		# add to layout
 		self.layout_page2.addWidget(self.label_validos, 0, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignTop)
@@ -346,7 +341,6 @@ class UI_SettingsWindow(object):
 		self.spinbox_left = QDoubleSpinBox()
 		self.spinbox_left.setFixedSize(100, text_height)
 		self.spinbox_left.setRange(0, 1)
-		self.spinbox_left.setValue(0.1)
 
 		# DIARIA
 		self.label_right = QLabel('Canto direito')
@@ -356,7 +350,6 @@ class UI_SettingsWindow(object):
 		self.spinbox_right = QDoubleSpinBox()
 		self.spinbox_right.setFixedSize(100, text_height)
 		self.spinbox_right.setRange(0, 1)
-		self.spinbox_right.setValue(0.1)
 
 		# MENSAL
 		self.label_bottom = QLabel('Canto inferior')
@@ -366,7 +359,6 @@ class UI_SettingsWindow(object):
 		self.spinbox_bottom = QDoubleSpinBox()
 		self.spinbox_bottom.setFixedSize(100, text_height)
 		self.spinbox_bottom.setRange(0, 1)
-		self.spinbox_bottom.setValue(0.1)
 
 		# ANUAL
 		self.label_top = QLabel('Canto superior')
@@ -376,7 +368,6 @@ class UI_SettingsWindow(object):
 		self.spinbox_top = QDoubleSpinBox()
 		self.spinbox_top.setFixedSize(100, text_height)
 		self.spinbox_top.setRange(0, 1)
-		self.spinbox_top.setValue(0.1)
 
 		# SEMIAUTOMATICA
 		self.label_fonts = QLabel("Fonte")
@@ -392,7 +383,6 @@ class UI_SettingsWindow(object):
 		self.font_size.setFixedWidth(40)
 		self.font_size.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.MinimumExpanding)
 		self.font_size.setRange(1, 50)
-		self.font_size.setValue(15)
 		#
 		self.text_frame = QFrame()
 		self.text_frame.setFixedHeight(30)
@@ -421,8 +411,7 @@ class UI_SettingsWindow(object):
 		self.stacked_widget.addWidget(self.page_connection)
 		self.stacked_widget.addWidget(self.page_criteria)
 		self.stacked_widget.addWidget(self.page_figure)
-
-		self.stacked_widget.setCurrentIndex(2)
+		self.stacked_widget.setCurrentIndex(0)
 
 
 
