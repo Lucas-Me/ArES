@@ -8,6 +8,8 @@
 # 
 # //////////////////////////////////////////////////////////////////////
 
+import os, json
+
 SETTINGS = dict(
     conexao = { # servidor hospedando o banco de dados MySQL
         'servidor' : "BP-J6XCZT3-INEA",
@@ -35,3 +37,28 @@ SETTINGS = dict(
     perfis = {}, # Perfis do usuário
     version = '1.3.0'
 )
+
+# IMPORTAR E ATUALIZAR AS CONFIGURACOES, SE JA EXISTIR.
+
+userhome_directory = os.path.expanduser("~")
+ArES_dir = os.path.join(userhome_directory, '.ArES')
+fname = os.path.join(ArES_dir, 'config.json')
+try:
+    # Se o diretorio nao existir, cria ele
+    os.makedirs(ArES_dir, exist_ok=True)
+
+    # se o arquivo JSON com as configuracoes existir, provoca um erro
+    exists = os.path.isfile(fname)
+    if not exists:
+        with open(fname, 'w', encoding='utf-8') as f:
+            json.dump(SETTINGS, f, ensure_ascii=False, indent=4)
+
+    else:
+        raise FileExistsError
+
+except FileExistsError:
+    # se o diretorio e o arquivo existirem, importa ele no programa
+    with open(fname, 'r', encoding='utf-8') as f:
+        existing_data = json.load(f)
+    
+    SETTINGS.update(existing_data)

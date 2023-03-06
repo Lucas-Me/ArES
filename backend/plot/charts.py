@@ -509,6 +509,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
     def barPlot(self, series_list : list[object]):
         n = len(series_list)
+        iter_color = iter(mpl.rcParams['axes.prop_cycle'])
 
         # largura de cada barra sera definida a partir da menor frequencia dentre os dados
         frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
@@ -555,7 +556,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # Plot properties
             kwargs = {
-                'color' : self.colors.get(id_, None),
+                'color' : self.colors.get(id_, next(iter_color)['color']),
                 'width' : width,
                 'zorder' : 1
             }

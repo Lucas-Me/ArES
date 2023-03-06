@@ -128,7 +128,7 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.ui.xaxis_level.date_range.vmax.setDate(QDate(vmax))
 
 
-	@Slot(bool)
+	@Slot(bool, int)
 	def toggleHLine(self, status : bool, index : bool):
 		hline_id = f'Faixa Horizontal {index + 1}'
 		if status:
@@ -137,7 +137,7 @@ class TimeSeriesMenu(AbstractChartMenu):
 		else:
 			self.parent().canvas.removePlot(hline_id)
 
-	@Slot(int)
+	@Slot(int, int)
 	def updateHline(self, value : int, index: int):
 		# properties
 		id_ = f'Faixa Horizontal {index + 1}'

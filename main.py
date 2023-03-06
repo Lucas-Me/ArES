@@ -1,15 +1,14 @@
 # IMPORT MODULES
-import sys, os, json
+import sys
 import locale
-import backend.misc.settings as settings
 
 # IMPORT QT CORE
 from qt_core import *
 
 # IMPORT MAIN WINDOW
-from gui.windows.main_window.ui_main_window import *
+from gui.windows.main_window.ui_main_window import UI_MainWindow
 
-# IMPORT DIALGO
+# IMPORT DIALOG
 from gui.windows.dialog.import_dialog import ImportDialog
 from gui.windows.dialog.splash_screen import SplashScreen
 
@@ -22,9 +21,6 @@ class LoadUi(QObject):
 
     @Slot()
     def start(self):
-        # load configs
-        self.mainWindow.loadConfig()
-
         # load the main UI
         self.mainWindow.ui = UI_MainWindow()
         self.mainWindow.ui.setup_ui(self.mainWindow)
@@ -86,31 +82,6 @@ class MainWindow(QMainWindow):
         
         # Start the UI Loading
         self.uiLoadingThread.start()
-
-    def loadConfig(self):
-        userhome_directory = os.path.expanduser("~")
-        ArES_dir = os.path.join(userhome_directory, '.ArES')
-        fname = os.path.join(ArES_dir, 'config.json')
-        try:
-            # Se o diretorio nao existir, cria ele
-            os.makedirs(ArES_dir, exist_ok=True)
-
-            # se o arquivo JSON com as configuracoes existir, provoca um erro
-            exists = os.path.isfile(fname)
-            if not exists:
-                with open(fname, 'w', encoding='utf-8') as f:
-                    json.dump(settings.SETTINGS, f, ensure_ascii=False, indent=4)
-
-            else:
-                raise FileExistsError
-
-        except FileExistsError:
-            # se o diretorio e o arquivo existirem, importa ele no programa
-            with open(fname, 'r', encoding='utf-8') as f:
-                existing_data = json.load(f)
-            
-            settings.SETTINGS.update(existing_data)
-            settings.SETTINGS['version'] = self.version
 
     def closeLoadingScreen(self):
         # show the main UI
