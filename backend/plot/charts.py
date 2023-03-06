@@ -51,7 +51,7 @@ mpl.rcParams.update({
     # 'axes.spines.top': True,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
-    'lines.linewidth' : .75,
+    'lines.linewidth' : .9,
     'patch.edgecolor': 'none',
     'patch.force_edgecolor': False,
     'text.color': default_color,
@@ -302,7 +302,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.params['yticks-max'] = max_y
         self.params['yticks-size'] = size
     
-    def plothline(self, y, id_ = 'Faixa Horizontal'):
+    def plothline(self, y, id_):
         '''Plot a infinite hline with constant y value'''
 
         # remove if already exists
@@ -313,7 +313,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
             'y' : y,
             'label' : id_,
             'color' : self.colors.get(id_, 'red'),
-            'linewidth' : 3
+            'linewidth' : 3,
+            'zorder' : 3
         }
         
         # plotting
@@ -471,7 +472,8 @@ class TimeSeriesCanvas(AbstractCanvas):
         # Plot properties
         kwargs = {
             'label' : id_,
-            'color' : self.colors.get(id_, None)
+            'color' : self.colors.get(id_, None),
+            'zorder' : 2
         }
 
         # ploting
@@ -554,7 +556,8 @@ class TimeSeriesCanvas(AbstractCanvas):
             # Plot properties
             kwargs = {
                 'color' : self.colors.get(id_, None),
-                'width' : width
+                'width' : width,
+                'zorder' : 1
             }
 
             # LINE COLLECTION

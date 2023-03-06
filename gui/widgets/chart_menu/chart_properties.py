@@ -77,7 +77,6 @@ class TimeSeriesMenu(AbstractChartMenu):
 
 		# PROPERTIES
 		self.bar_rows = []
-		self.hline_id = 'Faixa Horizontal'
 
 		# SETUP UI
 		self.ui.setupTimeSeries(self)
@@ -86,9 +85,9 @@ class TimeSeriesMenu(AbstractChartMenu):
 		self.ui.xaxis_level.propertyChanged.connect(self.updateDateTicks)
 		self.ui.line_plot_level.list_view.rowClicked.connect(self.updateLineElement)
 		self.ui.bar_plot_level.list_view.rowClicked.connect(self.updateBarElement)
-		self.ui.line_plot_level.hline_frame.stateChanged.connect(self.toggleHLine)
-		self.ui.line_plot_level.hline_frame.valueChanged.connect(self.updateHline)
 		self.ui.xaxis_level.date_range.dateChanged.connect(self.updateDateLims)
+		self.ui.hlines_level.stateChanged.connect(self.toggleHLine)
+		self.ui.hlines_level.valueChanged.connect(self.updateHline)
 		self.ui.xaxis_level.auto_adjust.clicked.connect(self.setAutoAdjustXaxis)
 		self.parent().canvas.xaxisAdjusted.connect(self.setHorizontalThreshold)
 		
@@ -130,16 +129,18 @@ class TimeSeriesMenu(AbstractChartMenu):
 
 
 	@Slot(bool)
-	def toggleHLine(self, status : bool):
+	def toggleHLine(self, status : bool, index : bool):
+		hline_id = f'Faixa Horizontal {index + 1}'
 		if status:
-			y = self.ui.line_plot_level.hline_frame.spinbox.value()
-			self.parent().canvas.plothline(y, self.hline_id)
+			y = self.ui.hlines_level.hlines[index].spinbox.value()
+			self.parent().canvas.plothline(y, hline_id)
 		else:
-			self.parent().canvas.removePlot(self.hline_id)
+			self.parent().canvas.removePlot(hline_id)
 
 	@Slot(int)
-	def updateHline(self, value : int, id_ = 'Faixa Horizontal'):
+	def updateHline(self, value : int, index: int):
 		# properties
+		id_ = f'Faixa Horizontal {index + 1}'
 		canvas = self.parent().canvas
 		line = canvas.handles[id_]
 
