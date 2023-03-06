@@ -1,0 +1,1 @@
+python -m nuitka --standalone --disable-console --nofollow-import-to=tkinter --include-module=mysql.connector --plugin-enable=pyside6 --windows-icon-from-ico=C:\Users\lucassm\Documents\Repositorios\Project-PyQT-UI\gui\images\icons\ArES_logo.ico --output-filename=ArES --output-dir=C:\Users\lucassm\Documents\Repositorios\ArES-Output main.py
