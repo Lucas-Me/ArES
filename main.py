@@ -1,5 +1,5 @@
 # IMPORT MODULES
-import sys
+import sys, os
 import locale
 
 # IMPORT QT CORE
@@ -12,6 +12,15 @@ from gui.windows.main_window.ui_main_window import UI_MainWindow
 from gui.windows.dialog.import_dialog import ImportDialog
 from gui.windows.dialog.splash_screen import SplashScreen
 
+# IMPORT CUSTOM FUNCTIONS
+from backend.misc.functions import get_imagepath
+
+try:
+    from ctypes import windll  # Only exists on Windows.
+    myappid = 'inea.ares.1.3.0'
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
 class LoadUi(QObject):
 
@@ -164,8 +173,21 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    # locale
+    # marca o diretorio do script como atual
+    path = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(path)
+
+    # locale (linguagem do sistema)
     locale.setlocale(locale.LC_ALL, 'pt_BR')
+
+    # criando aplicacao
     app = QApplication(sys.argv)
+
+    # window icon
+    icon_pixmap = QPixmap(get_imagepath('ArES_logo.ico', 'gui/images/icons'))
+    icon = QIcon(icon_pixmap)
+    app.setWindowIcon(icon)
+    
+    # run application main window
     window = MainWindow()
     sys.exit(app.exec())
