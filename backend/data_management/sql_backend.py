@@ -2,6 +2,9 @@
 import numpy as np
 from mysql.connector import Error, MySQLConnection
 
+# Necessarios para evitar erros
+from mysql.connector.locales.eng import client_error
+
 # IMPORT QT MODULES
 from qt_core import *
 
@@ -49,6 +52,7 @@ class SqlConnection(object):
 			)
 
 		except Error as err:
+			print(err)
 			code = err.errno
 
 		return code
