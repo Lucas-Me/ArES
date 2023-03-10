@@ -6,6 +6,7 @@ from qt_core import *
 
 # IMPORT MODULES
 import numpy as np
+import datetime
 
 # IMPORT CUSTOM MODULES
 from backend.plot.collections import CustomLineCollection
@@ -101,7 +102,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.labels = {} # store labels
         self.handles = {} # store artists
         self.ylims = {} # stores bottom and top for each artist
+        self.xlims = {} # stores left and right for each artist
         self.legend = self.fig.legend([], [])
+        self.iter_color = iter(mpl.rcParams['axes.prop_cycle'])
 
         # autoadjust axis options
         self.autoadjust_yaxis = True
@@ -326,6 +329,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.labels[id_] = lin.get_label()
         self.colors[id_] = lin.get_color()
         self.ylims[id_] = lin.get_ydata()
+        self.xlims[id_] = [np.nan, np.nan]
 
         # update legend
         self.updateLegend()
@@ -344,6 +348,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # deleting private properties
         del self.handles[id_]
         del self.ylims[id_]
+        if id_ in self.xlims:
+            del self.xlims[id_]
 
         # update plot
         self.updateLegend()
@@ -373,6 +379,21 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         self.setVerticalTicks(min = new_bottom, max = new_top)
         self.yaxisAdjusted.emit(new_bottom, new_top)
+
+    def autoscaleAxisX(self):
+        if not self.autoadjust_xaxis or len(self.xlims) == 0 :
+            return None
+        
+        # estimando o valor maximo e minimo dos objetos no grafico
+        values = list(self.xlims.values())
+        new_left = np.nanmin(values)
+        new_right = np.nanmax(values)
+
+        if new_right == new_left:
+            return None
+
+        self.setHorizontalLims(min = new_left, max = new_right)
+        self.xaxisAdjusted.emit(new_left, new_right)
 
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
@@ -424,21 +445,13 @@ class TimeSeriesCanvas(AbstractCanvas):
         })
         
     def getXLims(self):
-        vmin = mdates.num2date(self.params['xticks-min'])
-        vmax = mdates.num2date(self.params['xticks-max'])
+        vmin = self.params['xticks-min']
+        vmax = self.params['xticks-max']
+
+        vmin = mdates.num2date(vmin)
+        vmax = mdates.num2date(vmax)
 
         return (vmin, vmax)
-
-    def autoscaleAxisX(self, vmin, vmax):
-        if self.autoadjust_xaxis:
-            if isinstance(vmin, float):
-                vmin = mdates.num2date(vmin)
-                vmax = mdates.num2date(vmax)
-            
-            self.setHorizontalLims(min = vmin, max = vmax)
-
-            # emit signal
-            self.xaxisAdjusted.emit(vmin, vmax)
 
     def setHorizontalTicks(self, **kwargs):
         locator = kwargs.pop('locator', self.params['xticks-locator'])
@@ -472,7 +485,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         # Plot properties
         kwargs = {
             'label' : id_,
-            'color' : self.colors.get(id_, None),
+            'color' : self.colors.get(id_, next(self.iter_color)['color']),
             'zorder' : 2
         }
 
@@ -485,9 +498,13 @@ class TimeSeriesCanvas(AbstractCanvas):
         self.colors[id_] = hl.get_color()
         self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
         self.ylims[id_] = (np.nanmin(values), np.nanmax(values))
+        #
+        min_date = mdates.date2num(dates.min().item())
+        max_date = mdates.date2num(dates.max().item())
+        self.xlims[id_] = (min_date, max_date)
 
         # scaling axis
-        self.autoscaleAxisX(dates.min().item(), dates.max().item())
+        self.autoscaleAxisX()
         self.autoscaleAxisY()
 
         # updating legend
@@ -509,7 +526,6 @@ class TimeSeriesCanvas(AbstractCanvas):
 
     def barPlot(self, series_list : list[object]):
         n = len(series_list)
-        iter_color = iter(mpl.rcParams['axes.prop_cycle'])
 
         # largura de cada barra sera definida a partir da menor frequencia dentre os dados
         frequencies = np.fromiter(map(lambda x: x.metadata['frequency'].astype('timedelta64[m]'), series_list), dtype = 'timedelta64[m]')
@@ -527,6 +543,11 @@ class TimeSeriesCanvas(AbstractCanvas):
         # preparing maximum and minimum values
         max_y = [1] * n + [self.params['yticks-max']]
         min_y = [0] * n + [self.params['yticks-min']]
+
+        # scaling X axis
+        t_final = mdates.date2num(series_list[0].getDates()[-1])
+        xmin = t0 - delta_t / 2
+        xmax = t_final + delta_t /2
 
         # loop through each series
         for i in range(n):
@@ -556,7 +577,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # Plot properties
             kwargs = {
-                'color' : self.colors.get(id_, next(iter_color)['color']),
+                'color' : self.colors.get(id_, next(self.iter_color)['color']),
                 'width' : width,
                 'zorder' : 1
             }
@@ -574,14 +595,10 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.colors[id_] = lc.get_color()[0]
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
             self.ylims[id_] = (0, np.nanmax(values))
-
-        # scaling X axis
-        t_final = mdates.date2num(series_list[0].getDates()[-1])
-        xmin = t0 - delta_t / 2
-        xmax = t_final + delta_t /2
-        self.autoscaleAxisX(xmin, xmax)
+            self.xlims[id_] = (xmin, xmax)
         
-        # scaling Y axis
+        # scaling axis
+        self.autoscaleAxisX()
         self.autoscaleAxisY()
 
         # updating legend

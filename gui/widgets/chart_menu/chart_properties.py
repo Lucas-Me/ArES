@@ -5,6 +5,8 @@ import datetime
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.chart_menu.ui_properties import UI_AbstractMenu
 
+# IMPORT MODULES
+import matplotlib.dates as mdates
 
 class AbstractChartMenu(QFrame):
     
@@ -96,6 +98,10 @@ class TimeSeriesMenu(AbstractChartMenu):
 			vmin = vmin.date()
 			vmax = vmax.date()
 
+		elif isinstance(vmin, float):
+			vmin = mdates.num2date(vmin).date()
+			vmax = mdates.num2date(vmax).date()
+
 		self.ui.xaxis_level.date_range.vmin.setDate(QDate(vmin))
 		self.ui.xaxis_level.date_range.vmax.setDate(QDate(vmax))
 
@@ -136,6 +142,9 @@ class TimeSeriesMenu(AbstractChartMenu):
 			self.parent().canvas.plothline(y, hline_id)
 		else:
 			self.parent().canvas.removePlot(hline_id)
+		
+		# atualiza a figura
+		self.parent().canvas.draw()
 
 	@Slot(int, int)
 	def updateHline(self, value : int, index: int):
