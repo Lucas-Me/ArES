@@ -244,7 +244,7 @@ class UI_SettingsWindow(object):
 		self.label_hourly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_hourly.setFixedHeight(text_height)
 		#
-		self.spinbox_hourly = QSpinBox()
+		self.spinbox_hourly = QDoubleSpinBox()
 		self.spinbox_hourly.setFixedSize(100, text_height)
 		self.spinbox_hourly.setRange(0, 100)
 
@@ -253,7 +253,7 @@ class UI_SettingsWindow(object):
 		self.label_daily.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_daily.setFixedHeight(text_height)
 		#
-		self.spinbox_daily = QSpinBox()
+		self.spinbox_daily = QDoubleSpinBox()
 		self.spinbox_daily.setFixedSize(100, text_height)
 		self.spinbox_daily.setRange(0, 100)
 
@@ -262,7 +262,7 @@ class UI_SettingsWindow(object):
 		self.label_monthly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_monthly.setFixedHeight(text_height)
 		#
-		self.spinbox_monthly = QSpinBox()
+		self.spinbox_monthly = QDoubleSpinBox()
 		self.spinbox_monthly.setFixedSize(100, text_height)
 		self.spinbox_monthly.setRange(0, 100)
 
@@ -271,7 +271,7 @@ class UI_SettingsWindow(object):
 		self.label_yearly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_yearly.setFixedHeight(text_height)
 		#
-		self.spinbox_yearly = QSpinBox()
+		self.spinbox_yearly = QDoubleSpinBox()
 		self.spinbox_yearly.setFixedSize(100, text_height)
 		self.spinbox_yearly.setRange(0, 100)
 
