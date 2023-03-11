@@ -106,6 +106,14 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.legend = self.fig.legend([], [])
         self.iter_color = iter(mpl.rcParams['axes.prop_cycle'])
 
+        # timer
+        self.timer = QTimer()
+        m = 100
+        self.time_count = 0
+        self.timer.timeout.connect(lambda: self.updateCount(m))
+        self.timer.setInterval(m)
+        self.MAX_TIME = 300
+
         # autoadjust axis options
         self.autoadjust_yaxis = True
         self.autoadjust_xaxis = True
@@ -395,13 +403,20 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.setHorizontalLims(min = new_left, max = new_right)
         self.xaxisAdjusted.emit(new_left, new_right)
 
+    def updateCount(self, msec):
+        self.time_count += msec
+        if self.time_count > self.MAX_TIME:
+            self.timer.stop()
+            self.time_count = 0
+
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
-        if dblclick:
+        if dblclick and not self.timer.isActive():
             artist = event.artist
             label = artist.get_label()
 
             self.artistClicked.emit(label)
+            self.timer.start()
 
     def on_click(self, event):
         if event.dblclick and event.inaxes is None:

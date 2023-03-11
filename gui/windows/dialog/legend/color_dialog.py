@@ -38,7 +38,6 @@ class LegendDialog(QDialog):
 		self.ui.save_button.clicked.connect(self.saveContents)
 		self.ui.cancel_button.clicked.connect(self.close)
 
-
 	def saveContents(self):
 		text = self.ui.line_edit.text()
 		if len(text) > 0:
@@ -85,9 +84,9 @@ class LegendDialog(QDialog):
 		line_edit.setText(self.origLabel)
 		self.updateColor(self.origColor)
 
-	def showWindow(self):
+	def show(self):
 		self.adjustPosition()
-		self.show()
+		super().show()
 
 	def updateColor(self, color : QColor):
 		style = self.ui.color_view.styleSheet()
@@ -119,9 +118,9 @@ class LegendDialog(QDialog):
 		target = self.parent()
 		rect = QRect(target.geometry())
 
-		topleft = QPoint()
-		topleft.setX((rect.width() - w) / 2)
-		topleft.setY((rect.height() - h) / 2)
+		topleft = target.mapToGlobal(rect.topLeft())
+		topleft.setX((rect.width() - w) / 2 + topleft.x())
+		topleft.setY((rect.height() - h) / 2 + topleft.y())
 
 		self.setGeometry(QRect(topleft, QSize(w, h)))
 
