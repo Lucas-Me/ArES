@@ -22,7 +22,6 @@ class Dashboard(QWidget):
 		
 		self.canvas = TimeSeriesCanvas()
 		self.chart_menu = TimeSeriesMenu(self)
-		self.bar_rows = []
 
 		# setting UI
 		self.ui = UI_Dashboard()
@@ -71,9 +70,6 @@ class Dashboard(QWidget):
 
 		# reseta o grafico
 		self.canvas.resetChart()
-
-		# reset private properties
-		self.bar_rows.clear()
 
 	def toggleMenu(self):
 		status = self.chart_menu.isHidden()

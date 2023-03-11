@@ -76,7 +76,7 @@ class HorizontalLineProperty(QFrame):
 
         # PROPERTIES
         self.index = index
-        self.label = QLabel(f'Faixa Horizontal {index}')
+        self.label = QLabel(f'Faixa Horizontal {index + 1}')
         self.spinbox = QSpinBox()
         self.left_margin = 25
 

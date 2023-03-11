@@ -16,6 +16,7 @@ import backend.misc.settings as settings
 import matplotlib.dates as mdates
 import matplotlib.container as mcontainer
 import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import matplotlib.ticker as mticker
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -98,6 +99,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.ax = self.fig.add_subplot(111)
 		
 		# CUSTOM PROPERTIES
+        # /////////////////////////////////////
         self.colors = {} # store colors
         self.labels = {} # store labels
         self.handles = {} # store artists
@@ -105,6 +107,12 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.xlims = {} # stores left and right for each artist
         self.legend = self.fig.legend([], [])
         self.iter_color = iter(mpl.rcParams['axes.prop_cycle'])
+
+        # annotation 
+        self.annot = self.ax.annotate("", xy=(0,0), xytext=(-20,20),textcoords="offset points",
+                    bbox=dict(boxstyle="round", fc="grey"),
+                    arrowprops=dict(arrowstyle="->"))
+        self.annot.set_visible(False)
 
         # timer
         self.timer = QTimer()
@@ -117,7 +125,8 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # autoadjust axis options
         self.autoadjust_yaxis = True
         self.autoadjust_xaxis = True
-    
+
+        # /////////////////////////////////////
         # SET LOCATOR AT Y AXIS
         self.ax.yaxis.set_major_locator(mticker.MaxNLocator(nbins = self.ax.get_yticks().shape[0]))
 
@@ -163,11 +172,14 @@ class AbstractCanvas(FigureCanvasQTAgg):
         }
 
         # CONSTRUCTOR
+        # /////////////////////////////////////
         super(AbstractCanvas, self).__init__(self.fig)
 
         # SIGNALS AND SLOTS
-        self.mpl_connect('pick_event', self.on_pick)
-        self.mpl_connect('button_press_event', self.on_click)
+        # /////////////////////////////////////
+        self.mpl_connect('pick_event', self.on_pick) # legenda
+        self.mpl_connect('button_press_event', self.on_click) # titulo dos eixos
+        self.mpl_connect("motion_notify_event", self.on_hover) # hover
 
     def getSettings(self):
         return self.params
@@ -203,6 +215,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # creating new legend
         self.legend = self.fig.legend(handles, labels, **args)
+        for patch_, key in zip(self.legend.get_patches(), self.handles.keys()):
+            patch_.set_label(key)
+            patch_.set_picker(True)
 
         # save options
         self.params['legend-ncol'] = args['ncol']
@@ -239,6 +254,9 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
         # legenda
         self.updateLegend()
+
+        # schedule an update
+        self.draw_idle()
 
     def setTitle(self, **kwargs):
         kwargs = dict(
@@ -409,6 +427,13 @@ class AbstractCanvas(FigureCanvasQTAgg):
             self.timer.stop()
             self.time_count = 0
 
+    def updateAnnotation(self, index : int, line : mlines.Line2D):
+        x = line.get_xdata()[index["ind"][0]]
+        y = line.get_ydata()[index["ind"][0]]
+        self.annot.xy = (x, y)
+        self.annot.set_text(f"{line.get_label()[6:]}\n\nY: {y:.2f}\nX: {str(x).replace('T', ' ')}")
+        self.annot.get_bbox_patch().set_alpha(0.4)
+
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
         if dblclick and not self.timer.isActive():
@@ -419,7 +444,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
             self.timer.start()
 
     def on_click(self, event):
-        if event.dblclick and event.inaxes is None:
+        if event.dblclick and event.inaxes is None and not self.timer.isActive():
             # get mouse properties
             width, height = self.get_width_height()
             x = event.x / width
@@ -436,7 +461,26 @@ class AbstractCanvas(FigureCanvasQTAgg):
             is_valid = sum(is_outside_lims) == 1
             if is_valid:
                 self.titleClicked.emit(is_outside_lims.index(True))
+                self.timer.start()
     
+    def on_hover(self, event):
+        vis = self.annot.get_visible()
+        if event.inaxes == self.ax:
+            # itera sobre todos as linhas presentas
+            for k, v in self.handles.items():
+                if isinstance(v, mlines.Line2D):
+                    cont, idx = v.contains(event)
+                    if cont and "Faixa Horizontal" not in k:
+                        self.annot.set_visible(True)
+                        self.updateAnnotation(idx, v)
+                        self.draw_idle()
+                        return None
+                    
+            # if visible, then hide.
+            if vis:
+                self.annot.set_visible(False)
+                self.draw_idle()
+
 
 class TimeSeriesCanvas(AbstractCanvas):
 
@@ -626,14 +670,26 @@ class OverpassingCanvas(AbstractCanvas):
         super.__init__(*args, **kwargs)
 
         # Properties
-        self.hline_faixa = self.plothline(0)
-        self.values_series = {} # necessary in order to update the count
-        self.count = 0      
+        self.values_series = {} # necessary in order to update the count (?)
+        self.count = 0 # don't know
         
         # containers
         self.handles['overpassing'] = mcontainer.BarContainer(orientation='Vertical')
         self.handles['first_maximum'] = mcontainer.BarContainer(orientation='Vertical')
         self.handles['second_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+
+        # color for each container
+        self.colors['overpassing'] = '#49111C'
+        self.colors['first_maximum'] = '#5E503F'
+        self.colors['second_maximum'] = '#A9927D'
+
+        # label for each container
+        self.labels['overpassing'] = 'Ultrapassagens'
+        self.labels['first_maximum'] = 'Máxima'
+        self.labels['second_maximum'] = 'Segunda Máxima'
+    
+        # SETTINGS
+        self.plothline(10, id_ = "Limite")
 
     def resetChart(self):
         super().resetChart()
@@ -648,18 +704,16 @@ class OverpassingCanvas(AbstractCanvas):
         self.handles['first_maximum'] = mcontainer.BarContainer(orientation='Vertical')
         self.handles['second_maximum'] = mcontainer.BarContainer(orientation='Vertical')
 
-
     def barPlot(self, series: object):
         # largura de cada barra
         total_width = 0.8
         
         # getting properties
         values = series.getValues()
-
         sorted_array = values[np.argsort(values)]
-        # preparing maximum and minimum values
+
+        # preparing maximum values
         max_y = [self.params['yticks-max'], np.nanmax(values)]
-        min_y = [self.params['yticks-min'], np.nanmin(values)]
 
         # bar container elements
         max_value = sorted_array[-1]
@@ -721,7 +775,7 @@ class OverpassingCanvas(AbstractCanvas):
         # adjusting axis
         self.setVerticalTicks(
             max = np.nanmax(max_y),
-            min = np.nanmin(min_y)
+            min = 0
         )
         
         # updating legend

@@ -11,7 +11,7 @@ from backend.misc.functions import drawShadow
 # IMPORT CUSTOM VARIABLES
 import backend.misc.settings as settings
 from matplotlib import font_manager
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 
 class SettingsWindow(QDialog):
@@ -154,7 +154,7 @@ class SettingsWindow(QDialog):
 		fontfamily = self.ui.font_families.currentText()
 
 		# update matplotlib standard
-		plt.rcParams.update({
+		mpl.rcParams.update({
 			'font.family': fontfamily,
 			'font.size' : fontsize,
 			'figure.subplot.bottom' : bottom,
