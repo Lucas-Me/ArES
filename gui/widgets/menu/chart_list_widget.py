@@ -6,15 +6,18 @@ from copy import copy
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.menu.buttons import ChartButton, CreateChartButton
+from gui.windows.dialog.chart.chart_selection import ChartCreationDialog
 
 class ChartList(QListWidget):
 
     rowClicked = Signal(object)
-    def __init__(self, width):
+    def __init__(self, width, parent = None):
         super().__init__()
 
         self.maxrows = 6
         self.item_height = 40
+        self.parent = parent
+        self.current_selection = 0
 
         # SETUP UI
         self.setup_style()
@@ -26,7 +29,7 @@ class ChartList(QListWidget):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # SIGNALS AND SLOTS
-        self.InsertWidget.createRow.connect(self.insertRow)
+        self.InsertWidget.createRow.connect(self.creationDialog)
     
     def setupWidgets(self):
         item = QListWidgetItem()
@@ -38,6 +41,19 @@ class ChartList(QListWidget):
         self.setItemWidget(item, self.InsertWidget)
     
     @Slot(str)
+    def creationDialog(self, text):
+        # getting the type of chart
+        self.dialog = ChartCreationDialog(parent = self.parent)
+        self.dialog.selection.connect(lambda x: self.handleSelection(text, x))
+        self.dialog.show()
+
+    def handleSelection(self, text, add):
+        if not add:
+            return None
+        
+        self.current_selection = self.dialog.ui.combobox.currentIndex()
+        self.insertRow(text)
+
     def insertRow(self, text):
         n = copy(self.count())
 

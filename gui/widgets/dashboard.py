@@ -10,18 +10,17 @@ from gui.widgets.chart_menu.chart_properties import TimeSeriesMenu, OverpassingM
 from gui.windows.dialog.legend.color_dialog import LegendDialog
 from gui.windows.dialog.figure_title.title_dialog import TitleEditDialog
 
-
 # Data Manager Page Class
 class Dashboard(QWidget):
 
-	def __init__(self, parent):
+	def __init__(self, parent, option):
 		super().__init__()
 
 		# PROPERTIES
 		self.parent = parent
 		
-		self.canvas = OverpassingCanvas()
-		self.chart_menu = OverpassingMenu(self)
+		self.canvas = [TimeSeriesCanvas, OverpassingCanvas][option]()
+		self.chart_menu = [TimeSeriesMenu, OverpassingMenu][option](self)
 
 		# setting UI
 		self.ui = UI_Dashboard()

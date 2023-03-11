@@ -13,10 +13,11 @@ class StackedPages(QStackedWidget):
     aos gráficos.
     '''
     
-    def __init__(self, parent) -> None:
+    def __init__(self, menu, parent = None) -> None:
         super().__init__(parent)
 
         # PROPERTIES
+        self.menu = menu
         self.chart_pages = [] # QWidgets
         self.chart_items = [] # ListWidgetItems
         self.data_handles = [] # List of ModifiedData Objects (data after processing)
@@ -53,7 +54,8 @@ class StackedPages(QStackedWidget):
 
     def createChartPage(self, item : QListWidgetItem):
         # creating dashboard
-        dashboard = Dashboard(parent = self)
+        chart_option = self.menu.charts_list.current_selection
+        dashboard = Dashboard(parent = self, option = chart_option)
 
         # Storing and inserting it on screen
         self.chart_pages.append(dashboard)

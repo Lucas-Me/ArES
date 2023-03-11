@@ -35,6 +35,7 @@ class Menu(QFrame):
 		)
 
 	def setup_ui(self):
+		self.setObjectName("main_menu")
 		self.main_layout = QVBoxLayout(self)
 		self.main_layout.setContentsMargins(0, 0, 0, 0)
 		self.main_layout.setSpacing(0)
@@ -74,7 +75,7 @@ class Menu(QFrame):
 		self.charts_label.setObjectName('label')
 		
 		# LIST OF CHARTS
-		self.charts_list = ChartList(width = self.width())		
+		self.charts_list = ChartList(width = self.width(), parent = self.parent)	
 
 		# BOTTOM 
 		# ////////////////////////////////////

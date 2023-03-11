@@ -62,7 +62,7 @@ class UI_MainWindow(object):
         self.bottom_bar_layout.addWidget(self.bottom_label_right)
        
         # Application pages
-        self.pages = StackedPages(parent = parent)
+        self.pages = StackedPages(parent = parent, menu = self.left_menu)
         self.pages.setCurrentIndex(0)
 
         # Add to content layout
