@@ -52,7 +52,6 @@ class SqlConnection(object):
 			)
 
 		except Error as err:
-			print(err)
 			code = err.errno
 
 		return code
