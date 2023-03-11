@@ -70,10 +70,6 @@ class LoginScreen(QWidget):
 			self.borderCredentials(borders = True)
 			pass
 		
-		elif code == 2003:
-			print('??')
-			pass
-
 		# reset the password field
 		self.ui.password.setText('')
 

@@ -1,5 +1,6 @@
 # IMPORT QT_CORE
 from qt_core import *
+import gc
 
 # IMPORT CUSTOM MODULES
 from gui.widgets.data_manager_qwidget import DataManager
@@ -37,6 +38,20 @@ class StackedPages(QStackedWidget):
         self.addWidget(self.data_page)
         self.addWidget(self.process_page)
 
+    def deleteChartPage(self, widget):
+        self.setCurrentIndex(0) # change page to login screen
+        index = self.chart_pages.index(widget) # get index of widget to delete
+
+        # delete from menu
+        self.menu.charts_list.deleteRow(self.chart_items[index])
+
+        # DELETE 
+        del self.chart_items[index]
+        del self.chart_pages[index]
+
+        # garbage collector
+        gc.collect()
+
     def getDataHandles(self):
         return self.data_handles
     
@@ -56,6 +71,7 @@ class StackedPages(QStackedWidget):
         # creating dashboard
         chart_option = self.menu.charts_list.current_selection
         dashboard = Dashboard(parent = self, option = chart_option)
+        dashboard.deleteRequest.connect(lambda: self.deleteChartPage(dashboard))
 
         # Storing and inserting it on screen
         self.chart_pages.append(dashboard)

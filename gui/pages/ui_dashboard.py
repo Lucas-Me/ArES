@@ -59,9 +59,20 @@ class UI_Dashboard(object):
 		)
 		self.toggle_menu.setObjectName('toggle_menu')
 
+		self.delete = IconButton(
+			height = 30,
+			width = 30,
+			icon_path= 'unselect_button.svg',
+			icon_color = '#C44536',
+			paint_icon=True,
+			hover_color= '#772E25'
+		)
+		self.delete.setObjectName('delete')
+
 		# add to layout
 		self.toolbar_layout.addWidget(self.toggle_menu)
 		self.toolbar_layout.addWidget(self.navigation_toolbar)
+		self.toolbar_layout.addWidget(self.delete)
 
 		# ADD TO MAIN LAYOUT
 		# /////////////////////////////////////////////////////////////
@@ -87,7 +98,7 @@ class UI_Dashboard(object):
 				border: 1px solid #dcdcdc;
 				border-radius: 10px;
 			}}
-			#toggle_menu {{
+			#toggle_menu, #delete {{
 				border: none;
 				background-color: transparent;
 			}}

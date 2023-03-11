@@ -13,6 +13,7 @@ from gui.windows.dialog.figure_title.title_dialog import TitleEditDialog
 # Data Manager Page Class
 class Dashboard(QWidget):
 
+	deleteRequest = Signal()
 	def __init__(self, parent, option):
 		super().__init__()
 
@@ -33,6 +34,11 @@ class Dashboard(QWidget):
 		self.ui.toggle_menu.clicked.connect(self.toggleMenu)
 		self.canvas.artistClicked.connect(self.editArtist)
 		self.canvas.titleClicked.connect(self.editTitle)
+		self.ui.delete.clicked.connect(self.deleteWidget)
+
+	def deleteWidget(self):
+		self.deleteRequest.emit()
+		self.deleteLater()
 
 	@Slot(int)
 	def editTitle(self, position):

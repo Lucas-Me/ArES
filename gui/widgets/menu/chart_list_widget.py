@@ -3,6 +3,7 @@ from qt_core import *
 
 # IMPORT MODULES
 from copy import copy
+import gc
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.menu.buttons import ChartButton, CreateChartButton
@@ -76,6 +77,15 @@ class ChartList(QListWidget):
         )
         widget.click()
 
+    def deleteRow(self, ListWidgetItem : QListWidgetItem):
+        # removing from list
+        self.removeItemWidget(ListWidgetItem)
+        self.takeItem(self.row(ListWidgetItem))
+
+        # Deleting ListWidgetItem
+        del ListWidgetItem
+
+        
     def setup_style(self):
 
         self.setStyleSheet('''

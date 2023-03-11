@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="12.727922"
+   height="12.727922"
+   viewBox="0 0 3.3675961 3.3675961"
+   version="1.1"
+   id="svg3200"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="icon_close_button.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3202"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="8.2046011"
+     inkscape:cx="-17.002655"
+     inkscape:cy="-12.675814"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs3197" />
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-146.8162,-103.3162)">
+    <g
+       id="g6204"
+       transform="matrix(0.74835472,0.74835472,-0.74835472,0.74835472,115.94657,-84.70792)">
+      <rect
+         style="fill:#ff80b2;fill-opacity:1;stroke-width:0.791842;stroke-linecap:square;paint-order:stroke fill markers"
+         id="rect5969"
+         width="3.5"
+         height="1"
+         x="146.75"
+         y="104.5" />
+      <rect
+         style="fill:#ff80b2;fill-opacity:1;stroke-width:0.791842;stroke-linecap:square;paint-order:stroke fill markers"
+         id="rect5969-3"
+         width="3.5"
+         height="1"
+         x="103.25"
+         y="-149"
+         transform="rotate(90)" />
+    </g>
+  </g>
+</svg>

@@ -16,7 +16,6 @@ class ChartCreationDialog(QDialog):
 
 		# PROPERTIES
 		self.margins = 20
-		self.dragPos = QPoint()
 		self.options = [
 			"Série temporal",
 			"Ultrapassagem"
@@ -64,21 +63,11 @@ class ChartCreationDialog(QDialog):
 		target = self.parent()
 		rect = QRect(target.geometry())
 
-		topleft = QPoint()
-		topleft.setX((rect.width() - w) / 2)
-		topleft.setY((rect.height() - h) / 2)
+		topleft = target.mapToGlobal(rect.topLeft())
+		topleft.setX((rect.width() - w) / 2 + topleft.x() / 2)
+		topleft.setY((rect.height() - h) / 2 + topleft.y() / 2)
 
 		self.setGeometry(QRect(topleft, QSize(w, h)))
-
-	def mousePressEvent(self, event):          
-		self.dragPos = event.globalPos()
-		self.move_event = True
-		
-	def mouseMoveEvent(self, event):                          
-		if event.buttons() == Qt.LeftButton:
-			self.move(self.pos() + event.globalPos() - self.dragPos)
-			self.dragPos = event.globalPos()
-			event.accept()
 
 	def confirm(self):
 		self.selection.emit(True)
@@ -87,3 +76,4 @@ class ChartCreationDialog(QDialog):
 	def close(self) -> bool:
 		self.selection.emit(False)
 		return super().close()
+	
