@@ -4,7 +4,7 @@ from qt_core import *
 # IMPORT CUSTOMW WIDGETS
 from gui.widgets.chart_menu.legend_level import LegendTopLevel
 from gui.widgets.chart_menu.numeric_axis_level import NumericalAxisTopLevel
-from gui.widgets.chart_menu.date_axis_level import DateAxisTopLevel
+from gui.widgets.chart_menu.horizontal_axis_level import DateAxisTopLevel, HorizontalAxisTopLevel
 from gui.widgets.chart_menu.parameter_level import SeriesTopLevel
 from gui.widgets.chart_menu.hline_level import HLineTopLevel
 
@@ -73,7 +73,7 @@ class UI_AbstractMenu(object):
 
 	def setupOverpassing(self, parent):
 		# BUTTONS
-		self.xaxis_level = DateAxisTopLevel(height = parent.item_height)
+		self.xaxis_level = HorizontalAxisTopLevel(height = parent.item_height)
 		self.hline_level = HLineTopLevel(text = 'Limite', height=parent.item_height, n = 1)
 		self.plot_level = SeriesTopLevel(text = 'Parâmetros', height = parent.item_height)
 
@@ -82,7 +82,7 @@ class UI_AbstractMenu(object):
 		self.hline_level.hlines[0].checkbox.setChecked(True)
 
 		# ADD TO MAIN LAYOUT
-		# self.main_layout.addWidget(self.xaxis_level)
+		self.main_layout.addWidget(self.xaxis_level)
 		self.main_layout.addWidget(self.hline_level)
 		self.main_layout.addWidget(self.plot_level)
 

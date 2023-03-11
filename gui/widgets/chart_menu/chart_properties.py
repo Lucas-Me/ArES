@@ -262,6 +262,15 @@ class OverpassingMenu(AbstractChartMenu):
 		self.ui.hline_level.valueChanged.connect(self.updateHline)
 		self.ui.xaxis_level.propertyChanged.connect(self.updateHorizontalTicks)
 
+	def setupInitialValues(self):
+		super().setupInitialValues()
+
+		# get canvas settings
+		config = self.parent().canvas.getSettings()
+
+		# X axis
+		self.ui.xaxis_level.font_size.spinbox.setValue(config['xaxis-fontsize'])
+
 	@Slot(dict)
 	def updateHorizontalTicks(self, kwargs):
 		self.parent().canvas.setTickParams(axis = 'x', **kwargs)
