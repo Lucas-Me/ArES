@@ -6,7 +6,7 @@ from qt_core import *
 
 # IMPORT MODULES
 import numpy as np
-import datetime
+from itertools import cycle
 
 # IMPORT CUSTOM MODULES
 from backend.plot.collections import CustomLineCollection
@@ -53,7 +53,7 @@ mpl.rcParams.update({
     # 'axes.spines.top': True,
     'figure.facecolor': 'white',
     'lines.solid_capstyle': 'round',
-    'lines.linewidth' : .9,
+    'lines.linewidth' : 1,
     'patch.edgecolor': 'none',
     'patch.force_edgecolor': False,
     'text.color': default_color,
@@ -106,11 +106,11 @@ class AbstractCanvas(FigureCanvasQTAgg):
         self.ylims = {} # stores bottom and top for each artist
         self.xlims = {} # stores left and right for each artist
         self.legend = self.fig.legend([], [])
-        self.iter_color = iter(mpl.rcParams['axes.prop_cycle'])
+        self.iter_color = cycle(color_list)
 
         # annotation 
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(-20,20),textcoords="offset points",
-                    bbox=dict(boxstyle="round", fc="grey"),
+                    bbox=dict(boxstyle="round", fc="lightgrey"),
                     arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
 
@@ -441,7 +441,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         y = line.get_ydata()[index["ind"][0]]
         self.annot.xy = (x, y)
         self.annot.set_text(f"{line.get_label()[6:]}\n\nY: {y:.2f}\nX: {str(x).replace('T', ' ')}")
-        self.annot.get_bbox_patch().set_alpha(0.4)
+        self.annot.get_bbox_patch().set_alpha(1)
 
     def on_click(self, event):
         if event.dblclick and event.inaxes is None and not self.timer.isActive():
@@ -542,7 +542,7 @@ class TimeSeriesCanvas(AbstractCanvas):
         # Plot properties
         kwargs = {
             'label' : id_,
-            'color' : self.colors.get(id_, next(self.iter_color)['color']),
+            'color' : self.colors.get(id_, next(self.iter_color)),
             'zorder' : 2
         }
 
@@ -634,7 +634,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # Plot properties
             kwargs = {
-                'color' : self.colors.get(id_, next(self.iter_color)['color']),
+                'color' : self.colors.get(id_, next(self.iter_color)),
                 'width' : width,
                 'zorder' : 1
             }
@@ -674,8 +674,8 @@ class OverpassingCanvas(AbstractCanvas):
 
         # color for each container
         self.colors['overpassing'] = '#49111C'
-        self.colors['first_maximum'] = '#5E503F'
-        self.colors['second_maximum'] = '#A9927D'
+        self.colors['first_maximum'] = '#ee9b00'
+        self.colors['second_maximum'] = '#ca6702'
 
         # label for each container
         self.labels['overpassing'] = 'Ultrapassagens'
@@ -711,7 +711,7 @@ class OverpassingCanvas(AbstractCanvas):
         # text options
         self.annot.xy = (x, y)
         self.annot.set_text(f"Y: {y:.2f}\nX: {str(date).replace('T', ' ')}")
-        self.annot.get_bbox_patch().set_alpha(0.4)
+        self.annot.get_bbox_patch().set_alpha(1)
         
     def on_hover(self, event):
         vis = self.annot.get_visible()
@@ -742,6 +742,7 @@ class OverpassingCanvas(AbstractCanvas):
 
         # adjusting
         self.setVerticalTicks(max = new_vmax)
+        self.yaxisAdjusted.emit(vmin, new_vmax)
 
     def barPlot(self, series_list: object):
         # getting properties
