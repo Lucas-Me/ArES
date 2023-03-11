@@ -244,3 +244,86 @@ class TimeSeriesMenu(AbstractChartMenu):
 			dashboard = self.parent()
 			list_objects = [dashboard.parent.getHandle(index) for index in self.bar_rows]
 			dashboard.canvas.barPlot(list_objects)
+
+
+class OverpassingMenu(AbstractChartMenu):
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+		# PROPERTIES
+		self.bar_rows = []
+
+		# SETUP UI
+		self.ui.setupOverpassing(self)
+
+		# SIGNALS AND SLOTS
+		self.ui.plot_level.list_view.rowClicked.connect(self.updateBarElement)
+		self.ui.hline_level.valueChanged.connect(self.updateHline)
+		self.ui.xaxis_level.propertyChanged.connect(self.updateHorizontalTicks)
+
+	@Slot(dict)
+	def updateHorizontalTicks(self, kwargs):
+		self.parent().canvas.setTickParams(axis = 'x', **kwargs)
+
+		# draw
+		self.parent().canvas.draw()
+
+	@Slot(int, int)
+	def updateHline(self, value : int, index: int):
+		# properties
+		id_ = 'Faixa Horizontal'
+		canvas = self.parent().canvas
+		line = canvas.handles[id_]
+
+		# set value
+		lims = [value, value]
+		line.set_ydata(lims)
+		canvas.ylims[id_] = lims
+
+		# update canvas
+		self.plotBars()
+
+		# draw
+		canvas.autoscaleAxisY()
+		canvas.draw_idle()
+
+	@Slot(int, bool)
+	def updateBarElement(self, row : int, add: bool):
+		series = self.parent().parent.getHandle(row)
+		canvas = self.parent().canvas
+
+		# either add or remove artist
+		if add:
+			# add bar 
+			self.bar_rows.append(row)
+
+		else:
+			# remove from canvas
+			del self.bar_rows[self.bar_rows.index(row)]
+			
+		# plot new artists
+		self.plotBars()
+
+		# drawing
+		canvas.draw_idle()
+
+	def plotBars(self):
+		if len(self.bar_rows) > 0:
+			dashboard = self.parent()
+			list_objects = [dashboard.parent.getHandle(index) for index in self.bar_rows]
+			dashboard.canvas.barPlot(list_objects)
+
+	def resetSeriesObjects(self, handles):
+		# reset properties
+		self.bar_rows.clear()
+
+		# reset list
+		listview = self.ui.plot_level.list_view
+
+		# cleaning list
+		listview.removeItems()
+
+		# adding elements to list
+		for i in range(len(handles)):
+			listview.addItem(handles[i].metadata['alias'])

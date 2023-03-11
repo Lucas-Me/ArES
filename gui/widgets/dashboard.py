@@ -5,8 +5,8 @@ from qt_core import *
 from gui.pages.ui_dashboard import UI_Dashboard
 
 # IMPORT CUSTOM WIDGETS
-from backend.plot.charts import TimeSeriesCanvas
-from gui.widgets.chart_menu.chart_properties import TimeSeriesMenu
+from backend.plot.charts import TimeSeriesCanvas, OverpassingCanvas
+from gui.widgets.chart_menu.chart_properties import TimeSeriesMenu, OverpassingMenu
 from gui.windows.dialog.legend.color_dialog import LegendDialog
 from gui.windows.dialog.figure_title.title_dialog import TitleEditDialog
 
@@ -20,8 +20,8 @@ class Dashboard(QWidget):
 		# PROPERTIES
 		self.parent = parent
 		
-		self.canvas = TimeSeriesCanvas()
-		self.chart_menu = TimeSeriesMenu(self)
+		self.canvas = OverpassingCanvas()
+		self.chart_menu = OverpassingMenu(self)
 
 		# setting UI
 		self.ui = UI_Dashboard()

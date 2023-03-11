@@ -71,4 +71,20 @@ class UI_AbstractMenu(object):
 		# ALIGNMENT
 		self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+	def setupOverpassing(self, parent):
+		# BUTTONS
+		self.xaxis_level = DateAxisTopLevel(height = parent.item_height)
+		self.hline_level = HLineTopLevel(text = 'Limite', height=parent.item_height, n = 1)
+		self.plot_level = SeriesTopLevel(text = 'Parâmetros', height = parent.item_height)
 
+		# SETTINGS
+		self.hline_level.hlines[0].checkbox.setHidden(True)
+		self.hline_level.hlines[0].checkbox.setChecked(True)
+
+		# ADD TO MAIN LAYOUT
+		# self.main_layout.addWidget(self.xaxis_level)
+		self.main_layout.addWidget(self.hline_level)
+		self.main_layout.addWidget(self.plot_level)
+
+		# ALIGNMENT
+		self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)

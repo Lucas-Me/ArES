@@ -427,13 +427,6 @@ class AbstractCanvas(FigureCanvasQTAgg):
             self.timer.stop()
             self.time_count = 0
 
-    def updateAnnotation(self, index : int, line : mlines.Line2D):
-        x = line.get_xdata()[index["ind"][0]]
-        y = line.get_ydata()[index["ind"][0]]
-        self.annot.xy = (x, y)
-        self.annot.set_text(f"{line.get_label()[6:]}\n\nY: {y:.2f}\nX: {str(x).replace('T', ' ')}")
-        self.annot.get_bbox_patch().set_alpha(0.4)
-
     def on_pick(self, event : PickEvent):
         dblclick = event.mouseevent.dblclick
         if dblclick and not self.timer.isActive():
@@ -442,6 +435,13 @@ class AbstractCanvas(FigureCanvasQTAgg):
 
             self.artistClicked.emit(label)
             self.timer.start()
+
+    def updateAnnotation(self, index : int, line : mlines.Line2D):
+        x = line.get_xdata()[index["ind"][0]]
+        y = line.get_ydata()[index["ind"][0]]
+        self.annot.xy = (x, y)
+        self.annot.set_text(f"{line.get_label()[6:]}\n\nY: {y:.2f}\nX: {str(x).replace('T', ' ')}")
+        self.annot.get_bbox_patch().set_alpha(0.4)
 
     def on_click(self, event):
         if event.dblclick and event.inaxes is None and not self.timer.isActive():
@@ -485,15 +485,13 @@ class AbstractCanvas(FigureCanvasQTAgg):
 class TimeSeriesCanvas(AbstractCanvas):
 
     def __init__(self, *args, **kwargs):
+        # CONSTRUCTOR
         super().__init__(*args, **kwargs)
 
         # SETTING UP HORIZONTAL AXIS
         self.ax.xaxis.set_major_locator(mdates.MonthLocator(interval = 2))
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%Y'))
         
-        # PROPERTIES
-        self.nbars = 0
-
         # Propriedades do grafico
         self.params.update({
             # Rotulos do eixo X
@@ -502,7 +500,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             'xticks-locator': self.ax.xaxis.get_major_locator(),
             'xticks-formatter' : self.ax.xaxis.get_major_formatter(),
         })
-        
+
     def getXLims(self):
         vmin = self.params['xticks-min']
         vmax = self.params['xticks-max']
@@ -666,17 +664,13 @@ class TimeSeriesCanvas(AbstractCanvas):
 
 class OverpassingCanvas(AbstractCanvas):
 
-    def __int__(self, *args, **kwargs):
-        super.__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        # CONSTRUCTOR
+        super().__init__(*args, **kwargs)
 
-        # Properties
-        self.values_series = {} # necessary in order to update the count (?)
-        self.count = 0 # don't know
-        
-        # containers
-        self.handles['overpassing'] = mcontainer.BarContainer(orientation='Vertical')
-        self.handles['first_maximum'] = mcontainer.BarContainer(orientation='Vertical')
-        self.handles['second_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+        # maximm and 2th maximum dates
+        self.maximum_dates = [] # list of tuples
+        self.total_width = 0.8
 
         # color for each container
         self.colors['overpassing'] = '#49111C'
@@ -689,97 +683,151 @@ class OverpassingCanvas(AbstractCanvas):
         self.labels['second_maximum'] = 'Segunda Máxima'
     
         # SETTINGS
-        self.plothline(10, id_ = "Limite")
+        self.plothline(10, id_ = "Faixa Horizontal")
 
     def resetChart(self):
         super().resetChart()
 
-        # resetting variables
-        self.hline_faixa = self.plothline(0)
-        self.values_series.clear()
-        self.count = 0
-        
-        # containers
-        self.handles['overpassing'] = mcontainer.BarContainer(orientation='Vertical')
-        self.handles['first_maximum'] = mcontainer.BarContainer(orientation='Vertical')
-        self.handles['second_maximum'] = mcontainer.BarContainer(orientation='Vertical')
+        # reseting properties from this class
+        self.maximum_dates.clear()
 
-    def barPlot(self, series: object):
-        # largura de cada barra
-        total_width = 0.8
+        # removing texts
+        first = True
+        for text in self.ax.texts:
+            if first:
+                first = False
+                continue
+    
+            text.remove()
+
+    def updateAnnotation(self, rect : mpatches.Rectangle):
+        # calculatin position and getting properties
+        i = rect.get_label() == 'second_maximum'
+        index = int(np.round(rect.get_x(), 0))
+        date = self.maximum_dates[index][i]
+        y = rect.get_height()
+        x = rect.get_x() + rect.get_width() / 2
+
+        # text options
+        self.annot.xy = (x, y)
+        self.annot.set_text(f"Y: {y:.2f}\nX: {str(date).replace('T', ' ')}")
+        self.annot.get_bbox_patch().set_alpha(0.4)
         
+    def on_hover(self, event):
+        vis = self.annot.get_visible()
+        if event.inaxes == self.ax:
+            # itera sobre todos as linhas presentas
+            for bars in self.handles.values():
+                if isinstance(bars, mcontainer.BarContainer) and bars.get_label() != 'overpassing':
+                    for bar in bars:
+                        cont, ind = bar.contains(event)
+                        if cont:
+                            self.annot.set_visible(True)
+                            self.updateAnnotation(bar)
+                            self.draw_idle()
+                            return None
+                    
+            # if visible, then hide.
+            if vis:
+                self.annot.set_visible(False)
+                self.draw_idle()       
+
+    def autoscaleAxisY(self):
+        super().autoscaleAxisY()
+
+        vmin = self.params['yticks-min']
+        vmax = self.params['yticks-max']
+        dy = vmax - vmin
+        new_vmax = vmax + 0.1 * dy
+
+        # adjusting
+        self.setVerticalTicks(max = new_vmax)
+
+    def barPlot(self, series_list: object):
         # getting properties
-        values = series.getValues()
-        sorted_array = values[np.argsort(values)]
+        self.resetChart()
+        ids = ['overpassing', 'first_maximum', 'second_maximum']
+        nbars = len(ids)
+        nseries = len(series_list)
+        ydata = self.handles['Faixa Horizontal'].get_ydata()[0]
 
-        # preparing maximum values
-        max_y = [self.params['yticks-max'], np.nanmax(values)]
+        # calculating values for each bar
+        overpasses = np.full(nseries, 0, dtype = int)
+        maximums1 = np.full(nseries, 0, dtype = float)
+        maximums2 = np.full(nseries, 0, dtype = float)
+        maximum_dates = [0] * nseries
+        tick_labels = [''] * nseries
 
-        # bar container elements
-        max_value = sorted_array[-1]
-        second_max = sorted_array[-2]
-        overpasses = np.count_nonzero(values > self.handles['Faixa Horizontal'].get_ydata()[0])
-        new_elements = [overpasses, max_value, second_max]
+        # loop through series
+        for i in range(nseries):
+            series = series_list[i]
 
-        # bar containers
-        bar_containers = ['overpassing', 'first_maximum', 'second_maximum']
-        n = 3 
+            # getting threshold
+            threshold = self.getThreshold(series)
+    
+            # getting values and dates
+            values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
+            dates = series.getDates()
 
-        # loop through each series
-        for i in range(n):
+            # index of maximum and 2nd maximum values
+            nans = np.count_nonzero(np.isnan(values))
+            idx_max1 = np.argpartition(values, -(nans + 1))[-(nans + 1)]
+            idx_max2 = np.argpartition(values, -(nans + 2))[-(nans + 2)]
+    
+            # storing results
+            maximums1[i] = values[idx_max1]
+            maximums2[i] = values[idx_max2]
+            maximum_dates[i] = (dates[idx_max1], dates[idx_max2])
+            overpasses[i] = np.count_nonzero(values > ydata)
+            tick_labels[i] = series.metadata['name']
 
+        # index of elements
+        x = np.arange(nseries)
+
+        # groups
+        groups = [overpasses, maximums1, maximums2]
+
+        # loop through each bar
+        for i in range(nbars):
             # getting position of left corner
-            offset = total_width * (2 * i - n) / (2 * n)
+            offset = self.total_width * (2 * i - nbars + 1) / (2 * nbars) 
 
-            # getting old rectangles
-            rectangles = self.handles[bar_containers[i]].get_children()
-            num_r = len(rectangles)
-
-            # Plot properties
-            id_ = series.metadata['signature']
-            kwargs = {
-                'xy' : [num_r + offset, 0],
-                'height' : new_elements[i],
-                'width' : total_width / n
-            }
-            
-            # creating new rect
-            this_rect = mpatches.Rectangle(**kwargs)
-            new_rectangles = rectangles + [this_rect]
-
-            # create new bar container
-            bc = mcontainer.BarContainer(
-                patches = new_rectangles,
-
+            # kwargs
+            kwargs = dict(
+                width = self.total_width / nbars,
+                facecolor = self.colors[ids[i]],
+                edgecolor = 'none',
+                zorder= 1
             )
+
+            # plotting bars
+            bc = self.ax.bar(x + offset, groups[i], **kwargs)
+            bc.set_label(ids[i])
+            if i == 0:
+                bl = self.ax.bar_label(bc, padding = 2)
 
             # set picker
             for artist in bc.get_children():
                 artist.set_picker(True)
-                artist.set_label(id_)
-                artist.set_facecolor(self.colors.get(bar_containers[i], None))
-                artist.set_edgecolor('none')
-
-            # storing labels and values]
-            self.handles[bar_containers[i]] = bc
-            self.values_series[id_] = values
-            self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
-            self.colors[bar_containers[i]] = artist.get_facecolor()
+                artist.set_label(ids[i])
             
-            # removing old artists
-            self.removePlot(bar_containers[i])
+            # updating artist
+            self.handles[ids[i]] = bc
+            
+            # updating values
+            self.ylims[ids[i]] = (0, np.nanmax(groups[i]))
 
-            # adding new artist
-            self.ax.add_container(bc)
+        # adjust axis
+        self.autoscaleAxisY()
+        self.ax.set_xlim(-1, nseries)
 
-        # adjusting axis
-        self.setVerticalTicks(
-            max = np.nanmax(max_y),
-            min = 0
-        )
-        
+        # adjust ticks
+        self.ax.set_xticks(x)
+        self.ax.set_xticklabels(tick_labels)
+        self.maximum_dates = maximum_dates
+
         # updating legend
         self.updateLegend()
 
         # draw
-        self.draw()
+        self.draw_idle()

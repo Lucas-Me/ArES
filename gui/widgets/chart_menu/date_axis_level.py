@@ -7,6 +7,69 @@ from gui.widgets.chart_menu.buttons import TopLevelButton
 # IMPORT MODULES
 import matplotlib.dates as mdates
 
+
+class HorizontalAxisTopLevel(QWidget):
+
+	propertyChanged = Signal(dict)
+	def __init__(self, height):
+		super().__init__()
+
+		# PROPERTIES
+		self.item_height = height
+
+		# SETUP UI
+		self.setupUI()
+		self.toggle()
+
+		# SIGNALS
+		self.top_level.clicked.connect(self.toggle)
+		self.font_size.valueChanged.connect(
+			lambda x: self.propertyChanged.emit({'fontsize' : x})
+		)
+		self.rotation.valueChanged.connect(
+			lambda x: self.propertyChanged.emit({'rotation' : x})
+		)
+
+	def toggle(self):
+		hidden = self.top_level.getStatus()
+		active = not hidden
+	
+		# toggle on (active) or off
+		self.top_level.setActive(active)
+
+		# SHOW/HIDDEN widgets
+		self.font_size.setHidden(hidden)
+		self.rotation.setHidden(hidden)
+
+		# size policty
+		if active:
+			self.setFixedHeight(self.item_height * 3)
+		else:
+			self.setFixedHeight(self.item_height)
+
+	def setupUI(self):
+		if not self.objectName():
+			self.setObjectName("horizontal_axis_top_level")
+
+		self.main_layout = QVBoxLayout(self)
+		self.main_layout.setContentsMargins(0, 0, 0, 0)
+		self.main_layout.setSpacing(0)
+
+		# OBJECTS
+		self.top_level = TopLevelButton(text = "Eixo Horizontal", height = self.item_height)
+
+		# FONT SIZE
+		self.font_size = DateLabelProperty(text = "Tamanho da fonte", height = self.item_height, vmin = 1, vmax = 30)
+
+		# ROTATION
+		self.rotation = DateLabelProperty(text = 'Rotação (°)', height = self.item_height, vmin=0, vmax = 90)
+
+		# add to layout
+		self.main_layout.addWidget(self.top_level)
+		self.main_layout.addWidget(self.font_size)
+		self.main_layout.addWidget(self.rotation)
+
+
 class DateAxisTopLevel(QWidget):
 
 	propertyChanged = Signal(dict)
