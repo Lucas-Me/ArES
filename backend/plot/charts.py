@@ -768,10 +768,14 @@ class OverpassingCanvas(AbstractCanvas):
     
             # getting values and dates
             values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
+            # a serie tem que possuir pelo menos 2 dados, ou um erro ocorre
+            nans = np.count_nonzero(np.isnan(values))
+            if values.shape[0] - nans < 2:
+                raise IndexError 
+
             dates = series.getDates()
 
             # index of maximum and 2nd maximum values
-            nans = np.count_nonzero(np.isnan(values))
             idx_max1 = np.argpartition(values, -(nans + 1))[-(nans + 1)]
             idx_max2 = np.argpartition(values, -(nans + 2))[-(nans + 2)]
     

@@ -4,6 +4,7 @@ import datetime
 
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.chart_menu.ui_properties import UI_AbstractMenu
+from gui.windows.dialog.import_dialog import ImportDialog
 
 # IMPORT MODULES
 import matplotlib.dates as mdates
@@ -299,7 +300,6 @@ class OverpassingMenu(AbstractChartMenu):
 
 	@Slot(int, bool)
 	def updateBarElement(self, row : int, add: bool):
-		series = self.parent().parent.getHandle(row)
 		canvas = self.parent().canvas
 
 		# either add or remove artist
@@ -312,7 +312,29 @@ class OverpassingMenu(AbstractChartMenu):
 			del self.bar_rows[self.bar_rows.index(row)]
 			
 		# plot new artists
-		self.plotBars()
+		try:
+			self.plotBars()
+		except IndexError:
+			# opens a dialog warning the user about the error
+			dialog = ImportDialog(
+				title = 'Dados insuficientes',
+				message = 'A série de dados precisa conter 2 ou mais valores válidos.',
+				description= 'Uma das séries de dados selecionadas contém somente 1 ou nenhum valor válido que atendeu ao critério de representatividade, assim sendo insuficiente para ser visualizada nesse tipo de gráfico',
+				parent = self
+			)
+			dialog.ignore_button.hide()
+			dialog.show()
+
+		except Exception as err:
+			# opens a dialog warning the user about the error
+			dialog = ImportDialog(
+				title = 'Erro desconhecido',
+				message = 'Ocorreu um erro inesperado durante a execução das tarefas.',
+				description= '',
+				parent = self
+			)
+			dialog.ignore_button.hide()
+			dialog.show()
 
 		# drawing
 		canvas.draw_idle()
