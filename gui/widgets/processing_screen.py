@@ -348,7 +348,6 @@ class Worker(QObject):
 
 			# Funcao respectiva ao cálculo selecionado
 			func = self.functions[calc]
-			print(calc, func)
 
 			# Applyng threshold
 			data_object.setValues(data_object.maskByThreshold(threshold))
