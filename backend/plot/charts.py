@@ -601,11 +601,6 @@ class TimeSeriesCanvas(AbstractCanvas):
         max_y = [1] * n + [self.params['yticks-max']]
         min_y = [0] * n + [self.params['yticks-min']]
 
-        # scaling X axis
-        t_final = mdates.date2num(series_list[0].getDates()[-1])
-        xmin = t0 - delta_t / 2
-        xmax = t_final + delta_t /2
-
         # loop through each series
         for i in range(n):
             # getting series
@@ -640,12 +635,12 @@ class TimeSeriesCanvas(AbstractCanvas):
             }
 
             # LINE COLLECTION
-            if values.shape[0] < 2:
-                lc = CustomLine([dates_num[0] + offset, dates_num[0] + offset], [0, values[0]], color = kwargs['color'], linewidth = kwargs['width'], zorder = kwargs['zorder'], ax = self.ax)
-                self.ax.add_artist(lc)
-            else:
-                lc = self.getLineCollection(dates_num + offset, values, **kwargs)
-                self.ax.add_collection(lc)
+            # if values.shape[0] < 2:
+                # lc = CustomLine([dates_num[0] + offset, dates_num[0] + offset], [0, values[0]], color = kwargs['color'], linewidth = kwargs['width'], zorder = kwargs['zorder'], ax = self.ax)
+                # self.ax.add_line(lc)
+            # else:
+            lc = self.getLineCollection(dates_num + offset, values, **kwargs)
+            self.ax.add_collection(lc)
 
             # set picker
             lc.set_label(id_)
@@ -656,6 +651,8 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.colors[id_] = kwargs['color']
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
             self.ylims[id_] = (0, np.nanmax(values))
+            xmax = dates_num[-1] + delta_t /2
+            xmin = dates_num[0] - delta_t /2
             self.xlims[id_] = (xmin, xmax)
         
         # scaling axis
