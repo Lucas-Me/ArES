@@ -302,6 +302,7 @@ class Worker(QObject):
 		self.functions = {"Média móvel":stats.media_movel, "Média aritmética":stats.media,
 				"Média geométrica" : stats.media_geometrica, "Média harmônica" : stats.media_harmonica,
 				"Máxima" : stats.maxima}
+		self.frequencias = {"Data" : np.timedelta64(1, 'D'), "Mês e ano": np.timedelta64(30, 'D'), "Ano" : np.timedelta64(365, 'D')}
 
 
 	def start(self):
@@ -375,6 +376,8 @@ class Worker(QObject):
 		
 		# get frequency of dataset
 		data_object.metadata['frequency'] = get_frequency(data_object.getDates())
+		if data_object.metadata['frequency'].item().total_seconds() == 0:
+			data_object.metadata['frequency'] = self.frequencias[methods[-1][1]]
 
 		return data_object
 

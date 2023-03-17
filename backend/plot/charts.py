@@ -9,7 +9,7 @@ import numpy as np
 from itertools import cycle
 
 # IMPORT CUSTOM MODULES
-from backend.plot.collections import CustomLineCollection, CustomLine
+from backend.plot.collections import CustomLineCollection
 import backend.misc.settings as settings
 
 # IMPORT PLOT RELATED MODULES
@@ -635,10 +635,6 @@ class TimeSeriesCanvas(AbstractCanvas):
             }
 
             # LINE COLLECTION
-            # if values.shape[0] < 2:
-                # lc = CustomLine([dates_num[0] + offset, dates_num[0] + offset], [0, values[0]], color = kwargs['color'], linewidth = kwargs['width'], zorder = kwargs['zorder'], ax = self.ax)
-                # self.ax.add_line(lc)
-            # else:
             lc = self.getLineCollection(dates_num + offset, values, **kwargs)
             self.ax.add_collection(lc)
 
@@ -651,8 +647,8 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.colors[id_] = kwargs['color']
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
             self.ylims[id_] = (0, np.nanmax(values))
-            xmax = dates_num[-1] + delta_t /2
-            xmin = dates_num[0] - delta_t /2
+            xmax = dates_num[-1] + (delta_t / total_width) /2
+            xmin = dates_num[0] - (delta_t / total_width) / 2
             self.xlims[id_] = (xmin, xmax)
         
         # scaling axis
