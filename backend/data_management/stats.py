@@ -10,6 +10,7 @@ def media_geometrica(array):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
+        array[array <= 0] = np.nan # se houver zeros ou valores negativos, ignora
         media_dos_logaritmos = np.nanmean(np.log(array), axis = 0)
 
     return np.exp(media_dos_logaritmos)
@@ -50,7 +51,7 @@ def media(array):
     A serie pode conter NaN.'''
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
-        result = np.nanmean(array, axis = 0)
+        result = np.nanmean(array)
 
     return result
 
@@ -59,6 +60,6 @@ def maxima(array):
     A serie pode conter NaN.'''
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
-        result = np.nanmax(array, axis = 0)
+        result = np.nanmax(array)
 
     return result

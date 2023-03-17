@@ -237,7 +237,7 @@ class ProcessingScreen(QWidget):
 		suspeitos = '[?*]\w' # any words that starts with ?
 		invalidos = '[I*]\w' # any word that start with I
 		#
-		flags = [validos, suspeitos, invalidos]
+		flags = [validos, invalidos, suspeitos]
 		regex = ''
 
 		# loop through each checkbox
@@ -247,7 +247,6 @@ class ProcessingScreen(QWidget):
 				regex += flags[i] + '|'
 
 		regex = regex[:-1] # removing last character "|"
-
 		return regex
 
 	def export(self, kind):
@@ -339,7 +338,7 @@ class Worker(QObject):
 		for order in range(n): # if n == 0, will not enter loop anyway
 			calc = methods[order][0]
 			group = methods[order][1]
-			
+
 			# Critério de representatividade a ser considerado antes de efetuar o cálculo
 			threshold = settings.SETTINGS['representatividade']['Horária']
 
@@ -349,6 +348,7 @@ class Worker(QObject):
 
 			# Funcao respectiva ao cálculo selecionado
 			func = self.functions[calc]
+			print(calc, func)
 
 			# Applyng threshold
 			data_object.setValues(data_object.maskByThreshold(threshold))

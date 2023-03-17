@@ -281,12 +281,12 @@ class GroupedData(object):
 
          # the ramining items on the dict "kwargs" are arguments for the function "func"
          values = np.fromiter(map(func, self.grouped_values), dtype = float)
-         representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
+         # representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
 
-         # if not self.anual:
-         #    representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
-         # else:
-         #    representatividade = np.fromiter(map(self.calculateRepresentatividadeAnual, self.grouped_values, self.grouped_dates), dtype = float)
+         if not self.anual:
+            representatividade = np.fromiter(map(self.calculateRepresentatividade, self.grouped_values), dtype = float)
+         else:
+            representatividade = np.fromiter(map(self.calculateRepresentatividadeAnual, self.grouped_values, self.grouped_dates), dtype = float)
 
          return ModifiedData(
             values = values,
