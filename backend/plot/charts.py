@@ -9,7 +9,7 @@ import numpy as np
 from itertools import cycle
 
 # IMPORT CUSTOM MODULES
-from backend.plot.collections import CustomLineCollection
+from backend.plot.collections import CustomLineCollection, CustomLine
 import backend.misc.settings as settings
 
 # IMPORT PLOT RELATED MODULES
@@ -640,8 +640,12 @@ class TimeSeriesCanvas(AbstractCanvas):
             }
 
             # LINE COLLECTION
-            lc = self.getLineCollection(dates_num + offset, values, **kwargs)
-            self.ax.add_collection(lc)
+            if values.shape[0] < 2:
+                lc = CustomLine([dates_num[0] + offset, dates_num[0] + offset], [0, values[0]], color = kwargs['color'], linewidth = kwargs['width'], zorder = kwargs['zorder'], ax = self.ax)
+                self.ax.add_artist(lc)
+            else:
+                lc = self.getLineCollection(dates_num + offset, values, **kwargs)
+                self.ax.add_collection(lc)
 
             # set picker
             lc.set_label(id_)
@@ -649,7 +653,7 @@ class TimeSeriesCanvas(AbstractCanvas):
 
             # storing artist, color and labels
             self.handles[id_] = lc
-            self.colors[id_] = lc.get_color()[0]
+            self.colors[id_] = kwargs['color']
             self.labels[id_] = self.labels.get(id_, series.metadata['alias'])
             self.ylims[id_] = (0, np.nanmax(values))
             self.xlims[id_] = (xmin, xmax)
@@ -768,6 +772,7 @@ class OverpassingCanvas(AbstractCanvas):
     
             # getting values and dates
             values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
+
             # a serie tem que possuir pelo menos 2 dados, ou um erro ocorre
             nans = np.count_nonzero(np.isnan(values))
             if values.shape[0] - nans < 2:
