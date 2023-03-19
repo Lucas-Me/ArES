@@ -78,7 +78,6 @@ class SettingsWindow(QDialog):
 		self.updateFigure()
 
 	def loadContents(self):
-		print(settings.SETTINGS)
 		# BANCO DE DADOS
 		self.ui.database_edit.setText(settings.SETTINGS['conexao']['database'])
 		self.ui.server_edit.setText(settings.SETTINGS['conexao']['servidor'])
