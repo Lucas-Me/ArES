@@ -13,7 +13,7 @@ class ColorTable(QWidget):
 
 		# PROPERTIES
 		self.nrows = 6
-		self.ncols = 8
+		self.ncols = 6
 
 		# SETTINGS
 		self.setupUI()

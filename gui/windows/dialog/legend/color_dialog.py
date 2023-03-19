@@ -26,17 +26,18 @@ class LegendDialog(QDialog):
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground, True)
 		self.setAttribute(Qt.WA_DeleteOnClose, True)
-		self.setFixedSize(500 + self.margins, 250 + self.margins)
+		self.setFixedSize(500 + self.margins, 350 + self.margins)
 
 		# SETUP UI
 		self.ui = UI_LegendDialog()
 		self.ui.setup_ui(self)
 
 		# SIGNALS AND SLOTS
-		self.ui.color_selector.color_changed.connect(self.changeArtistColor)
-		self.ui.table.colorSelected.connect(self.changeArtistColor)
+		self.ui.color_selector.color_changed.connect(lambda x: self.changeArtistColor(x, 'text'))
+		self.ui.table.colorSelected.connect(lambda x: self.changeArtistColor(x, 'both'))
 		self.ui.save_button.clicked.connect(self.saveContents)
 		self.ui.cancel_button.clicked.connect(self.close)
+		self.ui.color_codes.colorChanged.connect(lambda x: self.changeArtistColor(x, 'triangle'))
 
 	def saveContents(self):
 		text = self.ui.line_edit.text()
@@ -51,14 +52,14 @@ class LegendDialog(QDialog):
 		return super().close()
 
 	@Slot(QColor)
-	def changeArtistColor(self, color : QColor):
+	def changeArtistColor(self, color : QColor, which: str):
 		self.canvas.updateColor(self.artist_id, color.name())
 
 		# draw new canvas
 		self.canvas.draw()
 
 		# update dialog
-		self.updateColor(color)
+		self.updateColor(color, which)
 
 	def changeArtistLabel(self, text):
 		self.canvas.labels[self.artist_id] = text
@@ -88,12 +89,14 @@ class LegendDialog(QDialog):
 		self.adjustPosition()
 		super().show()
 
-	def updateColor(self, color : QColor):
-		style = self.ui.color_view.styleSheet()
-		index = style.index(';')
-		new_style = f'background-color: {color.name()}' + style[index:]
-		self.ui.color_view.setStyleSheet(new_style)
-		self.ui.color_selector.set_color(color)
+	def updateColor(self, color : QColor, which = 'triangle'):
+		if which == 'triangle':
+			self.ui.color_selector.set_color(color)
+		elif which == 'text':
+			self.ui.color_codes.setColor(color)
+		else:
+			self.ui.color_selector.set_color(color)
+			self.ui.color_codes.setColor(color)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		painter = QPainter(self)
@@ -144,3 +147,8 @@ class LegendDialog(QDialog):
 		self.canvas.draw()
 
 		return super().close()
+	
+	def keyPressEvent(self, arg__1: QKeyEvent) -> None:
+		if arg__1.key() == Qt.Key_Enter or arg__1.key() == Qt.Key_Return:
+			return None
+		return super().keyPressEvent(arg__1)
