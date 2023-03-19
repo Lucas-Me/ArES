@@ -149,7 +149,7 @@ class LegendDialog(QDialog):
 	def close(self) -> bool:
 		# revert to original color if necessary
 		if self.origColor != self.ui.color_selector.cur_color:
-			self.changeArtistColor(self.origColor)
+			self.changeArtistColor(self.origColor, which = 'both')
 
 		# update legend and draw figure
 		self.canvas.updateLegend()
