@@ -131,11 +131,16 @@ class UI_SettingsWindow(object):
 				font: normal 12pt 'Microsoft New Tai Lue';
 				color: black;
 			}}
+			#mask_label {{
+				background-color: transparent;
+				font: normal 10pt 'Microsoft New Tai Lue';
+				color: #303030;
+			}}
 			#version{{
 				background-color: transparent;
-				font: normal 12pt 'Microsoft New Tai Lue';
+				font: bold 12pt 'Microsoft New Tai Lue';
 				text-align: middle;
-				color: black;
+				color: #303030;
 			}}
 			#connection, #figure, #criteria{{
 				background-color: #e1e1e1;
@@ -315,7 +320,7 @@ class UI_SettingsWindow(object):
 		self.layout_page2.addWidget(self.date_edit, 7, 1)
 		self.layout_page2.addWidget(self.spinbox_freq, 8, 1)
 
-		# PAGE 3 - CRITERIOS DE REPRESENTATIVIDADE
+		# PAGE 3 - PROPRIEDADES DAS FIGURAS
 		# ///////////////////////
 		self.page_figure = QWidget()
 		self.page_figure.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
@@ -327,13 +332,13 @@ class UI_SettingsWindow(object):
 		self.layout_page3.setContentsMargins(10, 10, 10, 10)
 		self.layout_page3.setSpacing(5)
 
-		# representatividade
+		# FIGURAS
 		self.label_adjust = QLabel("Janela de gráfico")
 		self.label_adjust.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_adjust.setFixedHeight(text_height)
 		self.label_adjust.setObjectName('top_level_graphwindow')
 
-		# HORARIA
+		# CANTO ESQUERDO
 		self.label_left = QLabel('Canto esquerdo')
 		self.label_left.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_left.setFixedHeight(text_height)
@@ -342,7 +347,7 @@ class UI_SettingsWindow(object):
 		self.spinbox_left.setFixedSize(100, text_height)
 		self.spinbox_left.setRange(0, 1)
 
-		# DIARIA
+		# CANTO DIREITO
 		self.label_right = QLabel('Canto direito')
 		self.label_right.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_right.setFixedHeight(text_height)
@@ -351,7 +356,7 @@ class UI_SettingsWindow(object):
 		self.spinbox_right.setFixedSize(100, text_height)
 		self.spinbox_right.setRange(0, 1)
 
-		# MENSAL
+		# CANTO INFERIOR
 		self.label_bottom = QLabel('Canto inferior')
 		self.label_bottom.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_bottom.setFixedHeight(text_height)
@@ -360,7 +365,7 @@ class UI_SettingsWindow(object):
 		self.spinbox_bottom.setFixedSize(100, text_height)
 		self.spinbox_bottom.setRange(0, 1)
 
-		# ANUAL
+		# CANTO SUPERIOR
 		self.label_top = QLabel('Canto superior')
 		self.label_top.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_top.setFixedHeight(text_height)
@@ -369,7 +374,7 @@ class UI_SettingsWindow(object):
 		self.spinbox_top.setFixedSize(100, text_height)
 		self.spinbox_top.setRange(0, 1)
 
-		# SEMIAUTOMATICA
+		# FONTE DAS FIGURAS
 		self.label_fonts = QLabel("Fonte")
 		self.label_fonts.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.label_fonts.setFixedHeight(text_height)
@@ -392,6 +397,22 @@ class UI_SettingsWindow(object):
 		self.text_frame_layout.addWidget(self.font_families)
 		self.text_frame_layout.addWidget(self.font_size)
 
+		# FONTE DAS FIGURAS
+		self.label_others = QLabel("Outros")
+		self.label_others.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		self.label_others.setFixedHeight(text_height)
+		self.label_others.setObjectName('top_level_fonts')
+
+		# Font Family
+		self.mask_layout = QHBoxLayout()
+		self.mask_layout.setSpacing(5)
+		self.mask_layout.setContentsMargins(0, 0, 0, 0)
+		self.mask_label = QLabel("Ocultar resultados por critério de representatividade")
+		self.mask_label.setObjectName('mask_label')
+		self.mask_check_box = QCheckBox()
+		self.mask_layout.addWidget(self.mask_label)
+		self.mask_layout.addWidget(self.mask_check_box)
+
 		# add to layout
 		self.layout_page3.addWidget(self.label_adjust, 0, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignTop)
 		self.layout_page3.addWidget(self.label_left, 1, 0)
@@ -405,6 +426,8 @@ class UI_SettingsWindow(object):
 		self.layout_page3.addItem(QSpacerItem(10, 10, QSizePolicy.Expanding, QSizePolicy.MinimumExpanding), 5, 0, 1, 2)
 		self.layout_page3.addWidget(self.label_fonts, 6, 0, 1, 2)
 		self.layout_page3.addWidget(self.text_frame, 7, 0, 1, 2)
+		self.layout_page3.addWidget(self.label_others, 8, 0, 1,2)
+		self.layout_page3.addLayout(self.mask_layout, 9, 0, 1, 2)
 
 		# ADD TO STACKED WIDGET
 		# ////////////////////

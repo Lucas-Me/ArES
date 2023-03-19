@@ -194,6 +194,17 @@ class AbstractCanvas(FigureCanvasQTAgg):
             )
         
         return threshold
+    
+    def maskByThreshold(self, series : object):
+        if settings.SETTINGS['filtrar']:
+            # getting threshold
+            threshold = self.getThreshold(series)
+
+            # getting properties
+            return series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
+
+        else:
+            return series.getValues() # retorna os dados sem aplicar a mascara por quantitativo de dados validos
 
     def updateLegend(self, **kwargs):
         args = dict(
@@ -529,12 +540,8 @@ class TimeSeriesCanvas(AbstractCanvas):
         # rotulos do eixo X
         self.setHorizontalTicks()
     
-    def plot(self, series : object, threshold = 0):
-        # getting threshold
-        threshold = self.getThreshold(series)
-
-        # getting properties
-        values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
+    def plot(self, series : object):
+        values = self.maskByThreshold(series) # mascara os dados por quantitativo de dados validos, se o usuario desejar
         dates = series.getDates()
 
         # object metadata
@@ -611,8 +618,7 @@ class TimeSeriesCanvas(AbstractCanvas):
             self.removePlot(series.metadata['signature'])
 
             # getting properties
-            threshold = self.getThreshold(series)
-            values = series.maskByThreshold(threshold)  # mascara por quantitativo de dados validos
+            values = self.maskByThreshold(series) # mascara os dados por quantitativo de dados validos, se o usuario desejar
             dates = series.getDates()
 
             # maximum and minimum
@@ -761,11 +767,8 @@ class OverpassingCanvas(AbstractCanvas):
         for i in range(nseries):
             series = series_list[i]
 
-            # getting threshold
-            threshold = self.getThreshold(series)
-    
-            # getting values and dates
-            values = series.maskByThreshold(threshold) # mascara por quantitativo de dados validos
+            # getting values
+            values = self.maskByThreshold(series) # mascara por quantitativo de dados validos, se o usuário desejar.
 
             # a serie tem que possuir pelo menos 2 dados, ou um erro ocorre
             nans = np.count_nonzero(np.isnan(values))

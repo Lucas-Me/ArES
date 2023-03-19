@@ -24,7 +24,7 @@ class SettingsWindow(QDialog):
 		self.dragPos = QPoint()
 
 		# WINDOW SETTINGS
-		self.setFixedSize(400 + self.margins, 350 + self.margins)
+		self.setFixedSize(450 + self.margins, 350 + self.margins)
 		self.setModal(True)
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground, True)
@@ -78,6 +78,7 @@ class SettingsWindow(QDialog):
 		self.updateFigure()
 
 	def loadContents(self):
+		print(settings.SETTINGS)
 		# BANCO DE DADOS
 		self.ui.database_edit.setText(settings.SETTINGS['conexao']['database'])
 		self.ui.server_edit.setText(settings.SETTINGS['conexao']['servidor'])
@@ -96,6 +97,7 @@ class SettingsWindow(QDialog):
 		self.ui.spinbox_bottom.setValue(settings.SETTINGS['figura']['bottom'])
 		self.ui.spinbox_top.setValue(settings.SETTINGS['figura']['top'])
 		self.ui.font_size.setValue(settings.SETTINGS['figura']['font_size'])
+		self.ui.mask_check_box.setChecked(settings.SETTINGS['filtrar'])
 
 		# FAMILY
 		families = np.unique(sorted([f.name for f in font_manager.fontManager.afmlist] + [f.name for f in font_manager.fontManager.ttflist]))
@@ -188,6 +190,7 @@ class SettingsWindow(QDialog):
 		settings.SETTINGS['figura']['top'] = top
 		settings.SETTINGS['figura']['font_size'] = fontsize
 		settings.SETTINGS['figura']['font_family'] = fontfamily
+		settings.SETTINGS['filtrar'] = self.ui.mask_check_box.isChecked()
 
 	def show(self) -> None:
 		self.adjustPosition()

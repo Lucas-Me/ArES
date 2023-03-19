@@ -34,9 +34,10 @@ SETTINGS = dict(
         'font_size' : 15,
         'dpi' : 200
     },
+    filtrar =  True, # Ocultar resultados por quantitativo de dados válidos, na figura.
     perfis = {}, # Perfis do usuário
     cores = [['#ffffff']*6 for i in range(2)], # cores personalizadas salvas (legenda)
-    version = '1.3.0'
+    version = '1.3.1'
 )
 
 # IMPORTAR E ATUALIZAR AS CONFIGURACOES, SE JA EXISTIR.
@@ -62,4 +63,6 @@ except FileExistsError:
     with open(fname, 'r', encoding='utf-8') as f:
         existing_data = json.load(f)
     
+    version = SETTINGS['version']
     SETTINGS.update(existing_data)
+    SETTINGS['version'] = version

@@ -17,7 +17,7 @@ from backend.misc.functions import get_imagepath
 
 try:
     from ctypes import windll  # Only exists on Windows.
-    myappid = 'inea.ares.1.3.0'
+    myappid = 'inea.ares.1.3.1'
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # PROPERTIES
-        self.version = '1.3.0'
+        self.version = '1.3.1'
 
         # window title
         self.setWindowTitle("ArES")
