@@ -222,6 +222,7 @@ class AbstractCanvas(FigureCanvasQTAgg):
         # save options
         self.params['legend-ncol'] = args['ncol']
         self.params['legend-fontsize'] = args['prop']['size']
+        self.params['legend-loc'] = args['loc']
 
     def updateColor(self, artist_id, color):
         '''Updates the color of a given artist'''
