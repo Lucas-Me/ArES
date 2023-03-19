@@ -1,0 +1,36 @@
+Historico de atualizacões do Programa ArES
+As últimas atualizações sempre serão listadas primeiro.
+
+ArES V1.3.1 - 19/03/2023
+- Corrigido bug em que não era possível plotar uma série com um único dado/valor;
+- Calculo da Média Geométrica agora ignora valores menores ou igual a zero presentes na série, por segurança;
+    Este calculo envolve um logaritmo e exponencial, portanto valores <= 0 resultavam em "-infinito" (indefinição).
+- Em Ajustes, foi adicionada uma opcao para ocultar ou não, na figura, os resultados de acordo com o criterio de representatividade;
+- Possibilidade de editar as cores da legenda pelos códigos HEX ou RGB;
+- Possibilidade de salvar cores personalizadas da legenda.
+    Essas cores ficam guardadas na proxima inicializacao do programa.
+
+ArES V1.3.0 - 05/03/2023
+- Interface do programa foi atualizada;
+- Novos recursos;
+- Possibilidade de executar mais de uma operacao por processamento em diferentes parametros;
+- Possibilidade de editar multiplas figuras simultaneamente;
+- Entre outros.
+
+ArES v1.2 - 10/01/2023
+- Correção no comportamento do Eixo Y.
+
+ArES v1.1 - 22/12/2022 
+- Corrigido bug ao exigir valores menores do que 1 como rótulos do eixo Y; 
+- Eixo Y agora aceita como rótulos valores com até 2 casas decimais;
+- Incluida a opção de considerar somente dados validos, invalidos ou suspeitos;
+- Incluida a possibilidade de conversao da unidade [ppb] para [ppm];
+- Corrigido um bug visual na aba Configurações >> Conexão.
+- Adicionado a opcao de salvar as Configuracoes. Serao importadas assim que o usuario abrir novamente o programa.
+- Amostragem da rede semiautomatica pode ser customizada, caso futuramente o criterio mude.
+
+* Problemas conhecidos, a ser resolvido:
+    - Enquanto conectado ao banco de dados, se a conexão cair o programa para de responder.
+
+ArEs v1.0 - xx/11/2022
+- Primeiro lançamento
