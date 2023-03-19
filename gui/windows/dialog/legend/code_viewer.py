@@ -32,9 +32,7 @@ class ColorCode(QWidget):
 		self.hex_text.setObjectName('HEX_TEXT')
 		
 		# RGB OBJECTS
-		self.rgb_frame = QFrame()
-		self.rgb_frame.setObjectName("RGB_FRAME")
-		self.rgb_layout = QHBoxLayout(self.rgb_frame)
+		self.rgb_layout = QHBoxLayout()
 		self.rgb_layout.setContentsMargins(5, 5, 5, 5)
 		self.rgb_layout.setSpacing(5)
 
@@ -57,7 +55,7 @@ class ColorCode(QWidget):
 		# add to main layout
 		self.main_layout.addWidget(self.rgb_text, 0, 0)
 		self.main_layout.addWidget(self.hex_text, 1, 0)
-		self.main_layout.addWidget(self.rgb_frame, 0, 1)
+		self.main_layout.addLayout(self.rgb_layout, 0, 1)
 		self.main_layout.addWidget(self.hex_line_edit, 1, 1)
 
 		# setup style
@@ -73,7 +71,7 @@ class ColorCode(QWidget):
 				font: bold {font_size}pt '{font}';
 				color: {font_color};
 			}}
-			#RGB_FRAME, #HEX_EDIT {{
+			#HEX_EDIT {{
 				background-color: #303030;
 				border: 1px solid #dcdcdc;
 				border-radius: 5px;

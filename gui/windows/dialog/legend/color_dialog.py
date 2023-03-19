@@ -26,7 +26,7 @@ class LegendDialog(QDialog):
 		self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
 		self.setAttribute(Qt.WA_TranslucentBackground, True)
 		self.setAttribute(Qt.WA_DeleteOnClose, True)
-		self.setFixedSize(500 + self.margins, 350 + self.margins)
+		self.setFixedSize(500 + self.margins, 400 + self.margins)
 
 		# SETUP UI
 		self.ui = UI_LegendDialog()
@@ -35,9 +35,15 @@ class LegendDialog(QDialog):
 		# SIGNALS AND SLOTS
 		self.ui.color_selector.color_changed.connect(lambda x: self.changeArtistColor(x, 'text'))
 		self.ui.table.colorSelected.connect(lambda x: self.changeArtistColor(x, 'both'))
+		self.ui.custom_colors.colorSelected.connect(lambda x: self.changeArtistColor(x, 'both'))
+		self.ui.custom_colors.saveColor.connect(self.saveColor)
 		self.ui.save_button.clicked.connect(self.saveContents)
 		self.ui.cancel_button.clicked.connect(self.close)
 		self.ui.color_codes.colorChanged.connect(lambda x: self.changeArtistColor(x, 'triangle'))
+
+	def saveColor(self, widget):
+		cur_color = self.ui.color_selector.cur_color
+		widget.setColor(cur_color)
 
 	def saveContents(self):
 		text = self.ui.line_edit.text()
@@ -47,6 +53,9 @@ class LegendDialog(QDialog):
 		# update legend and draw figure
 		self.canvas.updateLegend()
 		self.canvas.draw()
+
+		# save custom colors
+		self.ui.custom_colors.exportSettings()
 
 		# close dialog
 		return super().close()

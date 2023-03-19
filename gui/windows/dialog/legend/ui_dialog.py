@@ -4,6 +4,7 @@ from qt_core import *
 # IMPORT CUSTOM WIDGETS
 from gui.widgets.color_triangle import QtColorTriangle
 from gui.windows.dialog.legend.color_table import ColorTable
+from gui.windows.dialog.legend.custom_colors import CustomColorTable
 from gui.windows.dialog.legend.code_viewer import ColorCode
 
 # IMPORT CUSTOM FUNCTIONS
@@ -27,7 +28,9 @@ class UI_LegendDialog(object):
 		self.frame_layout = QGridLayout(self.frame)
 		self.frame_layout.setContentsMargins(10, 10, 10, 10)
 		self.frame_layout.setSpacing(10)
-		self.frame_layout.setRowStretch(1, 2)
+		self.frame_layout.setRowStretch(1, 3)
+		self.frame_layout.setRowStretch(2, 2)
+
 		
 		# PROPERTIES
 		w, h = self.frame.width(), self.frame.height()
@@ -86,10 +89,14 @@ class UI_LegendDialog(object):
 		# COLOR CODES
 		self.color_codes = ColorCode(self.color_selector.cur_color)
 
+		# CUSTOM COLORS
+		self.custom_colors = CustomColorTable()
+
 		# SETTING UP MAIN LAYOUT
 		# ///////////////////////////
 		self.frame_layout.addWidget(self.header_frame, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop)
 		self.frame_layout.addWidget(self.table, 1, 0, 1, 1)
+		self.frame_layout.addWidget(self.custom_colors, 2, 0, 1, 1)
 		self.frame_layout.addWidget(self.color_selector, 1, 1, 1, 1)
 		self.frame_layout.addWidget(self.color_codes, 2, 1, 1, 1)
 
@@ -129,7 +136,7 @@ class UI_LegendDialog(object):
 				color: #8f8f8f;
 				border-color: #8f8f8f;
 			}}
-			#lables {{
+			#labels {{
 				font: bold 13pt {font_family};
 				color: {text_color};
 			}}

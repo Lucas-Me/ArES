@@ -35,6 +35,7 @@ SETTINGS = dict(
         'dpi' : 200
     },
     perfis = {}, # Perfis do usuário
+    cores = [['#ffffff']*6 for i in range(2)], # cores personalizadas salvas (legenda)
     version = '1.3.0'
 )
 
