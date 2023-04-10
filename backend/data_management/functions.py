@@ -2,7 +2,7 @@
 
 # IMPORT MODULES
 import numpy as np
-import os
+import os, glob
 import xlrd, xlsxwriter
 
 # IMPORT CUSTOM MODULES
@@ -419,6 +419,13 @@ def export_to_csv(files: list, directory : str):
 	Exporta todos os dados processados em um csv que pode ser lido na linguagem R, e consequentemente
 	manipulado para ser aproveitado pelo modulo openair.
 	'''
+
+	# DELETING ALL CSV FILES IN DIRECTORY, IF EXISTS
+	csv_files = glob.glob(os.path.join(directory, '*.csv'))
+	for i in range(len(csv_files)):
+		os.remove(csv_files[i])
+
+	# STARTING TASK
 	codes = np.array([abstract_data.metadata['code'] for abstract_data in files])
 
 	# sorting data by code
@@ -435,10 +442,10 @@ def export_to_csv(files: list, directory : str):
 		# preparing fname and header
 		fname = os.path.join(directory, f"{code}.csv")
 		acronyms = [ModifiedData.metadata['acronym'] for ModifiedData in data_list]
-		header = f"site,code,date,{','.join(acronyms)}"
+		header = f"site,date,{','.join(acronyms)}"
 
 		# getting info
-		info = f"{data_list[0].metadata['name']},{code},"
+		info = f"{data_list[0].metadata['name']},"
 		dates = data_list[0].getDates()
 
 		# preparing values

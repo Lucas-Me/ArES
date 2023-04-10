@@ -72,6 +72,7 @@ ALIAS_OPENAIR = [
    't',
    'sr',
    'lsr',
+   'rh',
    'p',
    'pts',
    'pm25',

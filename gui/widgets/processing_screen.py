@@ -268,10 +268,10 @@ class ProcessingScreen(QWidget):
 				if kind == 'raw':
 					export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
 				else:
-					export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
-					# directory = os.path.join(os.path.expanduser("~"), '.ArES', 'temp')
-					# os.makedirs(directory, exist_ok=True)
-					# export_to_csv(files = self.processed_data, directory = directory)
+					# export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
+					directory = os.path.join(os.path.expanduser("~"), '.ArES', 'temp')
+					os.makedirs(directory, exist_ok=True)
+					export_to_csv(files = self.processed_data, directory = directory)
 
 			# throw an exception if failed
 			except xlsxwriter.exceptions.FileCreateError as err:

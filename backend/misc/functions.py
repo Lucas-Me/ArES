@@ -56,7 +56,8 @@ def get_alias(varname : str, return_openair = False) -> str:
 		alias = varname
 
 	if return_openair:
-		return [alias + ' ' + words[-1], ALIAS_OPENAIR[idx]]
+		ob = [alias + ' ' + words[-1], ALIAS_OPENAIR[idx]]
+		return ob
 
 	return alias + ' ' + words[-1]
 
