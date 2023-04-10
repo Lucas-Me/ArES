@@ -18,7 +18,7 @@ from gui.windows.dialog.import_dialog import ImportDialog
 # IMPORT CUSTOM FUNCTIONS
 from backend.data_management import stats
 from backend.misc.functions import get_frequency
-from backend.data_management.functions import export_to_xlsx
+from backend.data_management.functions import export_to_xlsx, export_to_csv
 
 # IMPORT CUSTOM VARIABLES
 import backend.misc.settings as settings
@@ -268,7 +268,10 @@ class ProcessingScreen(QWidget):
 				if kind == 'raw':
 					export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
 				else:
-					export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
+					# export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
+					directory = os.path.join(os.path.expanduser("~"), '.ArES', 'temp')
+					os.makedirs(directory, exist_ok=True)
+					export_to_csv(files = self.processed_data, directory = directory)
 
 			# throw an exception if failed
 			except xlsxwriter.exceptions.FileCreateError as err:
@@ -325,6 +328,7 @@ class Worker(QObject):
 				dcopy = filtered_data.metadata.copy()
 				del dcopy['frequency']
 				final_data.metadata.update(dcopy)
+				final_data.setCode()
 
 				# finalizing
 				processed_data[i] = final_data

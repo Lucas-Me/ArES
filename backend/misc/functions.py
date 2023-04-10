@@ -35,25 +35,30 @@ def find_unit(parameter_name, return_name = False):
 		return parameter_name[:start - 1], parameter_name[start + 1:-1]
 
 
-def get_alias(varname : str) -> str:
-   '''
-   Recebe uma string com o nome de uma variavel e retorna uma outra string com
-   a sua abreviação, omitindo a unidade.
-   Ex: Hidrocarbonetos Totais (ppb) -> HCT
-   '''
-   # usando as variaveis globais
-   global VARIAVEIS
-   global VAR_ALIAS
+def get_alias(varname : str, return_openair = False) -> str:
+	'''
+	Recebe uma string com o nome de uma variavel e retorna uma outra string com
+	a sua abreviação, omitindo a unidade.
+	Ex: Hidrocarbonetos Totais (ppb) -> HCT
+	'''
+	# usando as variaveis globais
+	global VARIAVEIS
+	global VAR_ALIAS
+	global ALIAS_OPENAIR
 
-   # a string é composta pelo nome da variavel e por fim sua unidade.
-   words = re.compile('\s+').split(varname)
-   varname = ' '.join(words[:-1])
-   try:
-      alias = VAR_ALIAS[VARIAVEIS.index(str(varname))]
-   except:
-      alias = varname
-   
-   return alias + ' ' + words[-1]
+	# a string é composta pelo nome da variavel e por fim sua unidade.
+	words = re.compile('\s+').split(varname)
+	varname = ' '.join(words[:-1])
+	idx = VARIAVEIS.index(str(varname))
+	try:
+		alias = VAR_ALIAS[idx]
+	except:
+		alias = varname
+
+	if return_openair:
+		return [alias + ' ' + words[-1], ALIAS_OPENAIR[idx]]
+
+	return alias + ' ' + words[-1]
 
 def drawShadow(
 	_painter : QPainter,

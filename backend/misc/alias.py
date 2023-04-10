@@ -61,3 +61,32 @@ VAR_ALIAS = [
    'CH4',
    'HCTnM'
 ]
+
+ALIAS_OPENAIR = [
+   'sdwd',
+   'rf',
+   'ws',
+   'ws',
+   'wd',
+   'wd',
+   't',
+   'sr',
+   'lsr',
+   'p',
+   'pts',
+   'pm25',
+   'pm25',
+   'pm25',
+   'pm10',
+   'pm10',
+   'pm10',
+   'no',
+   'no2',
+   'nox',
+   'o3',
+   'so2',
+   'co',
+   'hct',
+   'ch4',
+   'hctnm'
+]

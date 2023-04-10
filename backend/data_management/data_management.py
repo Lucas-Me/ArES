@@ -120,8 +120,9 @@ class AbstractData(object):
       [nome estacao] - [var alias]
       '''
       varname = self.metadata['parameter']
-      var_alias = get_alias(varname)
+      var_alias, openair = get_alias(varname, return_openair=True)
 
+      self.metadata['acronym'] = openair
       self.metadata['alias'] = f"{self.metadata['name']} - {var_alias}"
       self.metadata['signature'] = f"{self.metadata['signature'][:3]} - {self.metadata['alias']}" 
 
@@ -234,6 +235,29 @@ class ModifiedData(AbstractData):
          representatividade = np.array(representatividade)
       
       self.representatividade = representatividade
+
+   def setCode(self):
+      '''Estabelece um codigo para este dado'''
+
+      # Tipo de estacao, fonte e nome
+      code = self.metadata['source'][0].upper() + self.metadata['type'][0] + '_'
+      name = self.metadata['name']
+      for string in re.split('\s+', name):
+         code += string[0]
+      
+      # metodos utilizados
+      n = len(self.metadata['methods']) * 2
+      if n > 0:
+         code += '_'
+         for i in range(n):
+            row = i // 2
+            col = i % 2
+            
+            initials = [string[0] for string in re.split('\s+', self.metadata['methods'][row][col])]
+            code += ''.join(initials)
+
+      # salve o codigo
+      self.metadata['code'] = code
 
    def getRepresentatividade(self):
       return self.representatividade

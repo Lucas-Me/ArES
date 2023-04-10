@@ -413,3 +413,46 @@ def workbook_processed(files: list, wb : xlsxwriter.workbook) -> xlsxwriter.Work
 
 			# writing enterprise header
 			ws.merge_range(0, current_col - cols, 0, current_col - 1, enterprise, header_fmt)
+
+def export_to_csv(files: list, directory : str):
+	'''
+	Exporta todos os dados processados em um csv que pode ser lido na linguagem R, e consequentemente
+	manipulado para ser aproveitado pelo modulo openair.
+	'''
+	codes = np.array([abstract_data.metadata['code'] for abstract_data in files])
+
+	# sorting data by code
+	sorted_objects = {k:[] for k in codes}
+
+	for i in range(len(files)):
+		index_list = sorted_objects.get(codes[i], [])
+		index_list.append(files[i])
+		sorted_objects[codes[i]] = index_list
+
+	# creating csv for each unique code
+	for code, data_list in sorted_objects.items():
+		
+		# preparing fname and header
+		fname = os.path.join(directory, f"{code}.csv")
+		acronyms = [ModifiedData.metadata['acronym'] for ModifiedData in data_list]
+		header = f"site,code,date,{','.join(acronyms)}"
+
+		# getting info
+		info = f"{data_list[0].metadata['name']},{code},"
+		dates = data_list[0].getDates()
+
+		# preparing values
+		values = [ModifiedData.getValues() for ModifiedData in data_list]
+		cols = len(values)
+
+		# creating csv
+		with open(fname, 'w') as file:
+			# write header
+			file.write(header)
+
+			# write each line
+			for row in range(dates.shape[0]):
+				line = info + dates[row].item().strftime("%d/%m/%Y %H:%M")
+				for col in range(cols):
+					line += f',{values[col][row]}'
+				file.write('\n' + line)
