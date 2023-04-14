@@ -1,12 +1,22 @@
+#' A function
+#'
+#' @param directory A directory path
+#'
+#' @return The dataframe with the read files in directory
 #' @importFrom magrittr %>%
+#' @ImportFrom dplyr full_join
+#' @export
 
 # IMPORTING LIBRARIES
-library(openair)
 library(tidyverse)
 library(readr)
-globalVariables(c("mpg", "hp", "mpg_div_hp"))
+library(magrittr)
+library(purrr)
+library(dplyr)
 
-open_dataset <- function(directory = "C:\\Users\\lucassm\\.ArES\\temp") {
+# FUNCTIONS
+
+open_dataset <- function(directory) {
     # LISTING EXISTING FILES
     list_files <- list.files(
         path = directory, pattern = "*.csv",
@@ -42,15 +52,3 @@ open_dataset <- function(directory = "C:\\Users\\lucassm\\.ArES\\temp") {
     # RETURN RESULTS
     return(df)
 }
-
-
-# OPTIONS TO SAVE FIGURE
-# png(file.path(directory, "teste.png"),
-#     width = 8, height = 4, units = "in", res = 300)
-
-# CUSTOM COMMANDS NEED TO BE INSERTED HERE
-# timeVariation(df, pollutant = c("pm10", "pts"),
-# ylab = "pm10 (µg/m3)")
-
-# CLOSE AND SAVE FIGURE
-# dev.off() #only 129kb in size

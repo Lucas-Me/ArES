@@ -17,8 +17,7 @@ class OpenAirScreen(QWidget):
 		super().__init__(parent = parent)
 
 		# PRIVATE VARIABLES
-		self.save_dir = os.path.expanduser("~")
-		self.data_dir = os.path.join(self.save_dir, '.ArES', 'temp')
+		self.data_dir = os.path.join(os.path.expanduser('~'), '.ArES', 'temp')
 		self.resources_list = ListaSuspensa()
 
 		# SETUP UI
@@ -28,6 +27,69 @@ class OpenAirScreen(QWidget):
 		# SETTINGS
 		self.resources_list.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
 		self.resources_list.setFixedWidth(250)
+		self.searchExecutableDirectory()
+		self.updateResolution()
+
+		# SIGNALS AND SLOTS
+		self.ui.r_directory.clicked.connect(lambda: self.directorySelection(field = self.ui.r_directory))
+		self.ui.save_directory.clicked.connect(lambda: self.directorySelection(field = self.ui.save_directory))
+		self.ui.dpi.valueChanged.connect(self.updateResolution)
+		self.ui.proportion.valueChanged.connect(self.updateResolution)
+
+	def directorySelection(self, field : QLabel):
+		current_dir = field.text()
+		if not os.path.isdir(current_dir):
+			current_dir = os.path.expanduser('~')
+
+		# open window requesting the user to find the directory
+		selected_dir = QFileDialog.getExistingDirectory(
+			self,
+			"Selecione um diretório...",
+			dir = current_dir
+		)
+
+		# if 'selected' is not a empty string
+		if len(selected_dir) > 0:
+			field.setText(selected_dir)
+
+	def searchExecutableDirectory(self):
+		# R path
+		r_path = r"R\R-4.2.3\bin\x64"
+
+		# search in windows folder and user folder
+		folders = ["C:\\Program Files", os.path.join(os.path.expanduser('~'), 'AppData\\Local\\Programs')]
+
+		for folder in folders:
+			installation_folder = os.path.join(folder, r_path)
+			folder_exists = os.path.isdir(installation_folder)
+			if folder_exists:
+				self.ui.r_directory.setText(installation_folder)
+				return None
+
+		# R installation folder has not been encountered, requesting user to insert the right one
+		self.ui.r_directory.setText('<Selecione a pasta do executável R>')	
+
+	def updateResolution(self):
+		dpi = self.ui.dpi.value()
+		x = self.ui.proportion.getWidth()
+		y = self.ui.proportion.getHeight()
+
+		height = y * dpi
+		width = x * dpi
+
+		# update text
+		self.ui.final_resolution.setText(f'''
+			<style>
+				h1 {{text-align: center;}}
+				p {{text-align: middle;}}
+				p2 {{text-align: center;}}
+			</style>
+			<body>
+				<p2><b>Resolução final</b></p2>
+				<p>Largura: {width}px<br>Altura: {height}px</p>
+			</body>
+		'''
+		)
 
 	def paintEvent(self, event: QPaintEvent) -> None:
 		'''
@@ -60,8 +122,7 @@ class ListaSuspensaModel(QAbstractListModel):
 		
 		elif role == Qt.BackgroundRole and row == self.active_row:
 			return QBrush(QColor('#d9e2f1'))
-
-
+		
 
 class ListaSuspensa(QListView):
 

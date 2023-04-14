@@ -3,7 +3,7 @@ from qt_core import *
 import gc
 
 # IMPORT CUSTOM MODULES
-from gui.widgets.data_manager_qwidget import DataManager
+from gui.widgets.data_manager_screen import DataManager
 from gui.widgets.login_screen import LoginScreen
 from gui.widgets.processing_screen import ProcessingScreen
 from gui.widgets.openair_screen import OpenAirScreen
