@@ -44,6 +44,9 @@ class LoadUi(QObject):
         # open page 3
         left_menu.btn_process.clicked.connect(lambda: self.mainWindow.change_page(page = 2, button = left_menu.btn_process))
 
+        # open page OpenAir
+        left_menu.btn_openair.clicked.connect(lambda: self.mainWindow.change_page(page = 3, button = left_menu.btn_openair))
+                                              
         # SQL request
         self.mainWindow.ui.pages.data_page.ui.sql_btn.clicked.connect(self.mainWindow.updateDatabaseSQL)
 
@@ -101,7 +104,7 @@ class MainWindow(QMainWindow):
 
     def reset_menu_selection(self):
         for btn in self.ui.left_menu.findChildren(QPushButton):
-            if btn.objectName() in ['home', 'settings', 'data', 'methods', 'chart']:
+            if btn.objectName() in ['home', 'settings', 'data', 'methods', 'chart', 'openair']:
                 btn.setActive(False)
 
     def change_page(self, page, button : QPushButton):

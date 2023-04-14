@@ -65,6 +65,10 @@ class Menu(QFrame):
 		self.btn_process = TopLevelButton(text = "Método", icon_name = 'process_screen_icon.svg')
 		self.btn_process.setObjectName('methods')
 		
+		# BUTTON OPENAIR
+		self.btn_openair = TopLevelButton(text = "OpenAir", icon_name = "R_logo.svg")
+		self.btn_openair.setObjectName("openair")
+
 		# GRÁFICOS LABEL
 		self.charts_label = TopLevelButton(
 			text_color='#d9e2f1',
@@ -91,6 +95,7 @@ class Menu(QFrame):
 		self.main_layout.addWidget(self.btn_home)
 		self.main_layout.addWidget(self.btn_data)
 		self.main_layout.addWidget(self.btn_process)
+		self.main_layout.addWidget(self.btn_openair)
 		self.main_layout.addWidget(self.charts_label)
 		self.main_layout.addWidget(self.charts_list)
 		self.main_layout.addWidget(self.btn_settings)
