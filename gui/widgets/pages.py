@@ -6,6 +6,7 @@ import gc
 from gui.widgets.data_manager_qwidget import DataManager
 from gui.widgets.login_screen import LoginScreen
 from gui.widgets.processing_screen import ProcessingScreen
+from gui.widgets.openair_screen import OpenAirScreen
 from gui.widgets.dashboard import Dashboard
 
 class StackedPages(QStackedWidget):
@@ -33,10 +34,14 @@ class StackedPages(QStackedWidget):
         # CREATE PAGE 3
         self.process_page = ProcessingScreen(self)
 
+        # CREATE PAGE 4
+        self.openair_page = OpenAirScreen(self)
+
         # insert pages into StackedWdiget (parent)
         self.addWidget(self.login_page)
         self.addWidget(self.data_page)
         self.addWidget(self.process_page)
+        self.addWidget(self.openair_page)
 
     def deleteChartPage(self, widget):
         self.setCurrentIndex(0) # change page to login screen
