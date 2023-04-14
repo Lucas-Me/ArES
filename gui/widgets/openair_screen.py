@@ -1,5 +1,5 @@
 # IMPORT MODULES
-import os
+import os, subprocess
 
 # IMPORT QT CORE
 from qt_core import *
@@ -26,7 +26,7 @@ class OpenAirScreen(QWidget):
 
 		# SETTINGS
 		self.resources_list.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-		self.resources_list.setFixedWidth(250)
+		self.resources_list.setFixedWidth(200)
 		self.searchExecutableDirectory()
 		self.updateResolution()
 
@@ -35,6 +35,14 @@ class OpenAirScreen(QWidget):
 		self.ui.save_directory.clicked.connect(lambda: self.directorySelection(field = self.ui.save_directory))
 		self.ui.dpi.valueChanged.connect(self.updateResolution)
 		self.ui.proportion.valueChanged.connect(self.updateResolution)
+		self.ui.process_button.clicked.connect(self.performTask)
+
+	def performTask(self):
+		command = os.path.join(self.ui.r_directory.text(), 'Rscript')
+		path2script = './/backend//openair//teste_plot.r'
+
+		retcode = subprocess.call([command, path2script], shell=True)
+		print(retcode)
 
 	def directorySelection(self, field : QLabel):
 		current_dir = field.text()
@@ -80,12 +88,9 @@ class OpenAirScreen(QWidget):
 		# update text
 		self.ui.final_resolution.setText(f'''
 			<style>
-				h1 {{text-align: center;}}
-				p {{text-align: middle;}}
-				p2 {{text-align: center;}}
+				p {{text-align: center;}}
 			</style>
 			<body>
-				<p2><b>Resolução final</b></p2>
 				<p>Largura: {width}px<br>Altura: {height}px</p>
 			</body>
 		'''
@@ -110,7 +115,7 @@ class ListaSuspensaModel(QAbstractListModel):
 		super().__init__()
 		
 		self.active_row = 0
-		self.data_objects = ["Rosa dos ventos"]
+		self.data_objects = ["Rosa dos ventos", "Rose de poluição", "Resumo"]
 
 	def rowCount(self, parent = QModelIndex()) -> int:
 		return len(self.data_objects)
@@ -120,8 +125,8 @@ class ListaSuspensaModel(QAbstractListModel):
 		if role == Qt.DisplayRole:
 			return self.data_objects[row]
 		
-		elif role == Qt.BackgroundRole and row == self.active_row:
-			return QBrush(QColor('#d9e2f1'))
+		elif role == Qt.DecorationRole and row == self.active_row:
+			return QColor('green')
 		
 
 class ListaSuspensa(QListView):
@@ -143,7 +148,7 @@ class ListaSuspensa(QListView):
 		# STYLE
 		self.setStyleSheet(f'''
 			QListView {{
-				font: bold 12pt 'Microsoft New Tai Lue';
+				font: bold 10pt 'Microsoft New Tai Lue';
 				color: #36475f;
 				background-color: white;
 				border: none;

@@ -7,6 +7,7 @@ from qt_core import *
 # IMPORT CUSTOM MODULES
 from backend.misc.functions import get_imagepath
 from gui.widgets.login_screen import Logo
+from gui.widgets.py_push_button import ClassicButton
 
 # Data Manager Page UI Class
 class UI_OpenAirScreen(object):
@@ -21,6 +22,7 @@ class UI_OpenAirScreen(object):
 		self.main_layout.setVerticalSpacing(20)
 		self.main_layout.setHorizontalSpacing(20)
 		self.main_layout.setContentsMargins(20, 20, 20, 20)
+		self.main_layout.setRowStretch(2, 4)
 
 		# R AND SAVE DIRECTORY FOLDERS
 		# ///////////////////////////////////////////////////////////
@@ -42,7 +44,7 @@ class UI_OpenAirScreen(object):
 		# FIGURE PROPERTIES GROUBOX
 		# ///////////////////////////////////////////////////////////
 		groupbox = QGroupBox("Propriedades da figura")
-		groupbox.setFixedSize(320, 100)
+		groupbox.setFixedSize(320, 80)
 		groupbox_layout = QGridLayout(groupbox)
 		groupbox_layout.setVerticalSpacing(5)
 		groupbox_layout.setHorizontalSpacing(10)
@@ -54,15 +56,16 @@ class UI_OpenAirScreen(object):
 		dpi_label.setObjectName('label')
 		self.dpi = QSpinBox()
 		self.dpi.setRange(100, 1000)
-		self.dpi.setFixedSize(60,25)
+		self.dpi.setFixedSize(60,15)
 		self.dpi.setSingleStep(100)
+		self.dpi.setButtonSymbols(QAbstractSpinBox.NoButtons)
 
 		# proporcao
 		prop_label = QLabel('Proporção')
 		prop_label.setObjectName('label')
 		self.proportion = ProportionWidget(
 			vmin = 1, vmax = 20,
-			width = 60, height = 25, 
+			width = 60, height = 15, 
 			font_color='#d9e2f1',
 			bg_color='#394251'
 		)
@@ -78,16 +81,38 @@ class UI_OpenAirScreen(object):
 		groupbox_layout.addWidget(self.proportion, 1, 1)
 		groupbox_layout.addWidget(self.final_resolution, 0, 2, 2, 1)
 
+		# MODULE OPTIONS FRAME
+		# ////////////////////////////////////////////////
+		self.module_frame = QFrame()
+		self.module_layout = QVBoxLayout(self.module_frame)
+		self.module_frame.setStyleSheet('background-color: transparent;border: 1px solid white;border-radius: 3px')
+
+		# EXECUTE BUTTON
+		# ////////////////////////////////////////////////
+		self.process_button = ClassicButton(
+			text = 'Executar',
+			icon_allign='right',
+			width = 180,
+			height = 40,
+			icon_width= 40,
+			icon_path= 'icon_next_btn.svg',
+			paint_icon=False
+		)
+		self.process_button.setObjectName('process_btn')
+
 		# ADD TO MAIN LAYOUT
 		# ///////////////////////////////////////////////////////////
-		self.main_layout.addWidget(parent.resources_list, 0, 0, 3, 1)
+		self.main_layout.addWidget(parent.resources_list, 0, 0, 4, 1)
 		self.main_layout.addWidget(r_icon, 0, 1, 1, 1)
 		self.main_layout.addWidget(folder_icon, 1, 1, 1, 1)
 		self.main_layout.addWidget(self.r_directory, 0, 2, 1, 1)
 		self.main_layout.addWidget(self.save_directory, 1, 2, 1, 1)
 		self.main_layout.addWidget(groupbox, 0, 3, 2, 1)
+		self.main_layout.addWidget(self.module_frame, 2, 1, 1, 3)
+		self.main_layout.addWidget(self.process_button, 3, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignRight)
 
 		# SETTING STYLESHEET
+		# ////////////////////////////////////////////////
 		self.setup_stylesheet(parent)
 
 	def setup_stylesheet(self, parent):
@@ -100,7 +125,7 @@ class UI_OpenAirScreen(object):
 			#directory {{
 				background-color: {color_pallette[1]};
 				color: {color_pallette[-1]};
-				font: normal 12pt 'Microsoft New Tai Lue';
+				font: normal 10pt 'Microsoft New Tai Lue';
 				border-radius: 5px;
 				vertical-align: middle;
 				padding-left: 5px;
@@ -108,22 +133,38 @@ class UI_OpenAirScreen(object):
 			#label{{
 				background-color: transparent;
 				color: {color_pallette[-1]};
-				font: bold 12pt 'Microsoft New Tai Lue';
+				font: bold 10pt 'Microsoft New Tai Lue';
 			}}
 			QLabel{{
 				background-color: transparent;
 				color: {color_pallette[-1]};
-				font: normal 12pt 'Microsoft New Tai Lue';
+				font: normal 10pt 'Microsoft New Tai Lue';
 			}}
 			QGroupBox::title {{
-				font: bold 18pt 'Microsoft New Tai Lue';
+				font: bold 10pt 'Microsoft New Tai Lue';
 				color: {color_pallette[-1]};
 			}}
 			QSpinBox {{
 				background-color: {color_pallette[1]};
 				color: {color_pallette[-1]};
-				font: normal 12pt 'Microsoft New Tai Lue';
+				font: normal 10pt 'Microsoft New Tai Lue';
 			}}
+			#process_btn {{
+                background-color: #ffffff;
+                border: 0.5px solid;
+                border-color: #dcdcdc;
+                border-radius: 5px;
+                font: 500 14pt 'Microsoft New Tai Lue';
+                color: {color_pallette[2]};
+                padding-left: 20px;
+                text-align: left;
+            }}
+            #process_btn:hover {{
+                background-color: #fafafa;
+            }}
+            #process_btn:pressed {{
+                background-color: #e4e4e4;
+            }}
 		''')
 
 

@@ -13,9 +13,9 @@ print(df)
 png(file.path(directory, "teste.png"),
     width = 8, height = 4, units = "in", res = 300)
 
-# CUSTOM COMMANDS NEED TO BE INSERTED HERE
-timeVariation(df, pollutant = c("pm10", "pts"),
-ylab = "pm10 (µg/m3)")
+# # CUSTOM COMMANDS NEED TO BE INSERTED HERE
+timeVariation(df, pollutant = c("o3", "so2"),
+ylab = "µg/m3")
 
 # CLOSE AND SAVE FIGURE
 dev.off() #only 129kb in size

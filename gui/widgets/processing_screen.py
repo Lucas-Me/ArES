@@ -213,6 +213,13 @@ class ProcessingScreen(QWidget):
 	def handleProcessedResults(self, results):
 		self.processed_data = results
 		self.exportStatus()
+
+		# export as csv for compatibility with openair
+		directory = os.path.join(os.path.expanduser("~"), '.ArES', 'temp')
+		os.makedirs(directory, exist_ok=True)
+		export_to_csv(files = self.processed_data, directory = directory)
+
+		# emit signal to other screens 
 		self.resultReady.emit(self.processed_data)
 
 	def handleError(self, error : object):
@@ -268,10 +275,7 @@ class ProcessingScreen(QWidget):
 				if kind == 'raw':
 					export_to_xlsx(files = self.raw_data, kind = kind, fname =  fname)
 				else:
-					# export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
-					directory = os.path.join(os.path.expanduser("~"), '.ArES', 'temp')
-					os.makedirs(directory, exist_ok=True)
-					export_to_csv(files = self.processed_data, directory = directory)
+					export_to_xlsx(files = self.processed_data, kind = kind, fname = fname)
 
 			# throw an exception if failed
 			except xlsxwriter.exceptions.FileCreateError as err:
