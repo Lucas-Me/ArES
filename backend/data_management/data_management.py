@@ -241,7 +241,7 @@ class ModifiedData(AbstractData):
 
       # Tipo de estacao, fonte e nome
       code = self.metadata['source'][0].upper() + self.metadata['type'][0] + '_'
-      name = self.metadata['name']
+      name = self.metadata['name'].replace('-', ' ')
       for string in re.split('\s+', name):
          code += string[0]
       

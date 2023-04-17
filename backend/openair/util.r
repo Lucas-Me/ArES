@@ -13,8 +13,24 @@ library(readr)
 library(magrittr)
 library(purrr)
 library(dplyr)
+library(collections)
 
 # FUNCTIONS
+
+read_dataframe <- function(filename) {
+    df <- read_csv(filename,
+    na = c(" ", "nan"),
+    locale = readr::locale(encoding = "latin1")
+    )
+
+    # convert date objects
+    df$date <- as.POSIXct(
+        strptime(df$date, format = "%d/%m/%Y %H:%M")
+        )
+
+    print(df)
+    return(df)
+}
 
 open_dataset <- function(directory) {
     # LISTING EXISTING FILES
@@ -28,27 +44,43 @@ open_dataset <- function(directory) {
         no.. = FALSE
         )
 
-    # CREATING EMPTY LIST
-    df_list <- list()
-
+    df <- tempfile()
     # READING FILES AND STORING THEM INTO THE ABOVE LIST
-    for (i in seq(1, length(list_files))){
-        csv_obj <- read_csv(list_files[i],
-        na = c(" ", "nan"),
-        locale = readr::locale(encoding = "latin1")
-        )
-        # convert date objects
-        csv_obj$date <- as.POSIXct(
-            strptime(csv_obj$date, format = "%d/%m/%Y %H:%M")
-            )
+    for (i in seq(1, length(list_files))) {
 
-        # appending
-        df_list <- append(df_list, list(csv_obj))
+        if (i == 0) {
+            # reading first df
+            df <- read_dataframe(list_files[i])
+
+        } else {
+            # reading new df
+            csv_obj <- read_dataframe(list_files[i])
+
+            # MERGING THE DATAFRAMES
+            intersect <- intersect(colnames(df), colnames(csv_obj))
+            print(df)
+            df <- merge(
+                df,
+                csv_obj,
+                by = intersect,
+                all = TRUE)
+        }
     }
 
-    # MERGING INTO ONE SINGLE DATAFRAME
-    df <- df_list %>% reduce(full_join, by = c("site", "date"))
-
-    # RETURN RESULTS
+    # RETURN RESULT
     return(df)
+}
+
+handle_args <- function(parsed_args) {
+    n <- length(parsed_args)
+    d <- dict() # empty dict
+    if (n > 2) {
+        for (i in seq(1, n, 2)) {
+            arg_n <- nchar(parsed_args[i])
+            d$set(substr(parsed_args[i], 3, arg_n), parsed_args[i + 1])
+        }
+    }
+
+    # retorna o dicionario
+    return(d)
 }

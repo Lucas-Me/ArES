@@ -40,8 +40,9 @@ class OpenAirScreen(QWidget):
 	def performTask(self):
 		command = os.path.join(self.ui.r_directory.text(), 'Rscript')
 		path2script = './/backend//openair//teste_plot.r'
+		args = ["--fname", "teste.png","--inputdir", "C:\\Users\\lucassm\\.ArES\\temp"]
 
-		retcode = subprocess.call([command, path2script], shell=True)
+		retcode = subprocess.call([command, path2script] + args, shell=True)
 		print(retcode)
 
 	def directorySelection(self, field : QLabel):
