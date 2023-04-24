@@ -45,7 +45,7 @@ open_dataset <- function(directory) {
 
     nfiles <- length(list_files)
     df <- read_dataframe(list_files[1])
-    if (nfiles > 0) {
+    if (nfiles > 1) {
         for (i in seq(2, nfiles)) {
 
             # reading new df

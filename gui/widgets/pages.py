@@ -71,6 +71,9 @@ class StackedPages(QStackedWidget):
         for i in range(n):
             widget = self.chart_pages[i]
             widget.updateItems()
+        
+        # updating openair options
+        self.openair_page.updateItems(self.getDataHandles())
 
     def createChartPage(self, item : QListWidgetItem):
         # creating dashboard

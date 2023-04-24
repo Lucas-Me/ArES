@@ -8,6 +8,7 @@ from qt_core import *
 from backend.misc.functions import get_imagepath
 from gui.widgets.login_screen import Logo
 from gui.widgets.py_push_button import ClassicButton
+from gui.openair.stacked_modules import StackedModules
 
 # Data Manager Page UI Class
 class UI_OpenAirScreen(object):
@@ -56,6 +57,7 @@ class UI_OpenAirScreen(object):
 		dpi_label.setObjectName('label')
 		self.dpi = QSpinBox()
 		self.dpi.setRange(100, 1000)
+		self.dpi.setValue(200)
 		self.dpi.setFixedSize(60,15)
 		self.dpi.setSingleStep(100)
 		self.dpi.setButtonSymbols(QAbstractSpinBox.NoButtons)
@@ -83,9 +85,7 @@ class UI_OpenAirScreen(object):
 
 		# MODULE OPTIONS FRAME
 		# ////////////////////////////////////////////////
-		self.module_frame = QFrame()
-		self.module_layout = QVBoxLayout(self.module_frame)
-		self.module_frame.setStyleSheet('background-color: transparent;border: 1px solid white;border-radius: 3px')
+		self.module_frame = StackedModules(parent)
 
 		# EXECUTE BUTTON
 		# ////////////////////////////////////////////////
@@ -192,11 +192,11 @@ class ProportionWidget(QFrame):
 		
 		# widgets settings
 		self.width_spinbox.setRange(vmin, vmax)
-		self.width_spinbox.setValue(4)
+		self.width_spinbox.setValue(8)
 		self.width_spinbox.setButtonSymbols(QAbstractSpinBox.NoButtons)
 		self.width_spinbox.lineEdit().setAlignment(Qt.AlignmentFlag.AlignRight)
 		self.height_spinbox.setRange(vmin, vmax)
-		self.height_spinbox.setValue(3)
+		self.height_spinbox.setValue(5)
 		self.height_spinbox.setButtonSymbols(QAbstractSpinBox.NoButtons)
 		self.height_spinbox.lineEdit().setAlignment(Qt.AlignmentFlag.AlignLeft)
 		self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)

@@ -223,10 +223,6 @@ class ProcessingScreen(QWidget):
 		self.resultReady.emit(self.processed_data)
 
 	def handleError(self, error : object):
-		# print(type(error))
-		# print(error.args)
-		# print(error)
-
 		# opens a dialog warning the user about the error
 		dialog = ImportDialog(
 			title = 'Erro desconhecido',

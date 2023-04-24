@@ -1,5 +1,6 @@
 # IMPORT MODULES
 import os, subprocess
+import numpy as np
 
 # IMPORT QT CORE
 from qt_core import *
@@ -9,6 +10,7 @@ from gui.pages.ui_openairscreen import UI_OpenAirScreen
 
 # IMPORT CUSTOM VARIABLES
 import backend.misc.settings as settings
+from backend.data_management.data_management import ModifiedData
 
 # Data Manager Page Class
 class OpenAirScreen(QWidget):
@@ -37,13 +39,47 @@ class OpenAirScreen(QWidget):
 		self.ui.proportion.valueChanged.connect(self.updateResolution)
 		self.ui.process_button.clicked.connect(self.performTask)
 
+	def updateItems(self, data_list : list[ModifiedData]):
+		# getting vars
+		nfiles = len(data_list)
+
+		# empty lists
+		site_names = [''] * nfiles
+		parameter_alias = [''] * nfiles
+
+		# filling empty lists
+		for i in range(nfiles):
+			site_names[i] = data_list[i].metadata['name']
+			parameter_alias[i] = data_list[i].metadata['acronym']
+
+		# updating private variables
+		metadata = dict(
+			parameter = np.unique(parameter_alias), 
+			site = np.unique(site_names)
+		)
+
+		# updating options in page modules
+		for plots in self.ui.module_frame.pages.keys():
+			self.ui.module_frame.getWidget(plots).updateOptions(metadata)
+
 	def performTask(self):
 		command = os.path.join(self.ui.r_directory.text(), 'Rscript')
 		path2script = './/backend//openair//teste_plot.r'
-		args = ["--fname", "teste.png","--inputdir", "C:\\Users\\lucassm\\.ArES\\temp"]
 
+		# args from the selected module
+		args = self.ui.module_frame.currentWidget().getArgs()
+		args[1] = os.path.join(self.ui.save_directory.text(), args[1])
+
+		# Include figure args
+		args += [
+			"--inputdir", self.data_dir,
+	   		'--figwidth', str(self.ui.proportion.getWidth()),
+			'--figheight', str(self.ui.proportion.getHeight()),
+			'--dpi', str(self.ui.dpi.value())
+			]
+
+		# calling R Script
 		retcode = subprocess.call([command, path2script] + args, shell=True)
-		print(retcode)
 
 	def directorySelection(self, field : QLabel):
 		current_dir = field.text()
