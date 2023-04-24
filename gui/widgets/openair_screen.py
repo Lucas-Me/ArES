@@ -79,7 +79,8 @@ class OpenAirScreen(QWidget):
 			]
 
 		# calling R Script
-		retcode = subprocess.call([command, path2script] + args, shell=True)
+		retcode = subprocess.call([command, path2script] + args, shell = True)
+		print(retcode)
 
 	def directorySelection(self, field : QLabel):
 		current_dir = field.text()
@@ -152,7 +153,7 @@ class ListaSuspensaModel(QAbstractListModel):
 		super().__init__()
 		
 		self.active_row = 0
-		self.data_objects = ["Rosa dos ventos", "Rose de poluição", "Resumo"]
+		self.data_objects = ["Variação temporal", "Rosa dos ventos", "Rose de poluição"]
 
 	def rowCount(self, parent = QModelIndex()) -> int:
 		return len(self.data_objects)

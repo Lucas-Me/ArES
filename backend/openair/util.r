@@ -14,8 +14,18 @@ library(magrittr)
 library(purrr)
 library(dplyr)
 library(collections)
+library(stringr)
 
 # FUNCTIONS
+
+string2vector <- function(text) {
+    text <- as.vector(
+        strsplit(substr(text, 2, str_length(text) - 1),
+        ", "))
+
+    # return vector
+    return(text[[1]])
+}
 
 read_dataframe <- function(filename) {
     df <- read_csv(filename,
