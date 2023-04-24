@@ -10,7 +10,6 @@ args <- handle_args(commandArgs(trailingOnly = TRUE))
 
 # # OPEN DATASET
 df <- open_dataset(args$get("inputdir"))
-print(df)
 
 # # OPTIONS TO SAVE FIGURE
 png(

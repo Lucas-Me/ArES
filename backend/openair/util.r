@@ -28,7 +28,6 @@ read_dataframe <- function(filename) {
         strptime(df$date, format = "%d/%m/%Y %H:%M")
         )
 
-    print(df)
     return(df)
 }
 
@@ -44,21 +43,16 @@ open_dataset <- function(directory) {
         no.. = FALSE
         )
 
-    df <- tempfile()
-    # READING FILES AND STORING THEM INTO THE ABOVE LIST
-    for (i in seq(1, length(list_files))) {
+    nfiles <- length(list_files)
+    df <- read_dataframe(list_files[1])
+    if (nfiles > 0) {
+        for (i in seq(2, nfiles)) {
 
-        if (i == 0) {
-            # reading first df
-            df <- read_dataframe(list_files[i])
-
-        } else {
             # reading new df
             csv_obj <- read_dataframe(list_files[i])
 
             # MERGING THE DATAFRAMES
             intersect <- intersect(colnames(df), colnames(csv_obj))
-            print(df)
             df <- merge(
                 df,
                 csv_obj,
