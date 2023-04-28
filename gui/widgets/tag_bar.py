@@ -21,55 +21,55 @@ class TagBar(QWidget):
         self.line_edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        # commands
-        self.refresh()
-        self.setup_ui()
+        # insert line edit into layout
+        self.h_layout.addWidget(self.line_edit)
 
-    def setup_ui(self):
+        # signals and slots
         self.line_edit.returnPressed.connect(self.create_tags)
 
     def create_tags(self):
+        # getting tag name
         new_tags = self.line_edit.text().split(', ')
         self.line_edit.setText('')
-        self.tags.extend(new_tags)
-        print(self.tags)
-        self.refresh()
-
-    def refresh(self):
-        for i in reversed(range(self.h_layout.count())):
-            self.h_layout.itemAt(i).widget().setParent(None)
-
-        for tag in self.tags:
-            self.add_tag_to_bar(tag)
         
-        # ADD TO WIDGET 
-        self.h_layout.addWidget(self.line_edit)
-        self.line_edit.setFocus()
+        # loop to create tags
+        index = self.h_layout.count() - 1
+        for i in range(len(new_tags)):
+            
+            # creating tag and appending into list
+            tag = TagButton(text = new_tags[i])
+            self.tags.append(tag)
+            position = index + i
 
-    def add_tag_to_bar(self, text):
+            # inserting into layout
+            self.h_layout.insertWidget(position, tag)
 
-        # creating tag
-        tag = TagButton(position = len(self.tags), text = text)
-        
-        # add to main layout
-        self.h_layout.addWidget(tag)
+            # delete when clicked
+            tag.clicked.connect(lambda x: self.delete_tag(x))
 
-        # signal
-        tag.clicked.connect(lambda x: self.delete_tag(x))
+            # check if maximum is reached
+            if self.nmax == position + 1:
+                self.line_edit.setHidden(True)
+                break
 
-    def delete_tag(self, index):
+    def delete_tag(self, tag_widget : QFrame):
+        index = self.tags.index(tag_widget)
+
+        # delete from layout
+        self.h_layout.takeAt(index)
+
+        # delete from list
         del self.tags[index]
-        self.refresh()
 
+        tag_widget.deleteLater()
+        # show line edit if necessary
+        self.line_edit.setHidden(False)
 
 class TagButton(QFrame):
     
-    clicked = Signal(int)
+    clicked = Signal(object)
     def __init__(self, *args, **kwargs):
         super().__init__()
-        
-        # PRIVATE VARIABLES
-        self.position = kwargs.pop('position')
 
         # UI AND ASSETS
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
@@ -101,4 +101,4 @@ class TagButton(QFrame):
         x_button.clicked.connect(self.deleteTag)
     
     def deleteTag(self):
-        self.clicked.emit(self.position)
+        self.clicked.emit(self)
