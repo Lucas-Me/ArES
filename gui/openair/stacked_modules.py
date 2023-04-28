@@ -11,7 +11,7 @@ class StackedModules(QStackedWidget):
 
         # PAGES
         self.pages = {
-            'TimeVariation' : TimeVariationPlot()
+            'TimeVariation' : TimeVariationPlot(parent = self.parent())
         }
 
         # COMMANDS

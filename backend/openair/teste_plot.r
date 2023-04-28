@@ -36,7 +36,7 @@ if (group_site) {
     timeVariation(
         df,
         pollutant = parameters,
-        ylab = "µg/m3",
+        ylab = args$get("ylab", ""),
         # name.pol = c(),
         # normalize = FALSE,
         group = "site",
@@ -47,9 +47,9 @@ if (group_site) {
     timeVariation(
         df,
         pollutant = parameters,
-        ylab = "µg/m3",
+        ylab = args$get("ylab", ""),
         # name.pol = c(),
-        # normalize = FALSE,
+        normalise = as.logical(args$get("normalise", FALSE)),
         # cols = c(),
         xlab = c("Hora", "Hora", "Mês", "Dia da semana"), # Fixed
     )

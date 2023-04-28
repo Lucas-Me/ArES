@@ -9,6 +9,7 @@ from backend.misc.functions import get_imagepath
 from gui.widgets.login_screen import Logo
 from gui.widgets.py_push_button import ClassicButton
 from gui.openair.stacked_modules import StackedModules
+from gui.widgets.labels import ClickableLabel
 
 # Data Manager Page UI Class
 class UI_OpenAirScreen(object):
@@ -166,18 +167,6 @@ class UI_OpenAirScreen(object):
                 background-color: #e4e4e4;
             }}
 		''')
-
-
-class ClickableLabel(QLabel):
-
-	clicked = Signal()
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-	def mousePressEvent(self, ev: QMouseEvent) -> None:
-		self.clicked.emit()
-		return super().mousePressEvent(ev)
-	
 
 class ProportionWidget(QFrame):
 

@@ -5,6 +5,7 @@ from qt_core import *
 class CheckableComboBox(QComboBox):
 
     # Subclass Delegate to increase item height
+    dataChanged = Signal()
     class Delegate(QStyledItemDelegate):
         def sizeHint(self, option, index):
             size = super().sizeHint(option, index)
@@ -28,6 +29,7 @@ class CheckableComboBox(QComboBox):
 
         # Update the text when an item is toggled
         self.model().dataChanged.connect(self.updateText)
+        self.model().dataChanged.connect(lambda: self.dataChanged.emit())
 
         # Hide and show popup when clicking the line edit
         self.lineEdit().installEventFilter(self)
@@ -111,6 +113,13 @@ class CheckableComboBox(QComboBox):
             except (TypeError, IndexError):
                 data = None
             self.addItem(text, data)
+
+    def clearSelection(self):
+        for i in range(self.model().rowCount()):
+            self.model().item(i).setCheckState(Qt.Unchecked)
+        
+        # update text
+        self.updateText()
 
     def currentData(self):
         # Return the list of selected items data

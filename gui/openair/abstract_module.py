@@ -1,6 +1,9 @@
 # IMPORT QT MODULE
 from qt_core import *
 
+# IMPORT BUILT-IN MODULES
+from itertools import cycle
+
 # IMPORT CUSTOM MODULES
 from gui.widgets.checkable_combobox import CheckableComboBox
 
@@ -9,6 +12,17 @@ class AbstractPlot(QWidget):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        # PRIVATE VARIABLES
+        CB91_Blue = '#2CBDFE'
+        CB91_Green = '#47DBCD'
+        CB91_Pink = '#F3A0F2'
+        CB91_Purple = '#9D2EC5'
+        CB91_Violet = '#661D98'
+        CB91_Amber = '#F5B14C'
+
+        self.color_list = cycle([CB91_Blue, CB91_Pink, CB91_Green, CB91_Amber,
+                    CB91_Purple, CB91_Violet])
 
         # UI
         self.setup_ui()
@@ -31,7 +45,6 @@ class AbstractPlot(QWidget):
 
         return args
         
-
     def setup_ui(self):
         # UI AND LAYOUTS
         # ////////////////
