@@ -4,6 +4,7 @@ from qt_core import *
 # IMPORT CUSTOM MODULES
 from gui.widgets.tag_bar import ColorTags
 from gui.openair.abstract_module import AbstractPlot
+from gui.widgets.colormap import ColormapWidget
 
 
 class TimeVariationPlot(AbstractPlot):
@@ -54,6 +55,7 @@ class TimeVariationPlot(AbstractPlot):
         # COLOR AND LEGEND 
         legends_label = QLabel("Cor e legenda")
         self.legend_properties = ColorTags()
+        self.colormap_edit = ColormapWidget()
 
         # ADD TO MAIN LAYOUT
         # ////////////////
@@ -61,7 +63,7 @@ class TimeVariationPlot(AbstractPlot):
         self.main_layout.addWidget(self.ylab)
         self.main_layout.addWidget(self.normalise)
         self.main_layout.addWidget(legends_label)
-        self.main_layout.addWidget(self.legend_properties)
+        self.main_layout.addWidget(self.colormap_edit)
 
         # BOTTOM SPACER
         bottom_spacer = QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
@@ -73,7 +75,7 @@ class TimeVariationPlot(AbstractPlot):
         super_args = super().getArgs()
         args = super_args + [
             "--ylab", self.ylab.text(),
-            '--normalise', str.upper(str(self.normalise.isChecked()))
+            '--normalise', str.upper(str(self.normalise.isChecked())), 
         ]
 
         return args
