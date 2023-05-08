@@ -5,6 +5,10 @@ from qt_core import *
 # IMPORTING MODULES
 import numpy as np
 
+# IMPORT CUSTOM MODULES
+from gui.windows.dialog.legend.color_dialog import LegendDialog
+
+
 def calculateLuminance(rgb : np.array):
     # Calculate luminance of a color
     rgb = np.array(rgb)
@@ -15,20 +19,40 @@ def calculateLuminance(rgb : np.array):
 
     return L
 
+def getContrast(color : str):
+    # Calculate contrast between the selected color and (black, white)
+    L1 = calculateLuminance(QColor(color).getRgb()[:-1])
+    L2 = calculateLuminance(QColor('white').getRgb()[:-1])
 
-class ColorMap(QWidget):
+    # CONTRAST RATIO BETWEEN THE COLOR AND WHITE
+    contrast_ratio = (L1 + 0.05) / (L2 + 1.05)
+    minimum_contrast_ratio = 0.5
+    final_color = "#000000" if contrast_ratio > minimum_contrast_ratio else '#ffffff'
     
+    return QColor(final_color)
+
+class ColormapWidget(QFrame):
+
     def __init__(self, *args, **kwargs):
         # PRIVATE VARIABLES
         self.gradient_ = QLinearGradient()
-
-        # SETTINGS
-        self.gradient_.setStart(0, 0)
-        self.gradient_.setFinalStop(1, 0)
-        self.gradient_.setCoordinateMode(QGradient.ObjectBoundingMode)
+        self.colors = [] # list of colors
 
         # INIT
         super().__init__(*args, **kwargs)
+
+        # SETUP UI
+        self.ui = ViewerUI()
+        self.ui.setup_ui(self)
+
+        # settings
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        self.gradient_.setCoordinateMode(QGradient.ObjectBoundingMode)
+
+        # init
+        self.refreshColors(["#ffffff", '#000000'])
+        self.refreshItems()
+        self.setFixedHeight(40)
 
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent()
@@ -46,6 +70,7 @@ class ColorMap(QWidget):
         self.gradient_.setStart(0, 0)
         self.gradient_.setFinalStop(1, 0)
         self.gradient_.setCoordinateMode(QGradient.ObjectBoundingMode)
+        self.colors = colors
 
         # adding colors
         n = len(colors)
@@ -55,39 +80,30 @@ class ColorMap(QWidget):
 
         # update colormap
         self.update()
-        
 
-class ColormapWidget(QFrame):
+    def refreshItems(self):
+        # removing children
+        n = self.ui.main_layout.count()
+        for i in range(n):
+            self.ui.main_layout.itemAt(i).widget().deleteLater()
+            self.ui.main_layout.takeAt(i)
 
-    def __init__(self, *args, **kwargs):
-        # PRIVATE VARIABLES
-        self.colormap_ = ColorMap()
-        self.sliders_ = ColormapMarkers()
+        # adding elements
+        for i in range(len(self.colors)):
+            if i > 0:
+                self.ui.main_layout.addItem(
+                    QSpacerItem(30, 30, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
+                )
 
-        # INIT
-        super().__init__(*args, **kwargs)
+            # adding marker
+            marker = ColorMarker(position = i, parent = self)
+            marker.clicked.connect(self.editColor)
+            self.ui.main_layout.addWidget(marker)
 
-        # SETUP UI
-        self.ui = ViewerUI()
-        self.ui.setup_ui(self)
+    def editColor(self, position):
+        color = self.colors[position]
+        print(position, color)
 
-        # settings
-        self.setFixedHeight(300)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-
-        # SIGNALS AND SLOTS
-        self.refreshWidgets()
-
-    def refreshWidgets(self):
-        # gradient colors
-        self.colormap_.refreshColors(
-            colors = self.sliders_.getColors(),
-        )
-
-        # markers
-        self.sliders_.refreshItems()
-
-    
 class ViewerUI(object):
 
     def setup_ui(self, parent : ColormapWidget):
@@ -96,88 +112,67 @@ class ViewerUI(object):
             parent.setObjectName("colormap")
 
         # MAIN LAYOUT
-        self.main_layout = QVBoxLayout(parent)
-        self.main_layout.setContentsMargins(5, 5, 5, 5)
-        self.main_layout.setSpacing(0)
-
-        # ADD TO MAIN LAYOUT
-        self.main_layout.addWidget(parent.colormap_)
-        self.main_layout.addWidget(parent.sliders_)
-
-        parent.colormap_.setFixedHeight(60)
-        parent.sliders_.setFixedHeight(30)
-
-class ColormapMarkers(QWidget):
-
-    def __init__(self, *args, **kwargs):
-        # PRIVATE VARIABLES
-        self.markers = [ColorMark('#000000'), ColorMark('#ffffff')]
-
-        # INIT
-        super().__init__()
-
-        # LAYOUT
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.setSpacing(0)
+        self.main_layout = QHBoxLayout(parent)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-
-    def refreshItems(self):
-        # removing children
-        for i in range(self.main_layout.count()):
-            self.main_layout.itemAt(i).widget().deleteLater()
-            #
-            self.main_layout.takeAt(i)
-
-        # inserting children
-        for i in range(len(self.markers)):
-            if i > 0:
-                self.main_layout.addItem(QSpacerItem(30, 30, QSizePolicy.MinimumExpanding))
-            
-            # add marker
-            self.main_layout.addWidget(self.markers[i])
-
-    def getColors(self):
-        return [marker.getColor() for marker in self.markers]
+        self.main_layout.setSpacing(0)
 
 
-class ColorMark(QWidget):
+class ColorMarker(QWidget):
 
-    def __init__(self, color : str):
+    clicked = Signal(int)
+    def __init__(self, position : int, parent : ColormapWidget):
+
         # INIT
-        super().__init__()
+        super().__init__(parent)
+
+        # PRIVATE VARIABLES
+        self.position = position
 
         # SETTINGS
-        self.setColor(color)
-        self.setFixedWidth(20)
+        self.setFixedWidth(10)
+        # self.setStyleSheet('background-color: red;')
 
-    def setColor(self, color : str):
-        self.color = QColor(color)
-
-        # COR DA BORDA
-        # Calculate contrast between the selected color and (black, white)
-        L1 = calculateLuminance(self.color.getRgb()[:-1])
-        L2 = calculateLuminance(QColor('white').getRgb()[:-1])
-
-        # CONTRAST RATIO BETWEEN THE COLOR AND WHITE
-        contrast_ratio = (L1 + 0.05) / (L2 + 1.05)
-        minimum_contrast_ratio = 0.5
-        border_color = "#000000" if contrast_ratio > minimum_contrast_ratio else '#ffffff'
-        self.border_color = border_color
-
-        # APPLYING STYLESHEET
-        self.setStyleSheet(f'''
-            background-color: {color};
-            border-radius: 5px;
-            border: 2px solid {border_color};
-            ''')
-
-    def getColor(self):
-        return self.color.name()
-    
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        ''' Emite um sinal ao ser clicado'''
+        super().mousePressEvent(event)
+        self.clicked.emit(self.position)
+        
     def paintEvent(self, event: QPaintEvent) -> None:
-        # super().paintEvent(event)
-
         opt = QStyleOption()
         opt.initFrom(self)
         p = QPainter(self)
+        p.setRenderHints(QPainter.RenderHint.Antialiasing)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+
+        # widget properties
+        w = self.width()
+        h = self.height()
+
+        # MARKER PROPERTIES
+        marker_h  = h // 4
+        midpoint = w // 2
+
+        # upper marker coords
+        upper_marker = [
+            QPointF(0, 0),
+            QPointF(w, 0),
+            QPointF(midpoint, marker_h),
+            ]
+
+        # lower marker coords
+        lower_marker = [
+            QPointF(0, h),
+            QPointF(w, h),
+            QPointF(midpoint, h - marker_h),
+        ]
+
+        # DRAWING
+        color = getContrast(self.parent().colors[self.position])
+        p.setBrush(QBrush(color))
+        p.setPen(color)
+        p.drawPolygon(upper_marker)
+        p.drawPolygon(lower_marker)
+
+        # END
+        p.end()
+

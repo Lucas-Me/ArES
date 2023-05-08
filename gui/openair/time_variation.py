@@ -53,7 +53,8 @@ class TimeVariationPlot(AbstractPlot):
         self.normalise.setToolTip("Divide as variáveis pelos seus valores médios. Ajuda a comparar tendências diurnas entre variáveis com diferentes escalas.")
 
         # COLOR AND LEGEND 
-        legends_label = QLabel("Cor e legenda")
+        legends_label = QLabel("Esquema de cores")
+        legends_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.legend_properties = ColorTags()
         self.colormap_edit = ColormapWidget()
 
@@ -64,12 +65,10 @@ class TimeVariationPlot(AbstractPlot):
         self.main_layout.addWidget(self.normalise)
         self.main_layout.addWidget(legends_label)
         self.main_layout.addWidget(self.colormap_edit)
+        self.main_layout.addItem(QSpacerItem(30, 30, QSizePolicy.Expanding, QSizePolicy.MinimumExpanding))
 
-        # BOTTOM SPACER
-        bottom_spacer = QSpacerItem(20, 20, QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-
-        # ADD SPACER TO LAYOUT
-        self.main_layout.addItem(bottom_spacer)
+        # SIZE POLICIES
+        self.colormap_edit.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
 
     def getArgs(self):
         super_args = super().getArgs()

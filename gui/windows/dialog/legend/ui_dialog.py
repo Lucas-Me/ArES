@@ -112,7 +112,6 @@ class UI_LegendDialog(object):
 		font_family = 'Microsoft New Tai Lue'
 		hover_color = '#e4e4e4'
 		pressed_color ='#c1c1c1'
-		radius = 2
 
 		parent.setStyleSheet(f'''
 			#frame{{
