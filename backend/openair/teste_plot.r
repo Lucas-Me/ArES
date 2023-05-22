@@ -22,6 +22,10 @@ parameters <- string2vector(args$get("parameters"))
 #     parameters <- parameters[1]
 # }
 
+# COLORMAP TO FOLLOW
+colors <- string2vector(args$get("colors"))
+print(colors)
+
 # OPTIONS TO SAVE FIGURE
 png(
     args$get("fname"),
@@ -38,9 +42,9 @@ if (group_site) {
         pollutant = parameters,
         ylab = args$get("ylab", ""),
         # name.pol = c(),
-        # normalize = FALSE,
+        normalise = as.logical(args$get("normalise", FALSE)),
         group = "site",
-        # cols = c(),
+        cols = colors,
         xlab = c("Hora", "Hora", "Mês", "Dia da semana"), # Fixed
     )
 } else {
@@ -50,7 +54,7 @@ if (group_site) {
         ylab = args$get("ylab", ""),
         # name.pol = c(),
         normalise = as.logical(args$get("normalise", FALSE)),
-        # cols = c(),
+        cols = colors,
         xlab = c("Hora", "Hora", "Mês", "Dia da semana"), # Fixed
     )
 }

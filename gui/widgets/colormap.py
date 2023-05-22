@@ -1,4 +1,6 @@
 # QT MODULES
+from typing import Any, Union
+import PySide6.QtCore
 import PySide6.QtGui
 from qt_core import *
 
@@ -6,7 +8,7 @@ from qt_core import *
 import numpy as np
 
 # IMPORT CUSTOM MODULES
-from gui.windows.dialog.legend.color_dialog import LegendDialog
+from gui.windows.dialog.legend.color_dialog import ColorEditDialog
 
 
 def calculateLuminance(rgb : np.array):
@@ -35,7 +37,7 @@ class ColormapWidget(QFrame):
 
     def __init__(self, *args, **kwargs):
         # PRIVATE VARIABLES
-        self.gradient_ = QLinearGradient()
+        self.gradient_ = LinearGradient()
         self.colors = [] # list of colors
 
         # INIT
@@ -66,7 +68,7 @@ class ColormapWidget(QFrame):
         painter.end()
 
     def refreshColors(self, colors):
-        self.gradient_ = QLinearGradient()
+        self.gradient_ = LinearGradient()
         self.gradient_.setStart(0, 0)
         self.gradient_.setFinalStop(1, 0)
         self.gradient_.setCoordinateMode(QGradient.ObjectBoundingMode)
@@ -84,9 +86,14 @@ class ColormapWidget(QFrame):
     def refreshItems(self):
         # removing children
         n = self.ui.main_layout.count()
-        for i in range(n):
-            self.ui.main_layout.itemAt(i).widget().deleteLater()
-            self.ui.main_layout.takeAt(i)
+        for i in reversed(range(n)):
+            item = self.ui.main_layout.itemAt(i)
+            if item.spacerItem():
+                self.ui.main_layout.removeItem(item)
+                del item
+            else:
+                item.widget().deleteLater()
+                self.ui.main_layout.takeAt(i)
 
         # adding elements
         for i in range(len(self.colors)):
@@ -97,12 +104,43 @@ class ColormapWidget(QFrame):
 
             # adding marker
             marker = ColorMarker(position = i, parent = self)
-            marker.clicked.connect(self.editColor)
+            marker.leftClick.connect(self.editColor)
+            marker.rightClick.connect(self.removeColor)
             self.ui.main_layout.addWidget(marker)
 
     def editColor(self, position):
-        color = self.colors[position]
-        print(position, color)
+        dialog = ColorEditDialog(self, position)
+        dialog.loadContents()
+        dialog.show()
+
+    def removeColor(self, position):
+        colors = self.colors
+        n = len(self.colors)
+
+        if n > 2:
+            colors.pop(position)
+            self.refreshColors(self.colors)
+            self.refreshItems()
+
+    def updateColor(self, position, color_name):
+        new_colors = self.colors.copy()
+        new_colors[position] = color_name
+        self.refreshColors(new_colors)
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
+        # getting position of the click
+        self.insertMarker(len(self.colors) + 1)
+        return super().mouseDoubleClickEvent(event)
+    
+    def getColors(self):
+        return self.colors
+    
+    def insertMarker(self, nmarkers):
+        # deducing new colors
+        positions = np.linspace(0, 1, nmarkers)
+        new_colors = [self.gradient_.getColor(position).name() for position in  positions]
+        self.refreshColors(new_colors)
+        self.refreshItems()
 
 class ViewerUI(object):
 
@@ -119,7 +157,8 @@ class ViewerUI(object):
 
 class ColorMarker(QWidget):
 
-    clicked = Signal(int)
+    leftClick = Signal(int)
+    rightClick = Signal(int)
     def __init__(self, position : int, parent : ColormapWidget):
 
         # INIT
@@ -134,8 +173,12 @@ class ColorMarker(QWidget):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         ''' Emite um sinal ao ser clicado'''
+        if event.button() == Qt.RightButton:
+            self.rightClick.emit(self.position)
+        else:
+            self.leftClick.emit(self.position)
+
         super().mousePressEvent(event)
-        self.clicked.emit(self.position)
         
     def paintEvent(self, event: QPaintEvent) -> None:
         opt = QStyleOption()
@@ -176,3 +219,38 @@ class ColorMarker(QWidget):
         # END
         p.end()
 
+class LinearGradient(QLinearGradient):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # PROPERTIES
+        self.ncolors = 0
+        self.mGradientColors = []
+    
+    def getColor(self, value):
+        # Assume mGradientColors.count()>1 and value=[0,1]
+        interval= self.ncolors - 1 
+        stepbase = 1.0 / interval
+
+        for i in range(1, self.ncolors):
+            if value <= i * stepbase:
+                interval = i
+                break
+
+        percentage = (value-stepbase*(interval-1))/stepbase
+        color = self.interpolate(self.mGradientColors[interval], self.mGradientColors[interval-1], percentage)        
+        return color
+
+    def interpolate(self, start : QColor, end : QColor, ratio : float):
+        r = int((ratio*start.red() + (1-ratio)*end.red()))
+        g = int((ratio*start.green() + (1-ratio)*end.green()))
+        b = int((ratio*start.blue() + (1-ratio)*end.blue()))
+
+        return QColor.fromRgb(r,g,b)
+
+    def setColorAt(self, pos: float, color) -> None:
+        self.ncolors += 1
+        self.mGradientColors.append(QColor(color))
+
+        return super().setColorAt(pos, color)

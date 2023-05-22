@@ -72,9 +72,11 @@ class TimeVariationPlot(AbstractPlot):
 
     def getArgs(self):
         super_args = super().getArgs()
+        colors = ', '.join(self.colormap_edit.getColors())
         args = super_args + [
             "--ylab", self.ylab.text(),
             '--normalise', str.upper(str(self.normalise.isChecked())), 
+            '--colors', f'"{colors}"'
         ]
 
         return args
