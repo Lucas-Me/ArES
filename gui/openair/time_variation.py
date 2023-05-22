@@ -15,6 +15,20 @@ class TimeVariationPlot(AbstractPlot):
         # UI
         self.setupUI()
 
+        # SETUP COLORS
+        self.colormap_edit.refreshColors(
+            ['#4331a0',
+            '#2670c0',
+            '#43c4b5',
+            '#b4e97e',
+            '#fcf8be',
+            '#ecc852',
+            '#fa6916',
+            '#d31818',
+            '#99123f']
+        )
+        self.colormap_edit.refreshItems()
+
         # SIGNALS AND SLOTS
         self.site_selection.dataChanged.connect(lambda: self.checkSelection(True))
         self.parameter_selection.dataChanged.connect(lambda: self.checkSelection(False))
