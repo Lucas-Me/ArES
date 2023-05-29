@@ -38,6 +38,10 @@ class OpenAirScreen(QWidget):
 		self.ui.dpi.valueChanged.connect(self.updateResolution)
 		self.ui.proportion.valueChanged.connect(self.updateResolution)
 		self.ui.process_button.clicked.connect(self.performTask)
+		self.resources_list.rowClicked.connect(self.changePlot)
+
+	def changePlot(self, row):
+		self.ui.module_frame.setCurrentIndex(row)
 
 	def updateItems(self, data_list : list[ModifiedData]):
 		# getting vars
@@ -64,10 +68,10 @@ class OpenAirScreen(QWidget):
 
 	def performTask(self):
 		command = os.path.join(self.ui.r_directory.text(), 'Rscript')
-		path2script = './/backend//openair//teste_plot.r'
 
 		# args from the selected module
 		args = self.ui.module_frame.currentWidget().getArgs()
+		path2script = self.ui.module_frame.currentWidget().getPath()
 		args[1] = os.path.join(self.ui.save_directory.text(), args[1])
 
 		# Include figure args
@@ -153,7 +157,7 @@ class ListaSuspensaModel(QAbstractListModel):
 		super().__init__()
 		
 		self.active_row = 0
-		self.data_objects = ["Variação temporal", "Rosa dos ventos", "Rose de poluição"]
+		self.data_objects = ["Variação temporal", "Rosa dos ventos"]
 
 	def rowCount(self, parent = QModelIndex()) -> int:
 		return len(self.data_objects)

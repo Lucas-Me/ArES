@@ -3,6 +3,7 @@ from qt_core import *
 
 # IMPORT PAGES
 from gui.openair.time_variation import TimeVariationPlot
+from gui.openair.windrose import WindRose
 
 class StackedModules(QStackedWidget):
 
@@ -11,7 +12,8 @@ class StackedModules(QStackedWidget):
 
         # PAGES
         self.pages = {
-            'TimeVariation' : TimeVariationPlot(parent = self.parent())
+            'TimeVariation' : TimeVariationPlot(parent = self.parent()),
+            'WindRose' : WindRose(parent = self.parent())
         }
 
         # COMMANDS

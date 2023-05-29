@@ -165,14 +165,13 @@ class LegendDialog(QDialog):
 
 class ColorEditDialog(QDialog):
 
-	def __init__(self, colormap, position,parent = None):
+	def __init__(self, color_marker, parent = None):
 		super().__init__(parent = parent)
 
 		# PROPERTIES
 		self.margins = 20
 		self.dragPos = QPoint()
-		self.colormap = colormap
-		self.position = position
+		self.colormarker = color_marker
 
 		# SETTINGS
 		self.setModal(True)
@@ -207,14 +206,14 @@ class ColorEditDialog(QDialog):
 
 	@Slot(QColor)
 	def changeArtistColor(self, color : QColor, which: str):
-		self.colormap.updateColor(self.position, color.name())
+		self.colormarker.parent().updateColor(self.colormarker, color.name())
 
 		# update dialog
 		self.updateColor(color, which)
 
 	def loadContents(self):
 		# storing original values
-		self.origColor = self.colormap.colors[self.position]
+		self.origColor = self.colormarker.getColor()
 		
 		if isinstance(self.origColor, tuple) or isinstance(self.origColor, list):
 			self.origColor = QColor(*map(lambda x: x*255, self.origColor))

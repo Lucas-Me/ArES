@@ -71,23 +71,23 @@ class AbstractPlot(QWidget):
         site_layout.addWidget(self.site_selection)
 
         # parameter combobox
-        parameter_layout = QHBoxLayout()
-        parameter_layout.setContentsMargins(0, 0, 0, 0)
-        parameter_layout.setSpacing(10)
+        self.parameter_layout = QHBoxLayout()
+        self.parameter_layout.setContentsMargins(0, 0, 0, 0)
+        self.parameter_layout.setSpacing(10)
         self.parameter_selection = CheckableComboBox()
         self.parameter_selection.lineEdit().setPlaceholderText("Selecione um ou mais parâmetros")
         self.parameter_selection.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         parameter_label = QLabel("Parâmetros")
         parameter_label.setFixedWidth(80)
         parameter_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        parameter_layout.addWidget(parameter_label)
-        parameter_layout.addWidget(self.parameter_selection)
+        self.parameter_layout.addWidget(parameter_label)
+        self.parameter_layout.addWidget(self.parameter_selection)
 
         # ADD TO MAIN LAYOUT
         # ////////////////
         self.main_layout.addWidget(self.image_name, alignment= Qt.AlignmentFlag.AlignTop)
         self.main_layout.addLayout(site_layout)
-        self.main_layout.addLayout(parameter_layout)
+        self.main_layout.addLayout(self.parameter_layout)
 
         # border
         label_border = QLabel()

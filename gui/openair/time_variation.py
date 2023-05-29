@@ -2,7 +2,6 @@
 from qt_core import *
 
 # IMPORT CUSTOM MODULES
-from gui.widgets.tag_bar import ColorTags
 from gui.openair.abstract_module import AbstractPlot
 from gui.widgets.colormap import ColormapWidget
 
@@ -14,20 +13,6 @@ class TimeVariationPlot(AbstractPlot):
 
         # UI
         self.setupUI()
-
-        # SETUP COLORS
-        self.colormap_edit.refreshColors(
-            ['#4331a0',
-            '#2670c0',
-            '#43c4b5',
-            '#b4e97e',
-            '#fcf8be',
-            '#ecc852',
-            '#fa6916',
-            '#d31818',
-            '#99123f']
-        )
-        self.colormap_edit.refreshItems()
 
         # SIGNALS AND SLOTS
         self.site_selection.dataChanged.connect(lambda: self.checkSelection(True))
@@ -42,12 +27,6 @@ class TimeVariationPlot(AbstractPlot):
                 self.parameter_selection.clearSelection()
             else:
                 self.site_selection.clearSelection()
-
-        # refresh the viewer
-        self.legend_properties.updateTags(
-            tag_names = options[is_site],
-            colors = self.color_list
-            )
 
     def setupUI(self):
         # UI AND LAYOUTS
@@ -69,8 +48,16 @@ class TimeVariationPlot(AbstractPlot):
         # COLOR AND LEGEND 
         legends_label = QLabel("Esquema de cores")
         legends_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.legend_properties = ColorTags()
-        self.colormap_edit = ColormapWidget()
+        self.colormap_edit = ColormapWidget(colors = ['#4331a0',
+            '#2670c0',
+            '#43c4b5',
+            '#b4e97e',
+            '#fcf8be',
+            '#ecc852',
+            '#fa6916',
+            '#d31818',
+            '#99123f'])
+        self.colormap_edit.refreshColors()
 
         # ADD TO MAIN LAYOUT
         # ////////////////
@@ -94,3 +81,7 @@ class TimeVariationPlot(AbstractPlot):
         ]
 
         return args
+    
+    def getPath(self):
+
+        return './/backend//openair//time_variation.r'

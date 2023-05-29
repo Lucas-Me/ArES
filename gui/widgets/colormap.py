@@ -1,8 +1,8 @@
 # QT MODULES
-from typing import Any, Union
-import PySide6.QtCore
-import PySide6.QtGui
 from qt_core import *
+
+# IMPORT BUILT-IND MODULES
+import gc
 
 # IMPORTING MODULES
 import numpy as np
@@ -38,10 +38,10 @@ class ColormapWidget(QFrame):
     def __init__(self, *args, **kwargs):
         # PRIVATE VARIABLES
         self.gradient_ = LinearGradient()
-        self.colors = [] # list of colors
+        self.color_markers = [] # list of color markers
 
         # INIT
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
         # SETUP UI
         self.ui = ViewerUI()
@@ -52,8 +52,8 @@ class ColormapWidget(QFrame):
         self.gradient_.setCoordinateMode(QGradient.ObjectBoundingMode)
 
         # init
-        self.refreshColors(["#ffffff", '#000000'])
-        self.refreshItems()
+        self.refreshItems(kwargs.get("colors", ["#ffffff", '#000000']))
+        self.refreshColors()
         self.setFixedHeight(40)
 
     def paintEvent(self, event: QPaintEvent) -> None:
@@ -65,14 +65,23 @@ class ColormapWidget(QFrame):
 
         # painting box
         painter.fillRect(QRect(0, 0, self.width(), self.height()), self.gradient_)
+
+        # BORDER
+        pen =  QPen()
+        pen.setColor("#000000")
+        pen.setWidth(4)
+        painter.setPen(pen)
+        painter.drawRect(self.rect())
+
+        # END
         painter.end()
 
-    def refreshColors(self, colors):
+    def refreshColors(self):
         self.gradient_ = LinearGradient()
         self.gradient_.setStart(0, 0)
         self.gradient_.setFinalStop(1, 0)
         self.gradient_.setCoordinateMode(QGradient.ObjectBoundingMode)
-        self.colors = colors
+        colors = self.getColors()
 
         # adding colors
         n = len(colors)
@@ -83,7 +92,7 @@ class ColormapWidget(QFrame):
         # update colormap
         self.update()
 
-    def refreshItems(self):
+    def refreshItems(self, colors):
         # removing children
         n = self.ui.main_layout.count()
         for i in reversed(range(n)):
@@ -95,52 +104,58 @@ class ColormapWidget(QFrame):
                 item.widget().deleteLater()
                 self.ui.main_layout.takeAt(i)
 
+        # cleaning list
+        self.color_markers.clear()
+
+        # garbage collector
+        gc.collect()
+
         # adding elements
-        for i in range(len(self.colors)):
+        for i in range(len(colors)):
             if i > 0:
                 self.ui.main_layout.addItem(
                     QSpacerItem(30, 30, QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
                 )
 
             # adding marker
-            marker = ColorMarker(position = i, parent = self)
+            marker = ColorMarker(color = colors[i], parent = self)
             marker.leftClick.connect(self.editColor)
             marker.rightClick.connect(self.removeColor)
+            self.color_markers.append(marker)
             self.ui.main_layout.addWidget(marker)
 
-    def editColor(self, position):
-        dialog = ColorEditDialog(self, position)
+    def editColor(self, marker):
+        dialog = ColorEditDialog(marker)
         dialog.loadContents()
         dialog.show()
 
-    def removeColor(self, position):
-        colors = self.colors
-        n = len(self.colors)
+    def removeColor(self, marker):
+        n = len(self.color_markers)
 
         if n > 2:
-            colors.pop(position)
-            self.refreshColors(self.colors)
-            self.refreshItems()
+            self.color_markers.remove(marker)
+            self.refreshItems(self.getColors())
+            self.refreshColors()
 
-    def updateColor(self, position, color_name):
-        new_colors = self.colors.copy()
-        new_colors[position] = color_name
-        self.refreshColors(new_colors)
+    def updateColor(self, marker, color_name):
+        marker.setColor(color_name)
+        self.refreshColors()
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         # getting position of the click
-        self.insertMarker(len(self.colors) + 1)
+        self.insertMarker(len(self.color_markers) + 1)
         return super().mouseDoubleClickEvent(event)
     
     def getColors(self):
-        return self.colors
+        return [marker.getColor() for marker in self.color_markers]
     
     def insertMarker(self, nmarkers):
         # deducing new colors
         positions = np.linspace(0, 1, nmarkers)
-        new_colors = [self.gradient_.getColor(position).name() for position in  positions]
-        self.refreshColors(new_colors)
-        self.refreshItems()
+        new_colors = [self.gradient_.getColor(position).name() for position in positions]
+        self.refreshItems(new_colors)
+        self.refreshColors()
+
 
 class ViewerUI(object):
 
@@ -157,26 +172,31 @@ class ViewerUI(object):
 
 class ColorMarker(QWidget):
 
-    leftClick = Signal(int)
-    rightClick = Signal(int)
-    def __init__(self, position : int, parent : ColormapWidget):
+    leftClick = Signal(object)
+    rightClick = Signal(object)
+    def __init__(self, color : str, parent : ColormapWidget):
 
         # INIT
         super().__init__(parent)
 
         # PRIVATE VARIABLES
-        self.position = position
+        self.color = QColor(color)
 
         # SETTINGS
         self.setFixedWidth(10)
-        # self.setStyleSheet('background-color: red;')
 
+    def getColor(self):
+        return self.color.name()
+    
+    def setColor(self, color : str):
+        self.color = QColor(color)
+    
     def mousePressEvent(self, event: QMouseEvent) -> None:
         ''' Emite um sinal ao ser clicado'''
         if event.button() == Qt.RightButton:
-            self.rightClick.emit(self.position)
+            self.rightClick.emit(self)
         else:
-            self.leftClick.emit(self.position)
+            self.leftClick.emit(self)
 
         super().mousePressEvent(event)
         
@@ -209,15 +229,23 @@ class ColorMarker(QWidget):
             QPointF(midpoint, h - marker_h),
         ]
 
-        # DRAWING
-        color = getContrast(self.parent().colors[self.position])
+        # FILL COLOR
+        color = getContrast(self.color.name())
         p.setBrush(QBrush(color))
-        p.setPen(color)
+
+        # BORDER COLOR
+        pen =  QPen()
+        pen.setColor("#000000")
+        pen.setWidth(1)
+        p.setPen(pen)
+
+        # DRAW POLYGON
         p.drawPolygon(upper_marker)
         p.drawPolygon(lower_marker)
 
         # END
         p.end()
+
 
 class LinearGradient(QLinearGradient):
 
@@ -254,3 +282,135 @@ class LinearGradient(QLinearGradient):
         self.mGradientColors.append(QColor(color))
 
         return super().setColorAt(pos, color)
+    
+
+class DiscreteColormap(QFrame):
+        
+    def __init__(self, *args, **kwargs):
+        # PRIVATE VARIABLES
+        self.colorMarkers = [] # list of color markers
+
+        # INITs
+        super().__init__()
+
+        # SETUP UI
+        self.ui = ViewerUI()
+        self.ui.setup_ui(self)
+
+        # settings
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+
+        # init
+        self.refreshItems(kwargs.get("colors", ["#ffffff", '#000000']))
+        self.setFixedHeight(40)
+        
+    def refreshItems(self, colors):
+        # removing children
+        n = self.ui.main_layout.count()
+        for i in reversed(range(n)):
+            item = self.ui.main_layout.itemAt(i)
+            if item.spacerItem():
+                self.ui.main_layout.removeItem(item)
+                del item
+            else:
+                item.widget().deleteLater()
+                self.ui.main_layout.takeAt(i)
+
+        # cleaning list
+        self.colorMarkers.clear()
+
+        # garbage collector
+        gc.collect()
+
+        # adding elements
+        for i in range(len(colors)):
+            self.insertMarker(color = colors[i])
+
+    def editColor(self, marker):
+        dialog = ColorEditDialog(marker)
+        dialog.loadContents()
+        dialog.show()
+
+    def removeColor(self, marker):
+        pass
+        # colors = self.colors
+        # n = len(self.colors)
+
+        # if n > 2:
+        #     colors.pop(position)
+        #     self.refreshColors(self.colors)
+        #     self.refreshItems()
+
+    def updateColor(self, marker, color_name):
+        marker.setColor(color_name)
+    
+    def getColors(self):
+        return [marker.getColor() for marker in self.colorMarkers]
+    
+    def insertMarker(self, color):
+        # adding marker
+        marker = DiscreteColorMarker(color = color, parent = self)
+        marker.doubleClick.connect(self.editColor)
+        marker.rightClick.connect(self.removeColor)
+        self.colorMarkers.append(marker)
+        self.ui.main_layout.addWidget(marker)
+
+
+class DiscreteColorMarker(QFrame):
+
+    doubleClick = Signal(object)
+    rightClick = Signal(object)
+    def __init__(self, color : str, parent : ColormapWidget):
+
+        # INIT
+        super().__init__(parent)
+
+        # PRIVATE VARIABLES
+        self.color = QColor(color)
+
+        # SETTINGS
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        # self.setStyleSheet('background-color: red;')
+
+    def setColor(self, color):
+        self.color = QColor(color)
+        self.update()
+
+    def getColor(self):
+        return self.color.name()
+    
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
+        ''' Emite um sinal ao ser clicado duas vezes'''
+        self.doubleClick.emit(self)
+
+        super().mouseDoubleClickEvent(event)
+    
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        ''' Emite um sinal ao ser clicado uma vez com o botão direito'''
+        if event.button() == Qt.RightButton:
+            self.rightClick.emit(self)
+
+        return super().mousePressEvent(event)
+    
+    def paintEvent(self, event: QPaintEvent) -> None:
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        p.setRenderHints(QPainter.RenderHint.Antialiasing)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+
+        # widget propertie
+        rect = self.rect()
+
+        # DRAWING
+        p.setBrush(QBrush(self.color))
+        pen = QPen()
+        pen.setColor("#000000")
+        pen.setWidth(4)
+        p.setPen(pen)
+        p.fillRect(rect, p.brush())
+        p.drawRect(rect)
+
+        # END
+        p.end()
+
