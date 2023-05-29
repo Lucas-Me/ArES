@@ -54,7 +54,7 @@ class ColormapWidget(QFrame):
         # init
         self.refreshItems(kwargs.get("colors", ["#ffffff", '#000000']))
         self.refreshColors()
-        self.setFixedHeight(40)
+        self.setFixedHeight(60)
 
     def paintEvent(self, event: QPaintEvent) -> None:
         # super().paintEvent()
@@ -289,32 +289,52 @@ class DiscreteColormap(QFrame):
     def __init__(self, *args, **kwargs):
         # PRIVATE VARIABLES
         self.colorMarkers = [] # list of color markers
+        self.border_length = 5
+        self.levels = Levels(border_length = self.border_length)
 
         # INITs
         super().__init__()
 
         # SETUP UI
-        self.ui = ViewerUI()
-        self.ui.setup_ui(self)
+        self.setup_ui()
 
         # settings
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
 
         # init
         self.refreshItems(kwargs.get("colors", ["#ffffff", '#000000']))
-        self.setFixedHeight(40)
-        
+        self.setFixedHeight(80)
+    
+    def setup_ui(self):
+
+        if not self.objectName():
+            self.setObjectName("colormap")
+
+        # MAIN LAYOUT
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+
+        # UPPER LAYOUT (CORES)
+        self.upper_layout = QHBoxLayout()
+        self.upper_layout.setContentsMargins(self.border_length, 0, self.border_length, 0)
+        self.upper_layout.setSpacing(0)
+
+        # LOWER LAYOUT (INTERVALOS)
+        self.main_layout.addLayout(self.upper_layout)
+        self.main_layout.addWidget(self.levels)
+
     def refreshItems(self, colors):
         # removing children
-        n = self.ui.main_layout.count()
+        n = self.upper_layout.count()
         for i in reversed(range(n)):
-            item = self.ui.main_layout.itemAt(i)
+            item = self.upper_layout.itemAt(i)
             if item.spacerItem():
-                self.ui.main_layout.removeItem(item)
+                self.upper_layout.removeItem(item)
                 del item
             else:
                 item.widget().deleteLater()
-                self.ui.main_layout.takeAt(i)
+                self.upper_layout.takeAt(i)
 
         # cleaning list
         self.colorMarkers.clear()
@@ -324,7 +344,11 @@ class DiscreteColormap(QFrame):
 
         # adding elements
         for i in range(len(colors)):
-            self.insertMarker(color = colors[i])
+            self.insertMarker(color = colors[i], update_levels = False)
+
+        # updating levels
+        self.levels.setLevels(np.arange(0, len(colors) + 1))
+        self.levels.update()
 
     def editColor(self, marker):
         dialog = ColorEditDialog(marker)
@@ -332,14 +356,17 @@ class DiscreteColormap(QFrame):
         dialog.show()
 
     def removeColor(self, marker):
-        pass
-        # colors = self.colors
-        # n = len(self.colors)
+        # get index
+        index = self.colorMarkers.index(marker)
+        self.colorMarkers.pop(index)
 
-        # if n > 2:
-        #     colors.pop(position)
-        #     self.refreshColors(self.colors)
-        #     self.refreshItems()
+        # remove object
+        item = self.upper_layout.itemAt(index)
+        item.widget().deleteLater()
+        self.upper_layout.takeAt(index)
+
+        # updating ticks
+        self.levels.updateLevels(len(self.colorMarkers) + 1)
 
     def updateColor(self, marker, color_name):
         marker.setColor(color_name)
@@ -347,14 +374,17 @@ class DiscreteColormap(QFrame):
     def getColors(self):
         return [marker.getColor() for marker in self.colorMarkers]
     
-    def insertMarker(self, color):
+    def insertMarker(self, color, update_levels = True):
         # adding marker
         marker = DiscreteColorMarker(color = color, parent = self)
         marker.doubleClick.connect(self.editColor)
         marker.rightClick.connect(self.removeColor)
         self.colorMarkers.append(marker)
-        self.ui.main_layout.addWidget(marker)
+        self.upper_layout.addWidget(marker)
 
+        if update_levels:
+            # updating ticks
+            self.levels.updateLevels(len(self.colorMarkers) + 1)
 
 class DiscreteColorMarker(QFrame):
 
@@ -370,7 +400,6 @@ class DiscreteColorMarker(QFrame):
 
         # SETTINGS
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
-        # self.setStyleSheet('background-color: red;')
 
     def setColor(self, color):
         self.color = QColor(color)
@@ -414,3 +443,77 @@ class DiscreteColorMarker(QFrame):
         # END
         p.end()
 
+
+class Levels(QFrame):
+    """Classe que mostra os níveis dos intervalos relacionados
+    a um esquema de cores discreto (discrete colormap).
+    De preferencia, posicionado logo abaixo do colormap"""
+
+    def __init__(self, border_length, levels = [1, 2]):
+
+        # PRIVATE VARIABLES
+        self.levels = levels
+        self.border_length = border_length
+        self.pen = QPen()
+        self.font = QFont()
+
+        # INIT
+        super().__init__(parent= None)
+
+        # SETTINGS
+        self.pen.setColor("#000000")
+        self.pen.setWidth(3)
+        # self.font.setBold(True)
+        self.font.setPixelSize(12)
+        self.setFixedHeight(20)
+
+    def setLevels(self, levels):
+        if not isinstance(levels, list):
+            levels = levels.tolist()
+
+        self.levels = levels
+        self.update()
+
+    def getLevels(self):
+        return self.levels
+    
+    def updateLevels(self, n):
+        levels = self.getLevels() # esta em ordem crescente
+        vmax, vmin = levels[-1], levels[0]
+        self.setLevels(np.round(np.linspace(vmin, vmax, n), 1))
+    
+    def paintEvent(self, event: QPaintEvent) -> None:
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        p.setRenderHints(QPainter.RenderHint.Antialiasing)
+        self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+
+        # widget properties and pen settings
+        tick_height = 3
+        p.setPen(self.pen)
+        p.setFont(self.font)
+
+        # DRAWING LEVELS
+        n = len(self.levels)
+        positions = np.round(np.linspace(0 + self.border_length, self.width() - self.border_length, n), 0).astype(int)
+        dx = (positions[-1] - positions[0]) // n
+        positions[0] += self.border_length // 2
+        positions[-1] -= self.border_length // 2
+
+        for i in range(n):
+            p1 = QPoint(positions[i], 0) # ponto superior
+            p2 = QPoint(positions[i], tick_height) # ponto inferior
+
+            # draw tick
+            p.drawLine(p1, p2)
+
+            # draw value
+            p.drawText(
+                QRectF(positions[i] - dx // 2, 0, dx, self.height()),
+                str(self.levels[i]),
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
+                )
+
+        # END
+        p.end()

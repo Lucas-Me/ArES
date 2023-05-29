@@ -17,14 +17,9 @@ class WindRose(AbstractPlot):
     def setupUI(self):
         # UI AND LAYOUTS
         # ////////////////
-        
-        # # xlabel description
-        # ylab = QLabel("Legendas do eixo vertical")
-        # ylab.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        # # XLABEL tagbar
-        # self.ylab = QLineEdit()
-        # self.ylab.setPlaceholderText("Insira uma legenda... (Ex: Concentração [µg/m3])")
+        # GROUPBOX "AGRUPAR POR"
+        self.groupby_types = GroupBoxTypes()
 
         # # COLOR AND LEGEND 
         legends_label = QLabel("Esquema de cores")
@@ -41,9 +36,7 @@ class WindRose(AbstractPlot):
 
         # # ADD TO MAIN LAYOUT
         # # ////////////////
-        # self.main_layout.addWidget(ylab)
-        # self.main_layout.addWidget(self.ylab)
-        # self.main_layout.addWidget(self.normalise)
+        self.main_layout.addWidget(self.groupby_types)
         self.main_layout.addWidget(legends_label)
         self.main_layout.addWidget(self.colormap_edit)
         self.main_layout.addItem(QSpacerItem(30, 30, QSizePolicy.Expanding, QSizePolicy.MinimumExpanding))
@@ -69,7 +62,8 @@ class WindRose(AbstractPlot):
             '--sites', f'"{sites}"',
             # "--ylab", self.ylab.text(),
             # '--normalise', str.upper(str(self.normalise.isChecked())), 
-            '--colors', f'"{colors}"'
+            '--colors', f'"{colors}"',
+            '--breaks', f'"{self.colormap_edit.levels.getLevels()}'
         ]
 
         return args
@@ -87,3 +81,72 @@ class WindRose(AbstractPlot):
 
         # updating text
         self.site_selection.updateText()
+
+
+class GroupBoxTypes(QWidget):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # PRIVATE VARIABLES
+        self.objects = []
+        self.names = ["Estação", "Ano", "Mês", "Dia da semana", "Estação", "Poluente"]
+        self.checked = []
+
+        # SETTINGS
+        self.setup_ui()
+        self.setup_stylesheet()
+
+    def setup_ui(self):
+        # UI
+        self.main_layout = QVBoxLayout(self)
+        #
+        groupbox = QGroupBox("Agrupar por")
+        grid = QGridLayout(groupbox)
+        grid.setContentsMargins(5, 5, 5, 5)
+        grid.setSpacing(2)
+        #
+        self.main_layout.addWidget(groupbox)
+
+        # RADIOBUTTONS
+        for i, name in enumerate(self.names):
+            button = QCheckBox(name)
+            self.objects.append(button)
+            #
+            row = i // 2
+            col = i % 2
+            grid.addWidget(button, row, col)
+
+    def setup_stylesheet(self):
+
+        self.setStyleSheet("""
+            QGroupBox {
+                border: 1px solid gray;
+                border-color: #FF17365D;
+                margin-top: 27px;
+                font-size: 14px;
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 15px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                border-top-left-radius: 15px;
+                border-top-right-radius: 15px;
+                padding: 5px 150px;
+                background-color: #FF17365D;
+                color: rgb(255, 255, 255);
+            }
+        """)
+    
+    def handleSelections(self, index):
+        n = len(self.checked)
+
+        # DISABLING LAST ONE
+        if n >= 2:
+            prev = self.checked.pop(0)
+            self.objects[prev].setChecked(False)
+    	
+        # MARKING AS TRUE
+        self.checked.append(index)
+        self.objects[index].setChecked(True)

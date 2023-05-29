@@ -25,7 +25,9 @@ types <- append(types, "year")
 
 # COLORMAP TO FOLLOW
 colors <- string2vector(args$get("colors"))
-print(types)
+
+# BREAKS OF THE COLORMAP
+breaks <- string2vector(args$get("breaks"))
 
 # OPTIONS TO SAVE FIGURE
 png(
@@ -42,13 +44,17 @@ if (length(types) > 0) {
         mydata = df,
         paddle = FALSE,
         type = types,
-        cols = colors
+        cols = colors,
+        breaks = breaks,
+        key.position = "right"
         )
 } else {
     windRose(
         mydata = df,
         paddle = FALSE,
-        cols = colors
+        cols = colors,
+        breaks = breaks,
+        key.position = "right"
         )
 }
 
